@@ -1,0 +1,56 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`one application > snapshots deterministic decisions and receipts for fixed seeds 1`] = `
+[
+  {
+    "decision": "accept",
+    "outcome": {
+      "kind": "registered",
+    },
+    "seed": 1,
+  },
+  {
+    "decision": "challenge",
+    "outcome": {
+      "kind": "filed",
+    },
+    "seed": 1,
+  },
+  {
+    "decision": "accept",
+    "outcome": {
+      "kind": "citation",
+      "violations": [
+        "day-1-phrase",
+      ],
+      "warning": true,
+    },
+    "seed": 2,
+  },
+  {
+    "decision": "challenge",
+    "outcome": {
+      "kind": "filed",
+    },
+    "seed": 2,
+  },
+  {
+    "decision": "accept",
+    "outcome": {
+      "kind": "citation",
+      "violations": [
+        "day-1-phrase",
+      ],
+      "warning": true,
+    },
+    "seed": 3,
+  },
+  {
+    "decision": "challenge",
+    "outcome": {
+      "kind": "filed",
+    },
+    "seed": 3,
+  },
+]
+`;

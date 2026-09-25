@@ -5,21 +5,21 @@ Fill Evidence with a commit hash, test output, screenshot path or clip. "The age
 ## Always true
 | Check | Evidence |
 |---|---|
-| `npm run typecheck` and `npm test` pass | |
-| Same seed produces identical applicants, court results and day totals (snapshot test) | |
-| `src/rules`, `src/gen`, `src/court`, `src/economy` never import React or use `Math.random`/`Date.now` (grep check) | |
-| **Oracle check:** for 500 seeded applicants, `judge()` finds exactly the `planted` violations, no more, no fewer | |
-| **Fair clue check:** every planted violation type maps to a visible difference in the UI data (for example photo vs video frame, transcript text, vouch names, registry match) | |
+| `npm run typecheck` and `npm test` pass | [Run output](evidence/slice-1-checks.txt): typecheck exit 0; 7 test files, 58 tests pass. |
+| Same seed produces identical applicants, court results and day totals (snapshot test) | [Applicant snapshot](../src/gen/__snapshots__/applicant.test.ts.snap), [decision snapshot](../src/__snapshots__/game.test.ts.snap); 500-seed repeatability test in `src/gen/applicant.test.ts`. Court and day totals are outside Slice 1. |
+| `src/rules`, `src/gen`, `src/court`, `src/economy` never import React or use `Math.random`/`Date.now` (grep check) | `src/purity.test.ts` passes; [rg command and empty result](evidence/slice-1-checks.txt), including `performance.now`. Court/economy have no implementation yet. |
+| **Oracle check:** for 500 seeded applicants, `judge()` finds exactly the `planted` violations, no more, no fewer | `src/gen/applicant.test.ts`: “oracle: judge finds exactly the planted violations in 500 seeded applicants”; [passing output](evidence/slice-1-checks.txt). |
+| **Fair clue check:** every planted violation type maps to a visible difference in the UI data (for example photo vs video frame, transcript text, vouch names, registry match) | `src/gen/applicant.test.ts`: fair-clue test over 500 seeds; `e2e/slice1.spec.ts` checks the visible transcript for typo, missing words, extra words and silence; [citation screenshot](evidence/slice-1-citation.png). |
 
 The oracle check matters most: the generator knows the truth by construction, so it tests the rule engine without trusting the engine's own logic. The fair clue check keeps every mistake the player's fault, never the game's.
 
 ## Slice 1: one applicant
 | Check | Evidence |
 |---|---|
-| Exact phrase is valid; typo, missing words, extra words and silence are each invalid | |
-| Accepting a valid applicant shows a stamp; accepting an invalid one prints a citation that names the broken rule | |
-| Browser: card, video strip and both buttons render; clicking shows the result | |
-| Playwright: with a fixed seed, `window.__game` records the decision and outcome | |
+| Exact phrase is valid; typo, missing words, extra words and silence are each invalid | `src/rules/judge.test.ts`: exact declaration and all four invalid cases; case, punctuation and spacing ignored per user decision. [58 passing unit tests](evidence/slice-1-checks.txt). |
+| Accepting a valid applicant shows a stamp; accepting an invalid one prints a citation that names the broken rule | `e2e/slice1.spec.ts`: seed 1 accepted, seeds 2/3/30/36 cited; [registered](evidence/slice-1-accepted.png), [Rule 1 warning](evidence/slice-1-citation.png). |
+| Browser: card, video strip and both buttons render; clicking shows the result | [Desk](evidence/slice-1-desk.png), [mobile](evidence/slice-1-mobile.png), [filed challenge](evidence/slice-1-filed.png); 13 Chromium tests pass in [run output](evidence/slice-1-checks.txt). |
+| Playwright: with a fixed seed, `window.__game` records the decision and outcome | `e2e/slice1.spec.ts` asserts seed, decision and outcome, repeatability after reload/replay, and deeply frozen state; [run output](evidence/slice-1-checks.txt). Production bundle has no `__game`. |
 
 ## Slice 2: one full day
 | Check | Evidence |

@@ -4,7 +4,7 @@ One row per agent run. Fill it right after the run; it is hard to reconstruct la
 
 | # | Date | Task / slice | Start commit | Model · harness · effort | Skills / workers / memory on? | Elapsed min | My intervention + review min | Quota used (session % / weekly %) | Checks actually run | Result (accepted / rejected / partial) | Failure caught / rework | Next adjustment |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | | | | | | | | | | | | |
+| 1 | 2026-09-25 | Slice 1: one applicant | d1ed356 | GPT-6 · Codex · effort not recorded | Repo instructions; no skills or workers | Not measured | Words-only phrase and mostly-clear fakes confirmed; local server escalation approved; review time not measured | Not measured | typecheck; 58 unit tests; 13 Chromium tests; build; purity/debug rg checks; diff check | Automated checks pass; human playtest pending | Original Playwright server reuse tested another checkout on port 5173; isolated port 5177 fixed the run. Screenshot animations disabled for evidence. | [Implementation and evidence](slice-1.md); next: human playtest, then Slice 2 |
 
 ## Comparisons
 Record each comparison separately so the report can link to it.

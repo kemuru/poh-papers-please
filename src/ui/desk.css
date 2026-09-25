@@ -1,0 +1,142 @@
+body { margin: 0; }
+.registry-app { --ink: #292e2a; --muted: #62665d; --paper: #f0eee4; --line: #c4c4b6; min-height: 100vh; color: var(--ink); background: #d6d8ce; font-family: 'Courier New', monospace; font-size: 14px; }
+.registry-app * { box-sizing: border-box; }
+.registry-app h1, .registry-app h2, .registry-app h3, .registry-app p, .registry-app figure { margin: 0; }
+.registry-app button { font: inherit; cursor: pointer; }
+.registry-app button:focus-visible { outline: 3px solid #222c22; outline-offset: 5px; }
+.ministry-header { min-height: 82px; padding: 18px max(28px, calc((100vw - 1120px) / 2)); background: #2d3730; color: #f0eee4; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 5px solid #8d9981; }
+.ministry-name { display: flex; align-items: center; gap: 14px; }
+.ministry-name strong { display: block; font-size: 15px; text-transform: uppercase; letter-spacing: 2px; }
+.ministry-name div > span { display: block; margin-top: 5px; font-size: 11px; color: #c9cdbf; }
+.ministry-seal { display: grid; place-items: center; width: 40px; height: 40px; border: 3px double #bac2ab; border-radius: 50%; font: 27px Georgia, serif; }
+.window-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+.registry-desk { max-width: 1120px; margin: 0 auto; padding: 32px 0 40px; }
+.desk-title { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 24px; }
+.eyebrow { text-transform: uppercase; font-size: 10px; font-weight: bold; letter-spacing: 1.8px; }
+.desk-title h1 { font: 46px/1.15 Georgia, 'Times New Roman', serif; letter-spacing: -1.5px; margin-top: 6px; }
+.day-badge { text-align: right; border-left: 1px solid #a7ad9f; padding-left: 22px; }
+.day-badge strong { display: block; font-size: 22px; letter-spacing: 1px; text-transform: uppercase; }
+.day-badge span { display: block; color: var(--muted); font-size: 12px; margin-top: 7px; }
+.shift-heading { display: flex; align-items: center; gap: 10px; padding: 13px 0; border-top: 1px solid #b3b9aa; border-bottom: 1px solid #b3b9aa; margin-bottom: 24px; font-size: 12px; }
+.status-light { width: 7px; height: 7px; border-radius: 50%; background: #566f4b; }
+.application-count { margin-left: auto; color: var(--muted); letter-spacing: 2px; }
+.desk-layout { display: grid; grid-template-columns: minmax(0, 1fr) 302px; gap: 30px; align-items: start; }
+.application-stack { display: grid; gap: 19px; }
+.paper { background: var(--paper); border: 1px solid #b7b9ac; box-shadow: 3px 4px 0 #bac0b2; }
+.document-heading { min-height: 43px; border-bottom: 1px solid var(--line); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; text-transform: uppercase; font-size: 10px; letter-spacing: 1.1px; }
+.document-heading h2 { font-size: inherit; }
+.document-number { white-space: nowrap; color: var(--muted); }
+.profile-body { display: flex; gap: 27px; padding: 22px 24px 16px; }
+.profile-photo { flex-shrink: 0; padding: 5px; border: 1px solid #b1b4a7; background: #e0e1d4; transform: rotate(-1.5deg); }
+.profile-photo svg { display: block; }
+.profile-photo figcaption { font-size: 9px; text-align: center; padding-top: 6px; }
+.profile-details { flex: 1; }
+.profile-details dl { margin: 0; display: grid; gap: 14px; }
+.profile-details dt, .phrase-comparison dt { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.profile-details dd { margin: 0; font-size: 15px; }
+.profile-details .applicant-name { font: bold 27px/1.2 Georgia, serif; padding-bottom: 10px; border-bottom: 1px dotted #b7b9ad; }
+.applicant-remark { border-top: 1px solid #d4d4c6; margin: 0 24px !important; padding: 13px 0; font-size: 12px; line-height: 1.5; color: #555e51; }
+.video-panel { background: #364138; border: 1px solid #253228; padding: 15px; box-shadow: 3px 4px 0 #bac0b2; }
+.video-heading { color: #e4e7db; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 13px; }
+.video-heading h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+.recording-label { font-size: 10px; color: #c3cbb9; display: flex; align-items: center; gap: 6px; }
+.recording-label > span { width: 5px; height: 5px; background: #bcc7a8; border-radius: 50%; }
+.video-frames { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.video-frame { position: relative; display: flex; justify-content: center; background: #929e91; border: 1px solid #1f2a21; padding-top: 5px; overflow: hidden; }
+.video-frame::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 3px, #26302512 3px, #26302512 4px); }
+.video-frame figcaption { position: absolute; bottom: 5px; left: 7px; color: #edf0e6; background: #2d382c; font-size: 9px; padding: 2px 4px; }
+.transcript-panel { background: #eeeee3; margin-top: 12px; padding: 13px 16px; }
+.transcript-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.transcript-heading h3 { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+.transcript-heading > span { color: #616c5a; font-size: 10px; }
+.transcript-panel > p { font-size: 14px; line-height: 1.6; }
+.decision-panel { padding-top: 2px; }
+.decision-panel h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+.decision-panel p { font-size: 11px; color: var(--muted); margin-top: 5px; }
+.decision-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 13px; }
+.stamp-button { min-height: 53px; border: 1px solid; border-bottom-width: 4px; text-transform: uppercase; letter-spacing: 2px; font-weight: bold !important; font-size: 15px !important; transition: background 120ms, transform 120ms; }
+.stamp-button > span { margin-right: 9px; }
+.accept-button { color: #f0f1e8; background: #416047; border-color: #293f2e; }
+.accept-button:hover { background: #314f37; }
+.challenge-button { color: #693d30; background: #e9e4d5; border-color: #8f6755; }
+.challenge-button:hover { background: #dfd3c1; }
+.stamp-button:active { transform: translateY(2px); }
+.desk-sidebar { display: grid; gap: 24px; }
+.rulebook { border-left: 6px solid #737c63; }
+.rulebook-cover { padding: 20px 20px 18px; background: #e1e3d5; position: relative; border-bottom: 1px solid #b5b9a8; }
+.rulebook-cover .eyebrow { font-size: 8px; letter-spacing: 1.3px; }
+.rulebook-cover h2 { font: 23px/1.2 Georgia, serif; margin-top: 7px; }
+.rulebook-edition { position: absolute; top: 17px; right: 16px; font-size: 12px; color: #6a705c; }
+.rulebook-body { padding: 20px; }
+.rule-tab { display: inline-block; background: #dae0c6; color: #475436; padding: 5px 7px; text-transform: uppercase; font-size: 9px; font-weight: bold; letter-spacing: 1px; }
+.rulebook-body h3 { font-size: 12px; line-height: 1.5; margin: 16px 0 12px; }
+.rulebook-body > p { font-size: 11px; line-height: 1.6; }
+.rulebook-body blockquote { margin: 12px 0 17px; font: 18px/1.45 Georgia, serif; border-left: 2px solid #9ca887; padding-left: 13px; }
+.matching-note { color: #4c5544; }
+.rulebook-body .rule-note { border-top: 1px solid #cbcebc; padding-top: 13px; margin-top: 15px; color: #646b5d; font-size: 10px; }
+.supervisor-memo { padding: 18px 20px; border-top: 2px solid #8b9480; background: #cbd0c0; transform: rotate(0.5deg); }
+.supervisor-memo h2 { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.supervisor-memo p { font-size: 12px; line-height: 1.7; }
+.memo-signature { display: block; text-align: right; padding-top: 14px; font: italic 17px Georgia, serif; }
+.ministry-footer { max-width: 1120px; margin: auto; padding: 20px 0 24px; border-top: 1px solid #b4bbac; display: flex; justify-content: space-between; gap: 16px; color: #5e6758; font-size: 9px; }
+.receipt { padding-bottom: 28px; text-align: center; }
+.result-stamp { display: inline-block; border: 4px double #3d6347; padding: 9px 21px; color: #3d6347; font: bold 29px 'Courier New', monospace; text-transform: uppercase; letter-spacing: 3px; transform: rotate(-5deg); margin: 36px 20px 25px; animation: stamp-in 180ms ease-out; }
+.filed-stamp { color: #725442; border-color: #725442; }
+.receipt-applicant { font: 20px Georgia, serif; }
+.receipt > h2 { font: 29px Georgia, serif; margin: 17px 24px 12px; }
+.receipt > h2:focus { outline: none; }
+.receipt-body { max-width: 540px; padding: 0 25px; margin: auto !important; line-height: 1.8; font-size: 13px; }
+.citation-slip { background: #f1e3cc; border-top: 4px solid #936247; margin: 26px 25px 0; padding: 20px; text-align: left; color: #563c2c; animation: slip-in 200ms ease-out; }
+.citation-slip h3 { font-size: 14px; margin: 14px 0 8px; }
+.citation-slip p { font-size: 12px; line-height: 1.7; }
+.phrase-comparison { margin: 18px 0; display: grid; gap: 16px; }
+.phrase-comparison dt { color: #75523c; }
+.phrase-comparison dd { margin: 0; font-size: 12px; line-height: 1.7; }
+.citation-slip .warning-notice { border-top: 1px dashed #bd9577; padding-top: 12px; font-weight: bold; }
+.scope-note { margin: 23px 30px 0 !important; padding: 16px; color: #666855; border: 1px dashed #babba7; font-size: 12px; line-height: 1.7; }
+.receipt-end { display: flex; justify-content: space-between; margin: 28px 25px 22px; border-top: 1px dashed #babcac; padding-top: 16px; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; color: #6f7564; }
+.replay-button { background: transparent; color: #3a513a; border: 1px solid #9ea891; padding: 12px 16px; margin: 0 20px; font-size: 12px !important; }
+.replay-button:hover { background: #e1e4d6; }
+@keyframes stamp-in { from { opacity: 0; transform: scale(1.2) rotate(-5deg); } to { opacity: 1; transform: scale(1) rotate(-5deg); } }
+@keyframes slip-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 1180px) { .registry-desk { margin: 0 28px; } .ministry-footer { margin: 0 28px; } }
+@media (max-width: 800px) {
+  .desk-layout { grid-template-columns: minmax(0, 1fr) 255px; gap: 18px; }
+  .profile-body { gap: 17px; padding: 18px 15px; }
+  .profile-photo svg { width: 90px; height: 108px; }
+  .profile-details .applicant-name { font-size: 23px; }
+  .profile-details dd { font-size: 12px; }
+  .recording-label { display: none; }
+  .document-heading { padding: 12px; font-size: 9px; }
+  .rulebook-body { padding: 16px; }
+}
+@media (max-width: 650px) {
+  .ministry-header { padding: 16px 18px; }
+  .ministry-name strong { font-size: 11px; letter-spacing: 1px; }
+  .ministry-name div > span { font-size: 9px; }
+  .window-label { display: none; }
+  .registry-desk { margin: 0 16px; padding-top: 24px; }
+  .desk-title h1 { font-size: 32px; letter-spacing: -1px; }
+  .day-badge { padding-left: 12px; }
+  .day-badge strong { font-size: 16px; white-space: nowrap; }
+  .day-badge span { font-size: 10px; white-space: nowrap; }
+  .desk-layout { display: flex; flex-direction: column; gap: 24px; }
+  .desk-sidebar { order: -1; width: 100%; gap: 12px; }
+  .rulebook-cover { padding: 12px 16px; }
+  .rulebook-cover h2 { font-size: 21px; }
+  .rulebook-body { padding: 14px 16px; }
+  .rulebook-body h3 { display: inline; margin-left: 10px; }
+  .rulebook-body > p:first-of-type { margin-top: 14px; }
+  .rulebook-body blockquote { font-size: 17px; margin: 9px 0 12px; }
+  .supervisor-memo { padding: 14px 16px; }
+  .memo-signature { display: none; }
+  .application-stack, .receipt { width: 100%; }
+  .shift-heading { font-size: 10px; }
+  .application-count { letter-spacing: 0; }
+  .transcript-heading { flex-wrap: wrap; }
+  .ministry-footer { margin: 0 16px; flex-direction: column; gap: 8px; }
+  .stamp-button { font-size: 13px !important; letter-spacing: 1px; }
+  .receipt > h2 { font-size: 25px; }
+  .citation-slip { margin-left: 15px; margin-right: 15px; padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .registry-app *, .registry-app *::after { animation: none !important; transition: none !important; } }
