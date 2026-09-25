@@ -1,4 +1,7 @@
+import { PortraitGallery } from './PortraitGallery';
+
 export function App() {
+  if (import.meta.env.DEV && new URLSearchParams(window.location.search).has('portraits')) return <PortraitGallery />;
   return (
     <main>
       <h1>Proof of Humanity: Papers, Please</h1>
