@@ -1,0 +1,522 @@
+/* Registry Window 3. Grey, stamped and official. No web fonts: system faces only. */
+:root {
+  --desk: #34372f;
+  --desk-dark: #1e211c;
+  --paper: #ebe6d6;
+  --paper-light: #f6f3ea;
+  --rule-line: #c9c1aa;
+  --ink: #26221f;
+  --ink-soft: #5f584f;
+  --pen: #2b3f7a;
+  --accept: #2f6e45;
+  --challenge: #9a2f2a;
+  --marker: #f2c94c;
+  --typewriter: 'Courier New', Courier, ui-monospace, monospace;
+  --official: 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
+  --hand: 'Bradley Hand', 'Segoe Print', 'Noteworthy', cursive;
+}
+
+body {
+  margin: 0;
+}
+
+.desk-page {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 50% 0%, #41453b 0%, var(--desk) 55%, var(--desk-dark) 100%);
+  color: var(--ink);
+  font-family: var(--typewriter);
+}
+
+.desk-header {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  padding: 12px 24px;
+  background: var(--desk-dark);
+  border-bottom: 3px solid #121411;
+  color: #d8d2c0;
+}
+
+.desk-header h1 {
+  margin: 0;
+  font-family: var(--official);
+  font-size: 20px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.desk-header p {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+}
+
+.desk {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 20px;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.desk-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+@media (max-width: 860px) {
+  .desk {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 16px;
+  }
+}
+
+/* ------------------------------------------------------------ documents */
+
+.doc {
+  position: relative;
+  padding: 14px 16px 16px;
+  background: var(--paper);
+  box-shadow: 0 2px 0 #b9b19a, 0 8px 18px rgb(0 0 0 / 35%);
+}
+
+.doc-title {
+  margin: 0 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule-line);
+  font-family: var(--official);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.label {
+  font-family: var(--official);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* Ink only lands on the paper, however hard the stamp comes down. */
+.card {
+  overflow: hidden;
+}
+
+.card-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.photo {
+  flex: none;
+  padding: 5px;
+  background: var(--paper-light);
+  border: 1px solid #9c9480;
+  line-height: 0;
+}
+
+.fields {
+  flex: 1 1 240px;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 8px 14px;
+  margin: 4px 0 0;
+}
+
+.fields dt {
+  padding-top: 3px;
+  font-family: var(--official);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.fields dd {
+  margin: 0;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.remarks {
+  margin: 14px 0 0;
+  padding-top: 8px;
+  border-top: 1px dashed var(--rule-line);
+}
+
+.hand {
+  margin-left: 6px;
+  font-family: var(--hand);
+  font-size: 17px;
+  color: var(--pen);
+}
+
+/* The stamp lands on the card with a thunk. */
+.stamp {
+  position: absolute;
+  top: 44%;
+  right: 22px;
+  padding: 4px 14px;
+  border: 5px double currentColor;
+  border-radius: 4px;
+  font-family: var(--official);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  mix-blend-mode: multiply;
+  transform: rotate(-11deg);
+  animation: stamp-slam 0.2s ease-in both;
+  pointer-events: none;
+}
+
+.stamp-accept {
+  color: var(--accept);
+}
+
+.stamp-challenge {
+  color: var(--challenge);
+}
+
+.stamped {
+  animation: thunk 0.28s 0.18s ease-out;
+}
+
+@keyframes stamp-slam {
+  from {
+    opacity: 0;
+    transform: rotate(-11deg) scale(2.2);
+  }
+  to {
+    opacity: 0.85;
+    transform: rotate(-11deg) scale(1);
+  }
+}
+
+@keyframes thunk {
+  0%,
+  100% {
+    transform: none;
+  }
+  25% {
+    transform: translate(2px, 3px);
+  }
+  60% {
+    transform: translate(-1px, -1px);
+  }
+}
+
+/* ------------------------------------------------------------ video strip */
+
+/* Three frames at full size, shrinking together on narrow screens. */
+.film {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 120px));
+  gap: 10px;
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 16px 10px 12px;
+  background: #1b1c1a;
+}
+
+.film::before,
+.film::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: repeating-linear-gradient(90deg, transparent 0 6px, #d8d2c0 6px 14px, transparent 14px 20px);
+  opacity: 0.8;
+}
+
+.film::before {
+  top: 5px;
+}
+
+.film::after {
+  bottom: 3px;
+}
+
+.frame {
+  margin: 0 0 6px;
+  line-height: 0;
+}
+
+.frame svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.frame figcaption {
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 1;
+  color: #c9c3b1;
+}
+
+.video .label {
+  display: block;
+  margin: 12px 0 4px;
+}
+
+.transcript {
+  /* Two lines of 60 characters hold every transcript (tested in src/gen/applicant.test.ts). */
+  max-width: 60ch;
+  min-height: 2.7em;
+  margin: 0;
+  padding: 8px 10px;
+  background: var(--paper-light);
+  border: 1px solid var(--rule-line);
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.no-speech {
+  color: var(--ink-soft);
+}
+
+.blink {
+  margin: 10px 0 0;
+  font-size: 14px;
+}
+
+.blink .label {
+  display: inline;
+  margin: 0 6px 0 0;
+}
+
+/* ------------------------------------------------------------ rulebook */
+
+.rule h3 {
+  margin: 0 0 6px;
+  font-family: var(--official);
+  font-size: 16px;
+  letter-spacing: 0.03em;
+}
+
+.rule p {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.rule .phrase {
+  padding: 8px 10px;
+  background: var(--paper-light);
+  border-left: 4px solid #8a8069;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.rule-note {
+  color: var(--ink-soft);
+}
+
+/* ------------------------------------------------------------ decision */
+
+.buttons {
+  display: flex;
+  gap: 14px;
+}
+
+.action {
+  flex: 1;
+  padding: 16px 0;
+  border: 0;
+  border-radius: 3px;
+  box-shadow: inset 0 -4px 0 rgb(0 0 0 / 30%), 0 4px 10px rgb(0 0 0 / 35%);
+  color: #f3efe4;
+  font-family: var(--official);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.action:hover {
+  filter: brightness(1.12);
+}
+
+.action:active {
+  box-shadow: inset 0 -1px 0 rgb(0 0 0 / 30%), 0 1px 4px rgb(0 0 0 / 35%);
+  transform: translateY(2px);
+}
+
+.action:focus-visible,
+.next:focus-visible {
+  outline: 3px solid var(--marker);
+  outline-offset: 3px;
+}
+
+.accept {
+  background: var(--accept);
+}
+
+.challenge {
+  background: var(--challenge);
+}
+
+.hint {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #bdb7a6;
+}
+
+/* ------------------------------------------------------------ verdict slips */
+
+.verdict {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.slip {
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.4;
+  box-shadow: 0 6px 14px rgb(0 0 0 / 35%);
+  /* Printed a line at a time. */
+  animation: print 0.6s steps(8) both;
+}
+
+.slip header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgb(0 0 0 / 20%);
+  font-family: var(--official);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.slip header span {
+  font-size: 12px;
+}
+
+.slip p {
+  margin: 0 0 8px;
+}
+
+.slip p:last-child {
+  margin-bottom: 0;
+}
+
+.slip-note {
+  background: var(--paper);
+}
+
+.slip-citation {
+  background: #f0d6d0;
+}
+
+.slip-citation header {
+  color: var(--challenge);
+}
+
+.slip-filing {
+  background: #e6dcb8;
+}
+
+.slip-ruling {
+  background: #d9dfe0;
+  animation-delay: 0.7s;
+}
+
+.shift-end {
+  margin: 0;
+  color: #d8d2c0;
+  font-family: var(--official);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-transform: uppercase;
+  animation: print 0.3s 0.5s both;
+}
+
+@keyframes print {
+  from {
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(-10px);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    transform: none;
+  }
+}
+
+.evidence {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 4px 10px;
+  margin: 0 0 8px;
+}
+
+.evidence dt {
+  padding-top: 2px;
+  font-family: var(--official);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.evidence dd {
+  margin: 0;
+}
+
+mark {
+  padding: 0 2px;
+  background: var(--marker);
+  color: inherit;
+}
+
+.memo {
+  padding-top: 8px;
+  border-top: 1px dashed rgb(0 0 0 / 25%);
+}
+
+.small {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.next {
+  align-self: flex-end;
+  color: #d8d2c0;
+  font-family: var(--official);
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.next::after {
+  content: ' \2192';
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp,
+  .stamped,
+  .slip,
+  .shift-end {
+    animation: none;
+  }
+}

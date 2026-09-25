@@ -133,7 +133,7 @@ export function generatePortrait(seed: number): Portrait {
   return { species: 'human', face, hair, hairColor, facialHair, outfit, outfitColor, accessories };
 }
 
-function weighted<T>(rng: Rng, table: Table<T>): T {
+export function weighted<T>(rng: Rng, table: Table<T>): T {
   const total = table.reduce((sum, [, weight]) => sum + weight, 0);
   let roll = rng.next() * total;
   for (const [value, weight] of table) {
