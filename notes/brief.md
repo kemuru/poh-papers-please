@@ -3,6 +3,8 @@
 ## Goal (observable result)
 A playable browser comedy game: the player reviews absurd applicants at a registry desk, accepts or challenges them under a rulebook that grows every day, sees challenged cases judged (and appealed) by a jury, and pays end-of-day bills. Seven days, several endings.
 
+Most applicants are legitimate. The comedy comes from absurd applicants who may or may not break a rule, so the player must judge by the rulebook, never by appearance. Playing it should feel like doing a real job competently in a ridiculous world: not too hard, not too easy, with the difficulty targets in `notes/game-design.md`.
+
 ## Context
 - New repo. Stack and architecture in `AGENTS.md`. Design, cast and rulebook in `notes/game-design.md`.
 - Parody of Kleros Proof of Humanity; all characters fictional.
@@ -14,9 +16,9 @@ A playable browser comedy game: the player reviews absurd applicants at a regist
 
 ## Slices
 1. **One applicant.** Profile card, video strip and phrase, Accept or Challenge, verdict screen. Rule: day 1 phrase.
-2. **One full day.** Seeded queue of applicants, shift clock, pay and penalties, end-of-day bills screen, next day.
-3. **Rulebook progression.** Days 1 to 6 rules, morning memo, rulebook panel, registry lookup for sybils, recurring cast.
-4. **The court.** Challenges go to a jury; APPEAL grows the jury 3, 7, 15; appeal costs and outcomes.
+2. **One full day.** Seeded queue of applicants, shift clock, pay, penalties and daily warning, challenges filed for end of shift, bills screen, next day.
+3. **Rulebook progression.** Days 1 to 6 rules, day 1 tutorial, morning memo, rulebook panel, inspect mode, registry lookup for sybils, recurring cast.
+4. **The court.** End-of-shift hearings; APPEAL grows the jury 3, 7, 15; fair appeals; costs and outcomes.
 5. **Stretch.** Day 7 finale, endings, sound, polish.
 
 ## Acceptance

@@ -32,7 +32,7 @@ Clément's guidance from Slack: the aim is to become 2 to 5 times faster afterwa
 | 45m | R10 (web track: Playwright), R11, R32 | Pick your R32 cells (below). |
 | 45m | Three directions of grilling (prompts on PDF page 19) | Subject: slice 2, one full day. Let the agent interview you (shift length, number of applicants, what happens at day end). Let it challenge the design (does the shift need a real-time clock?). Then interrogate it. Save one decision it changed. |
 | 1h30 | Implement slice 2 | Seeded queue, economy module, bills screen, next day. |
-| 1h | Inject and diagnose a failure | Break the phrase rule so "hooman" passes. Confirm the unchanged oracle check fails. Restore. Then the economic adversarial scenario: can a player farm PNK by always challenging? Write the balance test (always-accept and always-challenge bots lose, perfect bot wins) and tune the numbers until it passes. |
+| 1h | Inject and diagnose a failure | Break the phrase rule so "hooman" passes. Confirm the unchanged oracle check fails. Restore. Then the economic adversarial scenario: can a player farm PNK by always challenging? Write the balance tests from `acceptance.md` (lazy bots lose, a 2-mistakes-per-day bot gets promoted, a 5-mistakes-per-day bot gets fired) and tune the numbers until they pass. |
 | 1h | Interface alternatives | Ask for two or three desk layouts in isolation, with empty, loading and error states. Pick one yourself, integrate it, then have a fresh session review it. |
 | 30m | Development mode and handoff (R32) | Record your R32 decisions and any unfinished checks in `next.md`. |
 
@@ -69,7 +69,7 @@ Clément's guidance from Slack: the aim is to become 2 to 5 times faster afterwa
 | Time | Session | What you do |
 |---|---|---|
 | 1h | R23, R24 | |
-| 1h15 | Routine | **Balance report:** plays 20 seeded days with the three bots and writes `reports/balance-<content-hash>.md` (earnings per bot, which rules fired, which applicants were hardest). Run twice on the same input: identical file, no duplicate. Add one applicant and run again: the report changes. Disable any schedule at the end. |
+| 1h15 | Routine | **Balance report:** plays 20 seeded runs with every balance bot from `acceptance.md` and writes `reports/balance-<content-hash>.md` (earnings per bot, which rules fired, which applicants were hardest). Run twice on the same input: identical file, no duplicate. Add one applicant and run again: the report changes. Disable any schedule at the end. |
 | 45m | CLI wrapper | `scripts/new-applicant`: takes a joke idea, calls `claude -p` with JSON output (subscription login, not `--bare`) under an outer timeout, validates the JSON, runs `judge()` to confirm the planted violation is detected, then writes `src/content/applicants/<id>.json`. Show one success and one malformed result being rejected. |
 | 2h30 | Capstone | The held-back feature, from a fresh brief to an accepted change. Implement with one provider, review with the other in a fresh session given only the task, diff and acceptance criteria. Then inspect it yourself. |
 | 1h | Report and operating plan | See below. |
