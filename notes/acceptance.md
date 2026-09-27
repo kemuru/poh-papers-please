@@ -6,6 +6,8 @@ Fill Evidence with a commit hash, test output, screenshot path or clip. "The age
 | Check | Evidence |
 |---|---|
 | `npm run typecheck` and `npm test` pass | |
+| No UI label states a rule result (e.g. "Blink detected"); the player must find it in the evidence | |
+| Scoring uses judge() against the live registry: an applicant vouched for by a fake the player accepted earlier is valid | |
 | Same seed produces identical applicants, court results and day totals (snapshot test) | |
 | `src/rules`, `src/gen`, `src/court`, `src/economy` never import React or use `Math.random`/`Date.now` (grep check) | |
 | **Oracle check:** for 500 seeded applicants, `judge()` finds exactly the `planted` violations, no more, no fewer | |
