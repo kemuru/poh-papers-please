@@ -12,7 +12,7 @@ So the rediscovery baseline is not shaped by what the course teaches.
 
 ## Ambition note (PDF page 2)
 **Three ideas I postponed and what stopped me:**
-1. 
+1. Videogames: I saw them as too time-intensive to code, same for making the visuals.
 2. 
 3. 
 
@@ -25,15 +25,22 @@ So the rediscovery baseline is not shaped by what the course teaches.
 ## R32 decisions (Day 2)
 | Component | Critical? | Defects easy to spot? | Mode | Who writes it | How it is checked |
 |---|---|---|---|---|---|
-| Rule engine | | | | | |
-| Generator | | | | | |
-| Court | | | | | |
-| Economy | | | | | |
-| UI and content | | | | | |
+| Rule engine | No | No: bugs hide in rule combinations and edge cases (phrase inside noise, rules by day) | Vibecode then review | AI | Oracle check + one test per rule; I review `judge()` once after slice 3, when the rules are stable |
+| Generator | No | No: a mislabeled applicant looks fine while playing | Vibecode then review | AI | Oracle check, valid-ratio tests, fair clue check; I review it together with the rule engine after slice 3 |
+| Court | No | No: fairness is statistical, you can't see it in one game | Vibecode then review | AI | Fairness test (≥95%), jury sizes, same-seed replay; I review the vote logic once after slice 4 |
+| Economy | No | Yes: the balance bots measure the difficulty targets directly | Vibecode and use | AI | Payout tests + the six balance bots; no code review |
+| UI and content | No | Yes: I see it when I play | Vibecode and use | AI (jokes curated by me) | Playing, screenshots, Playwright; for jokes, I pick the best from generated batches |
+
+**Hidden failures that could change my choice:**
+- Rule engine + generator: both could misunderstand a rule *the same way* (e.g. the new "contains" phrase rule). The oracle check compares them against each other, so it would still pass. That's why they get a human review, not just tests.
+- Court: if appeals felt unfair in playtests even with the fairness test passing, I'd review the court code earlier.
+- Economy: if playtesters' results didn't match the bots (e.g. real players get fired far more often), the bots are measuring the wrong thing, and it moves to "vibecode then review."
 
 ## Running notes
 (date: what happened, what I decided, what's next)
 End of day 1: we have the initial game screen, still a simple prototype but I feel like it has a lot of potential, I'll have to tweak a lot of details.
+End of day 2: claude coded it, codex reviewed it: found 1 test was a false positive, which claude later fixed.
+End of day 3: 
 
 ## For the final report
 - What became possible:
