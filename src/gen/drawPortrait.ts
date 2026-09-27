@@ -365,10 +365,13 @@ function drawFacialHair(c: Canvas, p: Portrait, a: Anchors) {
 const SHOULDERS = [2, 6, 14, 16, 17, 18, 18, 19, 19, 19, 19, 19]; // half-widths from row 36 down; first two add to the neck
 const coatGap = mask((x, y) => y >= 38 && fromMid(x) <= 1 + (y - 38) * 0.5);
 
+/** Shoulders and chest, under a neck of this half-width. */
+const bodyMask = (n: number) => mask((x, y) => y >= 36 && fromMid(x) <= (y < 38 ? n + SHOULDERS[y - 36] : SHOULDERS[y - 36]));
+
 function drawBody(c: Canvas, p: Portrait, a: Anchors) {
   const cloth = CLOTH[p.outfitColor];
   const n = a.neckHalf;
-  const body = mask((x, y) => y >= 36 && fromMid(x) <= (y < 38 ? n + SHOULDERS[y - 36] : SHOULDERS[y - 36]));
+  const body = bodyMask(n);
   const neck = box(CX - n, a.chin - 4, CX + n - 1, 40);
   if (p.outfit === 'hoodie') solid(c, within(ellipse(CX, 36, n + 7, 4), rows(0, 38)), cloth);
   solid(c, neck, a.skin);
@@ -468,6 +471,17 @@ function drawAccessories(c: Canvas, p: Portrait, a: Anchors) {
     dot(c, W - 1 - x, y, color);
   };
 
+  if (wears('hi-vis')) {
+    // Straps over the shoulders, two panels open down the middle, and a reflective band.
+    const body = bodyMask(a.neckHalf);
+    const vest = within(body, mask((x, y) => (y < 38 ? fromMid(x) > a.neckHalf + 1 : fromMid(x) > 3 && fromMid(x) <= 13)));
+    paint(c, within(ring(vest), body), INK);
+    paint(c, vest, PROPS.hiVis.base);
+    paint(c, edge(vest, -1, -1), PROPS.hiVis.hi);
+    paint(c, edge(vest, 1, 1), PROPS.hiVis.lo);
+    paint(c, within(vest, rows(43, 43)), PROPS.reflector.hi);
+    paint(c, within(vest, rows(44, 44)), PROPS.reflector.base);
+  }
   if (wears('earrings')) {
     const x = Math.round(CX - side) - 2;
     both(x, a.eyeY + 5, PROPS.gold.hi);

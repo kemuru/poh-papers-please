@@ -14,7 +14,7 @@ type Regular = {
   address: string;
   birthYear: number;
   portrait: Portrait;
-  /** What they say in the video. Every line contains the phrase word for word. */
+  /** What they say in the video. Every line says every key word of the phrase, in order. */
   videos: readonly string[];
   /** What they say at the window, one per appearance. */
   remarks: readonly string[];
@@ -119,6 +119,28 @@ export const REGULARS: Record<RegularId, Regular> = {
       "I've been asked if I'm a robot four times today. You're the first one who's paid to.",
     ],
     exits: { accept: "Thank you. I'll tell my parents. They'll laugh.", challenge: "It's the name, isn't it." },
+  },
+  /** Works nights. Yawns in the middle of the phrase, never in place of a word of it. */
+  nightShiftDenise: {
+    name: 'Denise Dozier',
+    address: '58 Inkwell Terrace, Little Ledgerby',
+    birthYear: 1986,
+    portrait: CAST_PORTRAITS.nightShiftDenise,
+    videos: [
+      'I certify that I am a real (yawns) sorry, a real human and that I am not already registered in this registry.',
+      'I certify that I am a real human and that I am not already (yawns) registered in this registry.',
+      'I certify that I am a real human and that I am not (yawns) already registered in this registry. Long night.',
+    ],
+    remarks: [
+      "You're open nine to five. That's the middle of my night. I set an alarm to come and be human.",
+      "One UBI an hour, they said. Even the hours I'm asleep. I'm very good at those.",
+      "The vest is so the lorries can see me. I'm hoping it works on the Ministry.",
+      'I did the video on my break, at four in the morning. You can probably tell.',
+      "If I'm challenged, it's three and a half days. I can sleep through most of that.",
+      "All night, the only one who sees me is the car park camera. I'd like a second opinion.",
+      "My neighbours have never seen me in daylight. One of them thinks I'm a rumour.",
+    ],
+    exits: { accept: "Thank you. I'll tell the night shift.", challenge: "Right. The court's at five? I'll set another alarm." },
   },
 };
 

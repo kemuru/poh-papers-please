@@ -29,7 +29,7 @@ export const OUTFIT_COLORS = [
   'beige', 'khaki', 'brown', 'plum', 'forest', 'white',
 ] as const;
 export const ACCESSORIES = [
-  'glasses', 'monocle', 'earrings', 'pearls', 'fake-mustache', 'fake-beard', 'wig', 'top-hat', 'sweat',
+  'glasses', 'monocle', 'earrings', 'pearls', 'fake-mustache', 'fake-beard', 'wig', 'top-hat', 'sweat', 'hi-vis',
 ] as const;
 
 export type Species = (typeof SPECIES)[number];

@@ -101,4 +101,18 @@ export const CAST_PORTRAITS = {
     outfitColor: 'grey',
     accessories: [],
   },
+  /** Works nights. Came straight from the depot, in the vest. */
+  nightShiftDenise: {
+    species: 'human',
+    face: {
+      skin: 'tan', shape: 'round', eyes: 'tired', eyeColor: 'hazel', brows: 'flat',
+      nose: 'small', mouth: 'neutral', ears: 'normal', age: 'adult', mark: 'none',
+    },
+    hair: 'bun',
+    hairColor: 'dark-brown',
+    facialHair: 'none',
+    outfit: 'hoodie',
+    outfitColor: 'navy',
+    accessories: ['hi-vis'],
+  },
 } satisfies Record<string, Portrait>;

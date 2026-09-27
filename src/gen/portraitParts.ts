@@ -87,6 +87,8 @@ export const PROPS = {
   paper: '#f6f3ec',
   cardboard: { hi: '#dec293', base: '#c6a36d', lo: '#9f7f50' },
   sweat: { hi: '#f2fbff', base: '#9fd2e6', lo: '#5b91ab' },
+  hiVis: { hi: '#f3ff8c', base: '#d4ec2c', lo: '#a2b81c' },
+  reflector: { hi: '#f4f6f7', base: '#bfc6cc' },
 };
 
 export const EYES: Record<EyeStyle, { open: string[]; closed: string[] }> = {

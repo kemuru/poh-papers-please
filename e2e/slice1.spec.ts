@@ -4,11 +4,11 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 // the phrase rule, Accept or Challenge. Fixed seeds; each test first checks that its seed still
 // gives the applicant it expects.
 const PHRASE = 'I certify that I am a real human and that I am not already registered in this registry.';
-const CHATTY = '?seed=1&day=2'; // first up: "Ahem.", an aside, and "I'm" for "I am": all fine
-const CHATTY_SAYS = "Ahem. I certify that I am, you know, a real human and that I'm not already registered in this registry.";
-const HOOMAN = '?seed=761&day=6'; // first up: "Take two." then the phrase with "hang on" in it, and "hooman"
-const HOOMAN_SAYS = 'Take two. I certify that I am a real, hang on, hooman and that I am not already registered in this registry.';
-const SILENT = '?seed=12&day=2'; // first up: says nothing
+const CHATTY = '?seed=5467&day=2'; // first up: "Ahem.", an aside, and "I'm" for "I am": all fine
+const CHATTY_SAYS = "Ahem. I certify that I am a real human and, one second, that I'm not already registered in this registry.";
+const HOOMAN = '?seed=4573&day=2'; // first up: "Is the red light on?" then the phrase with "hang on" in it, and "hooman"
+const HOOMAN_SAYS = 'Is the red light on? I certify that I am a real hooman and, hang on, that I am not already registered in this registry.';
+const SILENT = '?seed=18&day=2'; // first up: says nothing
 
 const game = (page: Page) => page.evaluate(() => window.__game!);
 
@@ -93,7 +93,7 @@ test('accepting an invalid applicant prints a citation that names the rule and m
   await expect(citation.locator('mark', { hasText: 'hooman' })).toBeVisible();
   await expect(citation.locator('mark', { hasText: 'human' })).toBeVisible();
   // Whatever else was said, before or in between, is not assessed, so it is not marked.
-  await expect(citation.locator('mark', { hasText: /Take|two|hang/ })).toHaveCount(0);
+  await expect(citation.locator('mark', { hasText: /Is|red|light|hang/ })).toHaveCount(0);
   await expect.poll(async () => (await game(page)).decided.length).toBe(1);
   const [decided] = (await game(page)).decided;
   expect(decided.outcome.correct).toBe(false);

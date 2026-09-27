@@ -59,6 +59,10 @@ export const CAST_RULINGS: Record<CastId, readonly string[]> = {
   ],
   nervousNigel: ['The applicant thanked the court eleven times and was escorted out, damp.'],
   robotMcBotface: ['The court confirmed that the applicant is not a robot. The applicant has asked for it in writing.'],
+  nightShiftDenise: [
+    'The applicant yawned through the oath. The court confirmed that yawning is not in the rulebook.',
+    'The applicant slept through the hearing. The court found for the applicant, quietly.',
+  ],
 };
 
 export const EMPTY_COURT = 'No challenges were filed today. The court has gone home early.';

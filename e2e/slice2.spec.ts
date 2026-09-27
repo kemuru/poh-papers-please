@@ -39,9 +39,9 @@ test('the same seed gives the same queue, with the day table’s count', async (
 });
 
 test('a full day: the court hears the challenges, the statement adds up, savings carry to day 2', async ({ page }) => {
-  await page.goto('/?seed=1&day=1');
+  await page.goto('/?seed=7&day=1');
   await page.getByRole('button', { name: /Open the window/ }).click();
-  // Seed 1, day 1: a valid applicant first, then a fake. Challenge the first (a mistake) and
+  // Seed 7, day 1: a valid applicant first, then a fake. Challenge the first (a mistake) and
   // register the second (another), then do the rest by the rulebook.
   const { queue } = await game(page);
   expect(queue.map((a) => a.planted.length > 0)).toEqual([false, true, false, false, true]);
@@ -82,7 +82,7 @@ test('a full day: the court hears the challenges, the statement adds up, savings
 });
 
 test('the first fake registered each day is a warning; the next is a fine', async ({ page }) => {
-  await page.goto('/?seed=1&day=1');
+  await page.goto('/?seed=7&day=1');
   await page.getByRole('button', { name: /Open the window/ }).click();
   await stampNext(page);
   await stampNext(page, true);
