@@ -74,7 +74,7 @@ Add, never modify (AGENTS.md): append one `describe('<Name>')` block to `src/cas
 2. `npm run test:e2e`. First check who owns port 5175: `lsof -nP -iTCP:5175 -sTCP:LISTEN`, then `lsof -p <pid> | grep cwd`. Playwright reuses any server there, which may be another worktree's. If it isn't this worktree, stop and ask.
 3. `node ${CLAUDE_SKILL_DIR}/scripts/week.mjs <castId>`: the ratios are still in their bands and the character turns up.
 
-Expect one kind of failure. A new character shifts every seeded week, since the generator draws once per cast member, so tests pinned to a seed can fail with nothing broken: `e2e/slice1.spec.ts` says so ("changed: pick another"), and `e2e/slice2.spec.ts` expects a particular queue on seed 1, day 1. Don't edit them. Find seeds that recreate each situation (a few lines using `generateWeek`), then ask before changing the tests, listing each change.
+Expect one kind of failure. A new character shifts every seeded week, since the generator draws once per cast member, so tests pinned to a seed can fail with nothing broken: `e2e/slice1.spec.ts` says so ("changed: pick another"), and `e2e/slice2.spec.ts` expects a particular day-1 queue from a fixed seed (valid, fake, valid, valid, Gary). Don't edit them. Find seeds that recreate each situation (a few lines using `generateWeek`), then ask before changing the tests, listing each change.
 
 Any other failure, balance bots included, is the character's: fix the character, never the test. If a test looks wrong, stop and explain.
 
