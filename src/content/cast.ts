@@ -120,6 +120,28 @@ export const REGULARS: Record<RegularId, Regular> = {
     ],
     exits: { accept: "Thank you. I'll tell my parents. They'll laugh.", challenge: "It's the name, isn't it." },
   },
+  /** Does nights on the Ministry's door. Yawns through the phrase, between its words, never inside one. */
+  nightShiftDawn: {
+    name: 'Dawn Hollis',
+    address: '5 Pending Way, Upper Pendingham',
+    birthYear: 1986,
+    portrait: CAST_PORTRAITS.nightShiftDawn,
+    videos: [
+      'I certify that I am a real (yawns) human and that I am not already registered in this registry.',
+      'I certify that I am a real human and that I am not already regis... (yawns) Sorry. Registered in this registry.',
+      'I certify (yawns) that I am a real human and that I am not already registered in this registry. Excuse me.',
+    ],
+    remarks: [
+      "Sorry about the mask. It's the middle of my night.",
+      "I do nights here. Security. I've never seen the hall with people in it.",
+      "I've checked this window every night for six years. It's nice to see it from the front.",
+      'Something goes through the bins out the back every night. It wears a coat.',
+      "I could have come in the back way. It didn't seem fair on the queue.",
+      "The income is paid every hour. Even the ones I sleep through. That's the bit I like.",
+      'I recorded the video on my break. Four in the morning. I think it shows.',
+    ],
+    exits: { accept: 'Thank you. Back to bed, then.', challenge: "Fine. I'll be here tonight anyway." },
+  },
 };
 
 /** Three raccoons in a trench coat. His form, apart from the name, never changes. He lives behind the bins at `address`. */

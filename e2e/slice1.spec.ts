@@ -4,11 +4,11 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 // the phrase rule, Accept or Challenge. Fixed seeds; each test first checks that its seed still
 // gives the applicant it expects.
 const PHRASE = 'I certify that I am a real human and that I am not already registered in this registry.';
-const CHATTY = '?seed=1&day=2'; // first up: "Ahem.", an aside, and "I'm" for "I am": all fine
+const CHATTY = '?seed=496735&day=3'; // first up: "Ahem.", an aside, and "I'm" for "I am": all fine
 const CHATTY_SAYS = "Ahem. I certify that I am, you know, a real human and that I'm not already registered in this registry.";
-const HOOMAN = '?seed=761&day=6'; // first up: "Take two." then the phrase with "hang on" in it, and "hooman"
+const HOOMAN = '?seed=34573&day=6'; // first up: "Take two." then the phrase with "hang on" in it, and "hooman"
 const HOOMAN_SAYS = 'Take two. I certify that I am a real, hang on, hooman and that I am not already registered in this registry.';
-const SILENT = '?seed=12&day=2'; // first up: says nothing
+const SILENT = '?seed=18&day=2'; // first up: says nothing
 
 const game = (page: Page) => page.evaluate(() => window.__game!);
 

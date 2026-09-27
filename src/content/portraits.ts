@@ -101,4 +101,18 @@ export const CAST_PORTRAITS = {
     outfitColor: 'grey',
     accessories: [],
   },
+  /** Does nights on the Ministry's door. Came straight from bed, mask still on her forehead. */
+  nightShiftDawn: {
+    species: 'human',
+    face: {
+      skin: 'tan', shape: 'round', eyes: 'tired', eyeColor: 'hazel', brows: 'flat',
+      nose: 'straight', mouth: 'neutral', ears: 'normal', age: 'adult', mark: 'none',
+    },
+    hair: 'curly',
+    hairColor: 'dark-brown',
+    facialHair: 'none',
+    outfit: 'shirt',
+    outfitColor: 'navy',
+    accessories: ['sleep-mask'],
+  },
 } satisfies Record<string, Portrait>;
