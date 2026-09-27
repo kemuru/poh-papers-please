@@ -5,7 +5,7 @@
 import type { Accessory, HairStyle, HeadShape, Pose, Portrait } from './portrait';
 import {
   BROWS, CLOTH, EYES, EYE_WHITE, FAKE_MUSTACHE, FONT, FUR, HAIR, INK, IRIS, MOUTHS, MOUTH_INSIDE, MOUTH_OPEN,
-  NOSES, PROPS, RACCOON, SKIN, SWEAT_DROP, TEETH, type Ramp,
+  NOSES, PROPS, RACCOON, SKIN, SLEEP_MASK_EYE, SWEAT_DROP, TEETH, type Ramp,
 } from './portraitParts';
 
 export const PORTRAIT_WIDTH = 40;
@@ -544,6 +544,18 @@ function drawAccessories(c: Canvas, p: Portrait, a: Anchors) {
     const lines = wrap(p.sign, 8).slice(0, 2);
     lines.forEach((l, i) => text(c, l, CX - Math.floor(textWidth(l) / 2), (lines.length === 1 ? 39 : 36) + i * 6, INK));
     solid(c, sym(ellipse(4, 35, 2.2, 2)), a.skin);
+  }
+  if (wears('sleep-mask')) {
+    // Pushed up off the eyes, onto the forehead; the strap goes round the back of the head.
+    // One soft band with a dip for the nose, and a closed eye stitched over each eye.
+    const y = Math.max(a.browY - 4, a.top + 4);
+    const cx = a.eyeL + a.eyeW / 2;
+    const band = union(sym(ellipse(cx, y + 0.5, a.eyeW / 2 + 1.5, 1.6)), box(cx, y - 1, W - 1 - cx, y));
+    paint(c, minus(within(grow(a.head, 1), rows(y, y)), band), PROPS.sleepMask.lo);
+    paint(c, ring(band), INK);
+    paint(c, band, PROPS.sleepMask.base);
+    paint(c, edge(band, 0, 1), PROPS.sleepMask.lo);
+    pair(c, SLEEP_MASK_EYE, Math.round(cx) - 2, y - 1, { s: PROPS.sleepMask.stitch });
   }
   if (wears('sweat')) {
     const colors = { o: PROPS.sweat.lo, h: PROPS.sweat.hi, a: PROPS.sweat.base };

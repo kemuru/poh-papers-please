@@ -87,6 +87,7 @@ export const PROPS = {
   paper: '#f6f3ec',
   cardboard: { hi: '#dec293', base: '#c6a36d', lo: '#9f7f50' },
   sweat: { hi: '#f2fbff', base: '#9fd2e6', lo: '#5b91ab' },
+  sleepMask: { base: '#b8a3d6', lo: '#8a74ab', stitch: '#54406f' },
 };
 
 export const EYES: Record<EyeStyle, { open: string[]; closed: string[] }> = {
@@ -140,6 +141,9 @@ export const RACCOON = {
 export const FAKE_MUSTACHE = ['k..........k', 'kk.khhhhk.kk', '.kkkkkkkkkk.'];
 
 export const SWEAT_DROP = ['.o.', 'oho', 'oao', '.o.'];
+
+/** The closed eye stitched on a sleep mask, one per side. */
+export const SLEEP_MASK_EYE = ['s..s', '.ss.'];
 
 /** 3x5 glyphs: five octal digits, one per row, 4 = left column, 1 = right column. */
 export const FONT: Record<string, string> = {
