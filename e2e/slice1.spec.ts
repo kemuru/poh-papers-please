@@ -1,16 +1,27 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-// Fixed seeds. Each test first checks that its seed still gives the applicant it expects.
-const VALID = 2; // says the phrase word for word
-const HOOMAN = 22; // "I certify I am a real hooman."
-const SILENT = 6; // says nothing
+// Slice 1 acceptance (notes/acceptance.md) on the slice 2 desk: one applicant at the window,
+// the phrase rule, Accept or Challenge. Fixed seeds; each test first checks that its seed still
+// gives the applicant it expects.
+const PHRASE = 'I certify that I am a real human and that I am not already registered in this registry.';
+const CHATTY = '?seed=1&day=2'; // first up: "Ahem.", an aside, and "I'm" for "I am": all fine
+const CHATTY_SAYS = "Ahem. I certify that I am, you know, a real human and that I'm not already registered in this registry.";
+const HOOMAN = '?seed=761&day=6'; // first up: "Take two." then the phrase with "hang on" in it, and "hooman"
+const HOOMAN_SAYS = 'Take two. I certify that I am a real, hang on, hooman and that I am not already registered in this registry.';
+const SILENT = '?seed=12&day=2'; // first up: says nothing
 
 const game = (page: Page) => page.evaluate(() => window.__game!);
 
-async function open(page: Page, seed: number, planted: string[]) {
-  await page.goto(`/?seed=${seed}`);
-  await expect.poll(async () => (await page.evaluate(() => window.__game?.seed))).toBe(seed);
-  expect((await game(page)).applicant.planted.map((p) => p.mistake), `seed ${seed} changed: pick another`).toEqual(planted);
+/** Opens the window and calls the first applicant of the day. */
+async function firstApplicant(page: Page, query: string, expected: { planted: string[]; transcript: string }) {
+  await page.goto(`/${query}`);
+  await page.getByRole('button', { name: /Open the window/ }).click();
+  await page.getByRole('button', { name: 'Call next applicant' }).click();
+  await expect.poll(async () => (await game(page)).called).toBe(1);
+  const applicant = (await game(page)).queue[0];
+  expect(applicant.planted.map((p) => p.mistake), `${query} changed: pick another`).toEqual(expected.planted);
+  expect(applicant.video.transcript, `${query} changed: pick another`).toBe(expected.transcript);
+  return applicant;
 }
 
 /** Each drawn colour with its geometry: equal lists mean identical pictures. */
@@ -27,18 +38,16 @@ test.beforeEach(({ page }) => {
 });
 test.afterEach(() => expect(errors).toEqual([]));
 
-test('the desk shows the profile card, the video strip, the rulebook and both buttons', async ({ page }) => {
-  await open(page, VALID, []);
-  const { applicant, decision, outcome } = await game(page);
-  expect(decision).toBeNull();
-  expect(outcome).toBeNull();
+test('the desk shows the profile card, the video strip, the rulebook and both stamps', async ({ page }) => {
+  const applicant = await firstApplicant(page, CHATTY, { planted: [], transcript: CHATTY_SAYS });
 
   const card = page.getByRole('region', { name: 'Profile card' });
   await expect(card.getByTestId('name')).toHaveText(applicant.name);
   await expect(card).toContainText(applicant.address);
   await expect(card).toContainText(String(applicant.birthYear));
-  await expect(card).toContainText(applicant.remark);
   await expect(card.getByRole('img', { name: `Photo of ${applicant.name}` })).toBeVisible();
+  // The remark is said at the window, not written on the form.
+  await expect(page.getByTestId('speech')).toContainText(applicant.remark);
 
   const video = page.getByRole('region', { name: 'Video strip' });
   await expect(video.locator('svg')).toHaveCount(3);
@@ -47,80 +56,67 @@ test('the desk shows the profile card, the video strip, the rulebook and both bu
   expect(await picture(video.getByTestId('frame-2')), 'frame 2 shows speech').not.toEqual(still);
   expect(await picture(video.getByTestId('frame-3')), 'frame 3 shows the blink').not.toEqual(still);
 
-  await expect(page.getByRole('region', { name: 'Rulebook' })).toContainText(
-    'I certify that I am a real human and that I am not already registered in this registry.',
-  );
-  await expect(page.getByRole('button', { name: 'Accept' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Challenge' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Rulebook' })).toContainText(PHRASE);
+  await expect(page.getByRole('button', { name: 'Accept' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Challenge' })).toBeEnabled();
+  await shot(page, 'desk.png');
 
   // Same seed, same applicant; and the exposed state is read-only.
   await page.reload();
+  await page.getByRole('button', { name: /Open the window/ }).click();
+  await page.getByRole('button', { name: 'Call next applicant' }).click();
   await expect(card.getByTestId('name')).toHaveText(applicant.name);
-  await page.waitForFunction(() => window.__game !== undefined);
-  expect(await page.evaluate(() => Object.isFrozen(window.__game) && Object.isFrozen(window.__game!.applicant.video))).toBe(true);
-  await shot(page, 'desk.png');
+  expect(await page.evaluate(() => Object.isFrozen(window.__game) && Object.isFrozen(window.__game!.queue[0].video))).toBe(true);
 });
 
-test('accepting a valid applicant stamps the card, prints no citation and records the outcome', async ({ page }) => {
-  await open(page, VALID, []);
+test('accepting a valid applicant stamps the card and prints no citation, whatever else they said', async ({ page }) => {
+  await firstApplicant(page, CHATTY, { planted: [], transcript: CHATTY_SAYS });
   await page.getByRole('button', { name: 'Accept' }).click();
 
   await expect(page.getByTestId('stamp')).toHaveText('Registered');
-  await expect(page.getByTestId('note')).toBeVisible();
   await expect(page.getByTestId('citation')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Accept' })).toHaveCount(0);
-  await expect.poll(async () => (await game(page)).decision).toBe('accept');
-  expect((await game(page)).outcome).toEqual({ correct: true, violations: [] });
+  await expect(page.getByRole('button', { name: 'Accept' })).toBeDisabled();
+  await expect.poll(async () => (await game(page)).decided.length).toBe(1);
+  expect((await game(page)).decided[0]).toEqual({ decision: 'accept', outcome: { correct: true, violations: [] }, citation: null });
   await shot(page, 'accept-valid.png');
-
-  await page.getByRole('link', { name: 'Next applicant' }).click();
-  await expect.poll(async () => (await page.evaluate(() => window.__game?.seed))).toBe(VALID + 1);
-  expect((await game(page)).decision).toBeNull();
 });
 
-test('accepting an invalid applicant prints a citation that names the broken rule', async ({ page }) => {
-  await open(page, HOOMAN, ['missing-words']);
+test('accepting an invalid applicant prints a citation that names the rule and marks only the wrong word', async ({ page }) => {
+  await firstApplicant(page, HOOMAN, { planted: ['wrong-word'], transcript: HOOMAN_SAYS });
   await page.getByRole('button', { name: 'Accept' }).click();
 
   await expect(page.getByTestId('stamp')).toHaveText('Registered');
   const citation = page.getByTestId('citation');
-  await expect(citation).toContainText('Rule 1: Exact certification phrase');
+  await expect(citation).toContainText('Rule 1: Certification phrase');
+  // The first of the day is a warning.
+  await expect(citation).toContainText('Warning only');
   await expect(citation.locator('mark', { hasText: 'hooman' })).toBeVisible();
-  await expect.poll(async () => (await game(page)).decision).toBe('accept');
-  const { outcome } = await game(page);
-  expect(outcome?.correct).toBe(false);
-  expect(outcome?.violations.map((v) => v.rule)).toEqual(['phrase']);
+  await expect(citation.locator('mark', { hasText: 'human' })).toBeVisible();
+  // Whatever else was said, before or in between, is not assessed, so it is not marked.
+  await expect(citation.locator('mark', { hasText: /Take|two|hang/ })).toHaveCount(0);
+  await expect.poll(async () => (await game(page)).decided.length).toBe(1);
+  const [decided] = (await game(page)).decided;
+  expect(decided.outcome.correct).toBe(false);
+  expect(decided.outcome.violations.map((v) => v.rule)).toEqual(['phrase']);
+  expect(decided.citation).toBe('warning');
   await shot(page, 'accept-invalid.png');
 });
 
-test('challenging an invalid applicant files the case and the court upholds it', async ({ page }) => {
-  await open(page, HOOMAN, ['missing-words']);
+test('challenging files the case for the court at the end of the shift', async ({ page }) => {
+  await firstApplicant(page, HOOMAN, { planted: ['wrong-word'], transcript: HOOMAN_SAYS });
   await page.getByRole('button', { name: 'Challenge' }).click();
 
   await expect(page.getByTestId('stamp')).toHaveText('Challenged');
   await expect(page.getByTestId('filing')).toContainText('Case filed');
-  const ruling = page.getByTestId('ruling');
-  await expect(ruling).toContainText('Challenge upheld');
-  await expect(ruling).toContainText('Rule 1: Exact certification phrase');
-  await expect.poll(async () => (await game(page)).decision).toBe('challenge');
-  const { outcome } = await game(page);
-  expect(outcome?.correct).toBe(true);
-  expect(outcome?.violations.map((v) => v.rule)).toEqual(['phrase']);
+  await expect(page.getByTestId('citation')).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'Desk' }).getByLabel('Court tray: 1 case')).toBeVisible();
+  await expect.poll(async () => (await game(page)).decided.length).toBe(1);
+  expect((await game(page)).decided[0]).toMatchObject({ decision: 'challenge', outcome: { correct: true }, citation: null });
   await shot(page, 'challenge-invalid.png');
 });
 
-test('challenging a valid applicant is dismissed', async ({ page }) => {
-  await open(page, VALID, []);
-  await page.getByRole('button', { name: 'Challenge' }).click();
-
-  await expect(page.getByTestId('ruling')).toContainText('Challenge dismissed');
-  await expect.poll(async () => (await game(page)).decision).toBe('challenge');
-  expect((await game(page)).outcome).toEqual({ correct: false, violations: [] });
-  await shot(page, 'challenge-valid.png');
-});
-
 test('a silent applicant shows no speech in the transcript or the frames', async ({ page }) => {
-  await open(page, SILENT, ['silence']);
+  await firstApplicant(page, SILENT, { planted: ['silence'], transcript: '' });
   const video = page.getByRole('region', { name: 'Video strip' });
   await expect(video.getByTestId('transcript')).toHaveText('(no speech detected)');
   expect(await picture(video.getByTestId('frame-2')), 'mouth stays shut').toEqual(await picture(video.getByTestId('frame-1')));

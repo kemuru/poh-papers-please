@@ -1,0 +1,200 @@
+/* The waiting hall above the booth: a pixel-art scene and the announcement board. */
+
+.hall {
+  position: relative;
+  overflow: hidden;
+  background: #8f9a83;
+  border-bottom: 3px solid #121410;
+}
+
+.hall-scene {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 230px;
+  /* On a wide stage the scene stops growing and the room carries on past its edges. */
+  overflow: visible;
+  image-rendering: pixelated;
+}
+
+/* Everyone breathes, a pixel at a time, never in step. */
+.bob {
+  animation: bob 2.6s steps(2) infinite;
+}
+
+@keyframes bob {
+  50% {
+    transform: translateY(1px);
+  }
+}
+
+/* Called to the window: they shuffle off to the left, and the queue shuffles up. */
+.queuer {
+  transition: transform 1.3s steps(13);
+}
+
+.queuer.gone {
+  opacity: 0;
+  transition:
+    transform 1.3s steps(13),
+    opacity 0s 1.3s;
+}
+
+.tube.flicker {
+  animation: flicker 6s infinite;
+}
+
+@keyframes flicker {
+  0%,
+  41%,
+  43%,
+  45%,
+  88%,
+  100% {
+    opacity: 1;
+  }
+  42%,
+  44% {
+    opacity: 0.25;
+  }
+  89% {
+    opacity: 0.55;
+  }
+}
+
+.pigeon {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pigeon-walk 19s steps(90) infinite;
+}
+
+@keyframes pigeon-walk {
+  0% {
+    transform: translateX(0) scaleX(1);
+  }
+  8% {
+    transform: translateX(0) scaleX(1) rotate(-12deg);
+  }
+  10% {
+    transform: translateX(0) scaleX(1);
+  }
+  45% {
+    transform: translateX(-64px) scaleX(1);
+  }
+  50% {
+    transform: translateX(-64px) scaleX(-1);
+  }
+  58% {
+    transform: translateX(-64px) scaleX(-1) rotate(12deg);
+  }
+  60% {
+    transform: translateX(-64px) scaleX(-1);
+  }
+  95% {
+    transform: translateX(0) scaleX(-1);
+  }
+  100% {
+    transform: translateX(0) scaleX(1);
+  }
+}
+
+.tail {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: sway 3.4s ease-in-out infinite alternate;
+}
+
+@keyframes sway {
+  from {
+    transform: rotate(-9deg);
+  }
+  to {
+    transform: rotate(9deg);
+  }
+}
+
+.glint {
+  animation: blink 4s steps(1) infinite;
+}
+
+.drip {
+  animation: drip 1.7s linear infinite;
+}
+
+@keyframes drip {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    transform: translateY(84px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(86px);
+    opacity: 0;
+  }
+}
+
+.rain {
+  animation: rain 0.7s linear infinite;
+}
+
+@keyframes rain {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(-3px, 34px);
+  }
+}
+
+.sky,
+.hall-tint {
+  transition:
+    fill 2s,
+    opacity 2s;
+}
+
+/* The announcement board: a plain sign in dim amber, lit up while the PA reads an announcement. */
+.pa {
+  overflow: hidden;
+  padding: 4px 16px;
+  background: #0c0d0a;
+  border-top: 2px solid #20231c;
+  color: rgb(255 179 71 / 45%);
+  font-family: var(--typewriter);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: color 0.4s;
+}
+
+.pa span {
+  display: inline-block;
+}
+
+.pa.speaking {
+  color: var(--amber);
+  text-shadow: 0 0 6px rgb(255 179 71 / 55%);
+}
+
+/* Letters come on one after another, like the board's own bulbs. */
+.pa.speaking span {
+  animation: pa-type 1.4s 0.8s steps(28) both;
+}
+
+@keyframes pa-type {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}

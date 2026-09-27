@@ -33,8 +33,9 @@ So the rediscovery baseline is not shaped by what the course teaches.
 
 ## Running notes
 (date: what happened, what I decided, what's next)
+End of day 1: we have the initial game screen, still a simple prototype but I feel like it has a lot of potential, I'll have to tweak a lot of details.
 
 ## For the final report
 - What became possible:
-- What still needed my judgment:
+- What still needed my judgment: taste. the jokes were kinda odd, the "feel" of the game much improvable, I iteratively had to improve small things related to the "feel" of the game along the way.
 - What I'll try next:

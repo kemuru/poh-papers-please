@@ -15,7 +15,7 @@ export type Applicant = {
   birthYear: number;
   photo: Portrait;
   video: Video;
-  /** Written in the Remarks box of the form. Not part of the video, and no rule reads it. */
+  /** Said at the window: small talk. Not part of the video, and no rule reads it. */
   remark: string;
 };
 

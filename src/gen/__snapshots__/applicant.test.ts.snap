@@ -3,9 +3,10 @@
 exports[`generateApplicant > gives the same applicants as last time (snapshot) 1`] = `
 [
   {
-    "address": "56 Triplicate Avenue, Upper Pendingham",
-    "birthYear": 1978,
-    "name": "Yusuf Brightwater",
+    "address": "56 Paperclip Crescent, Sallowfield",
+    "birthYear": 1983,
+    "cast": null,
+    "name": "Agnes Grout",
     "photo": {
       "accessories": [
         "glasses",
@@ -29,13 +30,8 @@ exports[`generateApplicant > gives the same applicants as last time (snapshot) 1
       "outfitColor": "plum",
       "species": "human",
     },
-    "planted": [
-      {
-        "mistake": "extra-words",
-        "rule": "phrase",
-      },
-    ],
-    "remark": "My mother says I'm very human.",
+    "planted": [],
+    "remark": "I ironed a shirt for this. I don't iron shirts.",
     "video": {
       "blinked": true,
       "face": {
@@ -61,13 +57,14 @@ exports[`generateApplicant > gives the same applicants as last time (snapshot) 1
         "outfitColor": "plum",
         "species": "human",
       },
-      "transcript": "I certify that I am a real human and that I am not already registered in this registry. Over.",
+      "transcript": "I certify that I am a real human and that I am not already registered in this registry.",
     },
   },
   {
-    "address": "175 Triplicate Avenue, Old Stampton",
-    "birthYear": 1999,
-    "name": "Gustavo Grout",
+    "address": "126 Inkwell Terrace, Sallowfield",
+    "birthYear": 2001,
+    "cast": null,
+    "name": "Hortense Lindqvist",
     "photo": {
       "accessories": [
         "pearls",
@@ -91,8 +88,13 @@ exports[`generateApplicant > gives the same applicants as last time (snapshot) 1
       "outfitColor": "plum",
       "species": "human",
     },
-    "planted": [],
-    "remark": "Do I need to take my hat off? I'm not wearing a hat.",
+    "planted": [
+      {
+        "mistake": "missing-words",
+        "rule": "phrase",
+      },
+    ],
+    "remark": "I recorded the video forty times. That's the best one. Please don't ask for the others.",
     "video": {
       "blinked": true,
       "face": {
@@ -118,13 +120,14 @@ exports[`generateApplicant > gives the same applicants as last time (snapshot) 1
         "outfitColor": "plum",
         "species": "human",
       },
-      "transcript": "I certify that I am a real human and that I am not already registered in this registry.",
+      "transcript": "Real human. Not, hang on, registered.",
     },
   },
   {
-    "address": "96 Lower Queue Road, East Filing",
-    "birthYear": 1939,
-    "name": "Bartholomew Oyelaran",
+    "address": "96 Formsworth Lane, Upper Pendingham",
+    "birthYear": 1947,
+    "cast": null,
+    "name": "Agnes Abernathy",
     "photo": {
       "accessories": [
         "glasses",
@@ -148,13 +151,8 @@ exports[`generateApplicant > gives the same applicants as last time (snapshot) 1
       "outfitColor": "mustard",
       "species": "human",
     },
-    "planted": [
-      {
-        "mistake": "extra-words",
-        "rule": "phrase",
-      },
-    ],
-    "remark": "Is this the queue for parking permits?",
+    "planted": [],
+    "remark": "They said the deposit is refunded 'shortly after'. I've brought a flask.",
     "video": {
       "blinked": true,
       "face": {
@@ -180,13 +178,14 @@ exports[`generateApplicant > gives the same applicants as last time (snapshot) 1
         "outfitColor": "mustard",
         "species": "human",
       },
-      "transcript": "I certify that I am a real human and that I am not already registered in this registry. Probably.",
+      "transcript": "I certify that I am a real human and that I am not yet registered in this registry. Hi, Mum.",
     },
   },
   {
-    "address": "47 Inkwell Terrace, Greyford",
-    "birthYear": 1995,
-    "name": "Fenella Hatchett",
+    "address": "102 Formsworth Lane, East Filing",
+    "birthYear": 1967,
+    "cast": null,
+    "name": "Hortense Thistlewood",
     "photo": {
       "accessories": [],
       "face": {
@@ -208,8 +207,13 @@ exports[`generateApplicant > gives the same applicants as last time (snapshot) 1
       "outfitColor": "navy",
       "species": "human",
     },
-    "planted": [],
-    "remark": "I filled the form in twice, to be safe.",
+    "planted": [
+      {
+        "mistake": "quiet-word",
+        "rule": "phrase",
+      },
+    ],
+    "remark": "I've been outside since six. I wanted to be first. I was fourth.",
     "video": {
       "blinked": true,
       "face": {
@@ -233,7 +237,7 @@ exports[`generateApplicant > gives the same applicants as last time (snapshot) 1
         "outfitColor": "navy",
         "species": "human",
       },
-      "transcript": "I certify that I am a real human and that I am not already registered in this registry.",
+      "transcript": "I certify that I am a real person and that I am not already registered in this registry.",
     },
   },
 ]

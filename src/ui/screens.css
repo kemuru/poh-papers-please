@@ -1,0 +1,434 @@
+/* The evening: the court, the clerk's statement and the letters at the end. */
+
+.screen {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 0;
+  padding: 26px 24px;
+}
+
+.screen-button {
+  display: inline-block;
+  margin-top: 22px;
+  padding: 12px 22px;
+  border: 0;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #d19a3e, #a8742a);
+  box-shadow:
+    inset 0 -4px 0 rgb(0 0 0 / 25%),
+    0 4px 0 #4d3614,
+    0 8px 14px rgb(0 0 0 / 45%);
+  color: #2a1c08;
+  font-family: var(--official);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+  animation: fade-in 0.4s both;
+}
+
+.screen-button:active {
+  translate: 0 3px;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ------------------------------------------------------------ the court */
+
+.court-screen {
+  background:
+    repeating-linear-gradient(90deg, rgb(0 0 0 / 12%) 0 3px, transparent 3px 61px),
+    linear-gradient(180deg, #3b2c20, #2a1f16);
+}
+
+.court {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: min(1120px, 100%);
+  max-height: 100%;
+}
+
+.court-head {
+  align-self: stretch;
+  margin-bottom: 14px;
+  padding: 12px 20px;
+  border: 3px double #b99a62;
+  background: #2f241b;
+  color: #e6d6b3;
+  text-align: center;
+}
+
+.court-head h2 {
+  margin: 2px 0 4px;
+  font-family: var(--official);
+  font-size: 26px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.court-head p {
+  margin: 0;
+  font-size: 13px;
+  color: #b8a684;
+}
+
+.court-kicker {
+  font-family: var(--official);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.court-empty {
+  align-self: stretch;
+  margin: 0;
+  padding: 22px;
+  background: var(--paper);
+  font-size: 15px;
+  text-align: center;
+  box-shadow: 0 8px 18px rgb(0 0 0 / 40%);
+}
+
+/* The day's cases, two to a row, three when the clerk challenged half the queue. Never a scrollbar
+   in play: the list only scrolls if something has gone badly wrong with the day. */
+.docket {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: max-content;
+  gap: 12px;
+  align-self: stretch;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* A crowded day: a board of mugshots, five across, each stamped across the photo. */
+.docket.crowded {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.hearing {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 11px;
+  overflow: hidden;
+  background: var(--paper);
+  box-shadow: 0 6px 14px rgb(0 0 0 / 45%);
+  font-size: 13px;
+  line-height: 1.4;
+  animation: print 0.6s steps(8) both;
+}
+
+.hearing h3,
+.hearing-ruling {
+  padding-right: 92px;
+}
+
+.hearing h3 {
+  margin: 0 0 4px;
+  font-family: var(--official);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.hearing p {
+  margin: 0 0 5px;
+}
+
+.hearing p:last-child {
+  margin-bottom: 0;
+}
+
+.hearing-evidence {
+  font-size: 12.5px;
+}
+
+.docket.crowded .hearing {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  padding: 10px;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.docket.crowded .hearing-face {
+  justify-self: center;
+}
+
+.docket.crowded .hearing h3,
+.docket.crowded .hearing-ruling {
+  padding-right: 0;
+}
+
+.docket.crowded .ruling-stamp {
+  top: 46px;
+  right: auto;
+  left: 50%;
+  translate: -50% 0;
+  background: rgb(235 230 214 / 55%);
+}
+
+.docket.crowded .hearing-evidence,
+.docket.crowded .court-note {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.hearing-face {
+  line-height: 0;
+  padding: 4px;
+  background: var(--paper-light);
+  border: 1px solid #9c9480;
+  align-self: start;
+}
+
+.court-note {
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+.ruling-stamp {
+  position: absolute;
+  top: 12px;
+  right: 10px;
+  padding: 1px 7px;
+  border: 3px double currentColor;
+  border-radius: 4px;
+  font-family: var(--official);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  mix-blend-mode: multiply;
+  opacity: 0.85;
+  transform: rotate(8deg);
+  animation: stamp-slam-court 0.22s ease-in both;
+}
+
+.ruling-stamp.upheld {
+  color: var(--accept);
+}
+
+.ruling-stamp.dismissed {
+  color: var(--challenge);
+}
+
+@keyframes stamp-slam-court {
+  from {
+    opacity: 0;
+    transform: rotate(8deg) scale(2.3);
+  }
+  to {
+    opacity: 0.85;
+    transform: rotate(8deg) scale(1);
+  }
+}
+
+/* ------------------------------------------------------------ the statement */
+
+.statement-screen {
+  background: #0b0b09;
+}
+
+.statement {
+  width: min(620px, 100%);
+  color: #e8e2cf;
+}
+
+.statement h2 {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #3b3a33;
+  font-family: var(--official);
+  font-size: 20px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.statement h2 span {
+  color: var(--amber);
+}
+
+.statement dl {
+  margin: 0;
+}
+
+.statement .row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 16px;
+  animation: line-in 0.2s steps(2) both;
+}
+
+.statement .row dt::after {
+  content: '';
+}
+
+.statement .row dt {
+  flex: 0 1 auto;
+}
+
+.statement .row dd {
+  margin: 0 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Dotted leaders between the label and the amount. */
+.statement .row::after {
+  content: none;
+}
+
+.statement .row dt {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+}
+
+.statement .row dt::after {
+  flex: 1;
+  border-bottom: 2px dotted #4a483f;
+  translate: 0 -5px;
+}
+
+.statement .row.minus dd {
+  color: #e2887a;
+}
+
+.statement .row.balance {
+  color: #b8b29f;
+}
+
+.statement .row.total {
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #3b3a33;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.statement .row.total dd {
+  color: var(--amber);
+}
+
+.statement-alert {
+  margin: 16px 0 0;
+  color: #ff6a57;
+  font-family: var(--official);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  animation: line-in 0.2s steps(2) both;
+}
+
+.statement-footer {
+  margin: 22px 0 0;
+  color: #8f8a7a;
+  font-style: italic;
+  animation: line-in 0.2s steps(2) both;
+}
+
+/* A line of the statement arriving: it is there, or it is not. */
+@keyframes line-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ------------------------------------------------------------ the letters */
+
+.ending-screen {
+  background: radial-gradient(ellipse at 50% 30%, #3a3d34, #161812);
+}
+
+.notice {
+  position: relative;
+  width: min(560px, 100%);
+  padding: 30px 34px 34px;
+  background: var(--paper-light);
+  box-shadow: 0 16px 40px rgb(0 0 0 / 55%);
+  font-size: 15px;
+  line-height: 1.55;
+  animation: land 0.6s both;
+}
+
+.notice-head {
+  margin: 0 0 18px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--ink);
+  font-family: var(--official);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.notice h2 {
+  margin: 0 0 14px;
+  font-family: var(--official);
+  font-size: 24px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.notice-savings {
+  font-weight: 700;
+}
+
+.notice-stamp {
+  position: absolute;
+  right: 44px;
+  bottom: 30px;
+  padding: 4px 14px;
+  border: 5px double currentColor;
+  border-radius: 4px;
+  font-family: var(--official);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  transform: rotate(-10deg);
+  animation: stamp-slam 0.25s 0.7s ease-in both;
+}
+
+.notice-fired .notice-stamp {
+  color: var(--challenge);
+}
+
+.notice-promoted .notice-stamp {
+  color: var(--accept);
+}
+
+.out-of-order {
+  max-width: 560px;
+  margin: 80px auto;
+  padding: 28px;
+  background: var(--paper);
+  font-family: var(--typewriter);
+}
+
+.out-of-order pre {
+  white-space: pre-wrap;
+  color: var(--ink-soft);
+  font-size: 12px;
+}

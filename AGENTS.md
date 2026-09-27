@@ -1,6 +1,6 @@
 # Proof of Humanity: Papers, Please
 
-A comedy desk game in the browser. The player is a registry clerk for a parody of Kleros's Proof of Humanity. Absurd applicants (raccoons in a trench coat, a toaster, Socrates) try to register as humans; the player accepts or challenges them against a rulebook that gets stricter every day. Challenges go to a jury that can be appealed. Training project for an AI-driven-development course. Local only, no wallet, no chain, no network calls at runtime.
+A comedy desk game in the browser. The player is a registry clerk for a parody of Kleros's Proof of Humanity. In the week before Humanity Day, when every registered human starts receiving an income, absurd applicants (three raccoons in a trench coat, an AI agent with a wallet, a sybil farm, Socrates) try to register as humans; the player accepts or challenges them against a rulebook that gets stricter every day. Challenges go to a jury that can be appealed. Training project for an AI-driven-development course. Local only, no wallet, no chain, no network calls at runtime.
 
 Game design and cast: `notes/game-design.md`. Scope: `notes/brief.md`.
 
@@ -30,6 +30,6 @@ TypeScript, React, Vite. No game engine. Vitest for logic, Playwright for the br
 - Do not edit or delete existing tests unless the task explicitly asks. If a test looks wrong, stop and explain.
 - New dependency: justify it in one line in your report.
 - Keep code simple. No speculative abstractions, plugin systems or compatibility layers.
-- Humor lives in content files (`src/content/`), not in logic. Keep the tone deadpan and bureaucratic.
+- Humor lives in content files (`src/content/`), not in logic. Keep the tone deadpan and bureaucratic. It is satire of the real Proof of Humanity and Kleros, never random: every joke must be explained by a rule, a real fact or a character's want (see "Writing the jokes" in `notes/game-design.md`).
 - Characters are fictional. No real people.
 - If a choice changes gameplay, the rulebook or a module's public API, ask before implementing.

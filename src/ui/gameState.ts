@@ -1,13 +1,8 @@
 import type { GeneratedApplicant } from '../gen/applicant';
-import type { Decision, Outcome } from '../rules/judge';
+import type { GameState } from './week';
 
-export type GameSnapshot = {
-  seed: number;
-  day: number;
-  applicant: GeneratedApplicant;
-  decision: Decision | null;
-  outcome: Outcome | null;
-};
+/** Everything the UI knows, plus the day's queue with the truth attached. */
+export type GameSnapshot = GameState & { queue: GeneratedApplicant[] };
 
 declare global {
   interface Window {
