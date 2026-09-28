@@ -7,7 +7,7 @@ import { RULEBOOK } from '../content/rulebook';
 import type { GeneratedApplicant } from '../gen/applicant';
 import { generatePortrait } from '../gen/portrait';
 import { appealFee, JURY_SIZES, type Round } from './court';
-import { BUBBLES, COURT_SESSION, HUNCH_LINE, JUROR_NAMES } from './courtWords';
+import { BUBBLES, COURT_SESSION, HUNCH_LINE, JUROR_NAMES } from '../content/court';
 import { evidenceLine, evidenceWords } from './evidence';
 import { pick } from './Slips';
 import type { Ruling } from './week';

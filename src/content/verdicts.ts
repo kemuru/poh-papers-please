@@ -123,7 +123,7 @@ export const CAST_RULINGS: Record<CastId, { upheld?: readonly string[]; dismisse
       'The applicant has asked to keep the rulebook. The applicant has been given a leaflet.',
       'The applicant thanked the jury. The jury was not sure where to look.',
     ],
-    dismissed: ['The applicant was right. The court would like to say it saw this coming. It did not.'],
+    dismissed: ['The court found nothing wrong. The applicant has asked for the ruling in a frame.'],
   },
   patMother: { dismissed: ["The applicant is Pat's mother. The court was told this several times."] },
   twins: { dismissed: ['The court was shown one face on two people and found two humans. It was a long afternoon.'] },
