@@ -25,10 +25,10 @@ export type Tier = (typeof TIERS)[number];
  * each time. Tuned by src/court/jury.test.ts (fairness) and the balance bots.
  */
 export const FIND: Record<Tier, readonly [number, number, number]> = {
-  plain: [0.9, 0.96, 0.99],
+  plain: [0.95, 0.98, 0.99],
   often: [0.7, 0.85, 0.95],
-  sometimes: [0.5, 0.75, 0.9],
-  rare: [0.3, 0.6, 0.85],
+  sometimes: [0.55, 0.75, 0.9],
+  rare: [0.4, 0.65, 0.85],
 };
 
 /** How often a seat's bubble says something other than what it did. Flavour: no vote changes. */
@@ -49,8 +49,8 @@ const MANY_MISSING = 3;
 const FEW_WRONG = 3;
 
 /**
- * How visible a fault is. Silence, a square of dots, no sign, nobody vouching and a year no one is
- * born in are plain; a wrong word, a mirror, someone else's address often seen; a typo in the year, no
+ * How visible a fault is. Silence, a square of dots, no sign, nobody vouching, a year before Christ
+ * and a version number for a year are plain; a wrong word, a mirror, someone else's address often seen; a typo in the year, no
  * blink, another face, a picture held up and the generator's mark sometimes; a panel open in one frame,
  * an ear that changes, two wrong characters, and whatever needs the registry (a voucher not registered
  * or already vouching, a face on file) rarely.
@@ -148,9 +148,6 @@ export const canAppeal = ((c) => !isUpheld(c) && c.rounds.length < JURY_SIZES.le
 export const appealFee = ((c) => (canAppeal(c) ? feeFor(c.rounds.length) : null)) satisfies CourtEngine['appealFee'];
 
 export const appealCase = ((c) => (canAppeal(c) ? { ...c, rounds: [...c.rounds, hear(c, c.rounds.length)] } : c)) satisfies CourtEngine['appealCase'];
-
-/** The fees paid for a case's appeals so far. */
-export const feesPaid = (c: CourtCase) => c.rounds.reduce((sum, r) => sum + r.fee, 0);
 
 export const settle = ((registry, day, cases) => {
   let after: Registry = registry;

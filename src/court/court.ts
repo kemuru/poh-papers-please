@@ -1,6 +1,7 @@
 // The desk and the Humanity Court, step by step: a stamp at the window, and the hearings at five.
-// Until the jury arrives (slice 4) the court rules on the facts: a challenge is upheld when the
-// applicant broke any rule in force, judged against the registry as it stood at the window.
+// hearChallenges rules on the facts: a challenge is upheld when the applicant broke any rule in
+// force, judged against the registry as it stood at the window. playDay with a litigant goes to the
+// jury instead (src/court/jury.ts, slice 4).
 // Pure: the same registry, applicant and decision always give the same result.
 import { decide, judge, rulebookForDay, type Decision, type Outcome } from '../rules/judge';
 import { atWindow, register, remove } from '../rules/registry';

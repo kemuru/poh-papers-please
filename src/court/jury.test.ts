@@ -113,8 +113,8 @@ describe('the jury', () => {
     };
     const rates = TIERS.map(rate);
     for (let t = 1; t < TIERS.length; t++) expect(rates[t], TIERS[t]).toBeLessThan(rates[t - 1]);
-    expect(rates[0]).toBeGreaterThan(0.9);
-    expect(rates[TIERS.length - 1]).toBeLessThan(0.4);
+    expect(rates[0]).toBeGreaterThan(0.95);
+    expect(rates[TIERS.length - 1]).toBeLessThan(0.5);
     // Each seat looks harder in each appeal.
     for (const tier of TIERS) for (let n = 1; n < 3; n++) expect(FIND[tier][n]).toBeGreaterThan(FIND[tier][n - 1]);
   });
