@@ -5,7 +5,8 @@ import { PAY } from '../economy/economy';
 import { shortAddress } from '../rules/sign';
 import type { Violation } from '../rules/types';
 import { Words } from './Documents';
-import { evidenceLine } from './evidence';
+import type { Evidence } from './court';
+import { evidenceLine, evidenceWords } from './evidence';
 import type { Decided } from './week';
 
 /** One line from a pool: the same number always prints the same line. */
@@ -26,13 +27,17 @@ export function CitationSlip({ decided, caseNo }: { decided: Decided; caseNo: st
   );
 }
 
-/** Printed when the clerk challenges: the case waits for the court at the end of the shift, which finds what is wrong. */
-export function FilingSlip({ name, caseNo }: { name: string; caseNo: string }) {
+/**
+ * Printed when the clerk challenges: the case waits for the court at the end of the shift, with what
+ * Inspect found, or with nothing, and the jury looks for itself. It says nothing about who is right.
+ */
+export function FilingSlip({ name, caseNo, evidence }: { name: string; caseNo: string; evidence: Evidence | null }) {
   return (
     <Slip kind="filing" title="Case filed" number={`Case no. ${caseNo}`}>
       <p>
         <strong>The Registry v. {name}</strong>
       </p>
+      <p data-testid="filing-evidence">{evidence ? `Evidence: ${evidenceWords(evidence)}` : 'No evidence filed. The jury will look for itself.'}</p>
       <p>To be heard by the Humanity Court at the end of the shift. Deposit held: {PAY.deposit} PNK.</p>
     </Slip>
   );
