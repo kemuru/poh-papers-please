@@ -87,8 +87,8 @@ export function Court({
     onAppeal(index);
   };
   return (
-    <main className="screen court-screen">
-      <section className="court" aria-label="Humanity Court">
+    <main className={crowded ? 'screen court-screen crowded' : 'screen court-screen'}>
+      <section className={crowded ? 'court crowded' : 'court'} aria-label="Humanity Court">
         <header className="court-head">
           <p className="court-kicker">In the matter of the Registry</p>
           <h2>The Humanity Court</h2>
@@ -154,10 +154,15 @@ function Hearing({
   const stampAt = appealed ? 0.35 + lastRound.size * APPEAL_SEAT_GAP : stamp;
   const fee = appealFee(court);
   let seatAt = start + 0.45;
+  // An appeal plays where the case is: if the new jury runs past the fold, the docket follows it.
+  const card = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (appealed) card.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+  }, [appealed, court.rounds.length]);
   return (
-    <article className="hearing" data-testid="ruling" data-upheld={r.upheld} style={{ animationDelay: `${start}s` }}>
+    <article ref={card} className="hearing" data-testid="ruling" data-upheld={r.upheld} style={{ animationDelay: `${start}s` }}>
       <div className="hearing-face">
-        <PixelPortrait portrait={a.photo} scale={crowded ? 1.2 : 1.5} background="#cfd8dc" title={`Photo of ${a.name}`} />
+        <PixelPortrait portrait={a.photo} scale={crowded ? 1 : 1.5} background="#cfd8dc" title={`Photo of ${a.name}`} />
       </div>
       <div className="hearing-body">
         <h3>
@@ -218,7 +223,7 @@ function Hearing({
 function Jury({ round, n, crowded, first, gap }: { round: Round; n: number; crowded: boolean; first: number; gap: number }) {
   const upholds = round.seats.filter((s) => s.vote === 'uphold').length;
   return (
-    <div className={`jury jury-${round.size}${crowded ? ' collapsed' : ''}`} data-testid="round" data-size={round.size}>
+    <div className={`jury jury-${round.size}${crowded ? ' collapsed' : ''}${n === 0 ? ' first' : ''}`} data-testid="round" data-size={round.size}>
       <p className="jury-head">
         {n === 0 ? `Jury of ${round.size}` : `Appeal ${n} · jury of ${round.size}`} · {upholds} of {round.size} uphold
       </p>

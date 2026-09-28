@@ -157,8 +157,8 @@
 
 .docket.crowded .hearing {
   grid-template-columns: minmax(0, 1fr);
-  gap: 6px;
-  padding: 10px;
+  gap: 4px;
+  padding: 8px;
   font-size: 12px;
   line-height: 1.35;
   text-align: center;
@@ -174,7 +174,7 @@
 }
 
 .docket.crowded .ruling-stamp {
-  top: 46px;
+  top: 36px;
   right: auto;
   left: 50%;
   translate: -50% 0;
@@ -247,7 +247,7 @@
 }
 
 .hearing-outcome {
-  animation: outcome-in 0.2s steps(3) both;
+  animation: outcome-in 0.2s ease-out both;
 }
 
 @keyframes outcome-in {
@@ -294,7 +294,7 @@
   align-items: flex-start;
   gap: 6px;
   line-height: 0;
-  animation: juror-in 0.18s steps(3) both;
+  animation: juror-in 0.18s ease-out both;
 }
 
 .juror svg {
@@ -383,9 +383,49 @@
 }
 
 /* A crowded court: each jury a row of faces under the name; what they said, on hover. */
+.court-screen.crowded {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.court.crowded .screen-button {
+  margin-top: 12px;
+}
+
+.court.crowded .court-head {
+  margin-bottom: 8px;
+  padding: 6px 20px;
+}
+
+.court.crowded .court-head h2 {
+  margin: 0 0 2px;
+  font-size: 22px;
+}
+
 .docket.crowded .jury {
-  margin: 0 0 4px;
-  padding: 3px;
+  margin: 0 0 3px;
+  padding: 2px;
+  border: 0;
+  background: none;
+}
+
+.docket.crowded .jury.first .jury-head {
+  display: none;
+}
+
+.docket.crowded .hearing-ruling {
+  font-size: 11.5px;
+}
+
+/* Ten notes cut to a few words each say nothing: a crowded court keeps to its rulings. */
+.docket.crowded .court-note {
+  display: none;
+}
+
+.docket.crowded .appeal-button {
+  padding: 2px 6px;
+  font-size: 10.5px;
+  box-shadow: 1px 1px 0 var(--ink);
 }
 
 .docket.crowded .jurors {
