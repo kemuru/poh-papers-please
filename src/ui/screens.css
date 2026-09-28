@@ -250,9 +250,11 @@
   animation: outcome-in 0.2s ease-out both;
 }
 
+/* Hidden until the stamp: an APPEAL not yet shown cannot be pressed. */
 @keyframes outcome-in {
   from {
     opacity: 0;
+    visibility: hidden;
   }
 }
 
