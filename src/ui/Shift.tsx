@@ -10,6 +10,7 @@ import { inspect, sameItem, type Finding, type Item } from '../rules/inspect';
 import { judge, RULE_DAYS, rulebookForDay, type Decision } from '../rules/judge';
 import type { RuleId } from '../rules/types';
 import { Booth } from './Booth';
+import type { Evidence } from './court';
 import { Desk, type InspectView } from './Desk';
 import { evidenceLine, ruleName } from './evidence';
 import { atWindow, shiftOver, type Action, type GameState } from './week';
@@ -70,12 +71,15 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu }
   const [last, setLast] = useState<{ items: [Item, Item]; finding: Finding | null } | null>(null);
   const [lookup, setLookup] = useState<Lookup | null>(null);
   const [toolsUsed, setToolsUsed] = useState<Lookup['by'][]>([]);
+  // The latest discrepancy in force found on whoever is at the window: a challenge takes it to court.
+  const [evidence, setEvidence] = useState<Evidence | null>(null);
   // Each applicant starts with a clean desk: nothing picked, nothing found, nothing looked up.
   const [visit, setVisit] = useState(state.called);
   if (visit !== state.called) {
     setVisit(state.called);
     setPicked(null);
     setLast(null);
+    setEvidence(null);
     setLookup(null);
     setToolsUsed([]);
   }
@@ -91,6 +95,8 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu }
     if (sameItem(picked, item)) return setPicked(null);
     const finding = inspect(picked, item, queue[at], rulebook, state.registry);
     setLast({ items: [picked, item], finding });
+    // Two things that agree later on do not unsay the two that did not.
+    if (finding?.inForce) setEvidence({ rule: finding.rule, items: [picked, item] });
     setPicked(null);
     if (finding) blip(finding.inForce ? 180 : 320);
     else tick();
@@ -110,7 +116,7 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu }
   const stampedAt = useRef(0);
   const decideNow = (decision: Decision) => {
     if (at === null || state.timeUp) return;
-    dispatch({ type: 'decide', applicant: queue[at], decision });
+    dispatch({ type: 'decide', applicant: queue[at], decision, ...(decision === 'challenge' ? { evidence } : {}) });
     stampedAt.current = performance.now();
     setInspecting(false);
     setPicked(null);

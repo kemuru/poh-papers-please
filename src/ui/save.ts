@@ -4,15 +4,21 @@
 // did, the save is set aside and a new week begins.
 import type { GeneratedApplicant } from '../gen/applicant';
 import { generateWeek, LAST_DAY } from '../gen/day';
+import type { Item } from '../rules/inspect';
 import type { Decision } from '../rules/judge';
+import type { RuleId } from '../rules/types';
+import type { Evidence } from './court';
 import { atWindow, reduce, startWeek, type Action, type GameState } from './week';
 
 export const SAVE_KEY = 'poh-save';
 /** Where a save that could not be restored is kept, for whoever is debugging it. */
 const SET_ASIDE_KEY = 'poh-save-set-aside';
 
-/** One thing the clerk did. The applicant it was done to is the queue's to say, not the save's. */
-export type Step = 'open' | 'call' | Decision | 'time-up' | 'close' | 'statement' | 'next-day';
+/**
+ * One thing the clerk did. The applicant it was done to is the queue's to say, not the save's. A
+ * challenge filed with evidence keeps the evidence; an appeal keeps the place in the queue of its case.
+ */
+export type Step = 'open' | 'call' | Decision | 'time-up' | 'close' | 'statement' | 'next-day' | { challenge: Evidence } | { appeal: number };
 
 export type Save = {
   v: 1;
@@ -65,14 +71,44 @@ export function canSave(store: Store | null): boolean {
   }
 }
 
-export const stepOf = (action: Action): Step => (action.type === 'decide' ? action.decision : action.type);
+export function stepOf(action: Action): Step {
+  if (action.type === 'appeal') return { appeal: action.index };
+  if (action.type !== 'decide') return action.type;
+  return action.decision === 'challenge' && action.evidence ? { challenge: action.evidence } : action.decision;
+}
 
 const STEPS = new Set<string>(['open', 'call', 'accept', 'challenge', 'time-up', 'close', 'statement', 'next-day']);
-const isStep = (step: unknown): step is Step => typeof step === 'string' && STEPS.has(step);
+const RULES = new Set<string>(['human', 'phrase', 'photo', 'sign', 'vouch', 'duplicate', 'living'] satisfies RuleId[]);
+const PLAIN_ITEMS = new Set<string>(['photo', 'transcript', 'sign', 'name', 'birth-year', 'wallet', 'voucher', 'face-record'] satisfies Item['kind'][]);
+const whole = (n: unknown): n is number => Number.isSafeInteger(n) && (n as number) >= 0;
+
+function isItem(item: unknown): item is Item {
+  if (typeof item !== 'object' || item === null) return false;
+  const i = item as Record<string, unknown>;
+  if (typeof i.kind !== 'string') return false;
+  if (i.kind === 'frame') return whole(i.frame);
+  if (i.kind === 'rule') return typeof i.rule === 'string' && RULES.has(i.rule);
+  if (i.kind === 'name-record') return typeof i.name === 'string';
+  return PLAIN_ITEMS.has(i.kind);
+}
+
+function isStep(step: unknown): step is Step {
+  if (typeof step === 'string') return STEPS.has(step);
+  if (typeof step !== 'object' || step === null) return false;
+  if ('appeal' in step) return whole(step.appeal);
+  if (!('challenge' in step)) return false;
+  const e = step.challenge as Partial<Evidence> | null;
+  return typeof e?.rule === 'string' && RULES.has(e.rule) && Array.isArray(e.items) && e.items.length === 2 && e.items.every(isItem);
+}
 
 /** The reducer's action for a step, with the applicant and queue it was taken on; null if it could not have been taken. */
 function actionOf(step: Step, s: GameState, week: Week): Action | null {
   const queue = week[s.day - 1];
+  if (typeof step === 'object') {
+    if ('appeal' in step) return { type: 'appeal', index: step.appeal };
+    const at = atWindow(s);
+    return at === null ? null : { type: 'decide', applicant: queue[at], decision: 'challenge', evidence: step.challenge };
+  }
   if (step === 'accept' || step === 'challenge') {
     const at = atWindow(s);
     if (at === null) return null;
@@ -164,7 +200,6 @@ export function loadRun(store: Store | null): Run {
 function parse(raw: string): Save | null {
   try {
     const save = JSON.parse(raw) as Partial<Save> | null;
-    const whole = (n: unknown): n is number => Number.isSafeInteger(n) && (n as number) >= 0;
     if (
       save?.v === 1 &&
       whole(save.seed) &&

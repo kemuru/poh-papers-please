@@ -91,7 +91,7 @@ export function Desk(p: Props) {
           {/* The printer at the top edge of the desk: citations and case slips land where the papers were. */}
           <div className="printer" aria-live="polite">
             {p.papers && p.decided?.citation && <CitationSlip decided={p.decided} caseNo={p.caseNo} />}
-            {p.papers && p.decided?.decision === 'challenge' && <FilingSlip name={p.papers.name} caseNo={p.caseNo} />}
+            {p.papers && p.decided?.decision === 'challenge' && <FilingSlip name={p.papers.name} caseNo={p.caseNo} evidence={p.decided.evidence ?? null} />}
           </div>
           {p.inspect.message && (
             <p className={`inspector inspector-${p.inspect.tone}`} role="status" data-testid="inspector">

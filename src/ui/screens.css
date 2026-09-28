@@ -239,6 +239,172 @@
   }
 }
 
+/* ------------------------------------------------------------ the jury */
+
+.hearing-heard {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.hearing-outcome {
+  animation: outcome-in 0.2s steps(3) both;
+}
+
+@keyframes outcome-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* A round: how many sat and how many upheld, then the faces in the order drawn. */
+.jury {
+  margin: 0 0 6px;
+  padding: 5px 6px;
+  border: 1px dashed #9c9480;
+  background: rgb(0 0 0 / 3%);
+}
+
+.hearing .jury-head {
+  margin: 0 0 4px;
+  font-family: var(--official);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.jurors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.jury-3:not(.collapsed) .jurors {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.juror {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  line-height: 0;
+  animation: juror-in 0.18s steps(3) both;
+}
+
+.juror svg {
+  flex: none;
+  border: 1px solid #8a8472;
+}
+
+@keyframes juror-in {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+}
+
+/* What a juror said, in a speech bubble pointing at the face. */
+.bubble {
+  position: relative;
+  padding: 3px 5px;
+  border: 1px solid #8a8472;
+  border-radius: 3px;
+  background: var(--paper-light);
+  font-size: 11px;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.bubble::before {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: -5px;
+  border: 4px solid transparent;
+  border-left: 0;
+  border-right-color: #8a8472;
+}
+
+.vote-mark {
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  min-width: 11px;
+  padding: 0 2px;
+  font-family: var(--official);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 12px;
+  text-align: center;
+  color: #fff;
+  background: #6b6b6b;
+}
+
+.juror.vote-uphold .vote-mark {
+  background: var(--accept);
+}
+
+.juror.vote-dismiss .vote-mark {
+  background: var(--challenge);
+}
+
+.appeal-button {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 4px 10px;
+  border: 2px solid var(--ink);
+  background: var(--paper-light);
+  font-family: var(--official);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.appeal-button:hover,
+.appeal-button:focus-visible {
+  background: #fff;
+  outline: 2px solid var(--challenge);
+  outline-offset: 1px;
+}
+
+.appeal-button:active {
+  translate: 2px 2px;
+  box-shadow: none;
+}
+
+/* A crowded court: each jury a row of faces under the name; what they said, on hover. */
+.docket.crowded .jury {
+  margin: 0 0 4px;
+  padding: 3px;
+}
+
+.docket.crowded .jurors {
+  justify-content: center;
+}
+
+.docket.crowded .jury-head {
+  margin-bottom: 2px;
+  font-size: 9.5px;
+}
+
+.docket.crowded .hearing-heard {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 11.5px;
+}
+
 /* ------------------------------------------------------------ the statement */
 
 .statement-screen {

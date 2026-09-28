@@ -1,9 +1,34 @@
 // A violation in words: what disagrees with what. Dry on purpose; the jokes are in the memos.
 import { RULEBOOK } from '../content/rulebook';
+import type { Item } from '../rules/inspect';
 import { shortAddress } from '../rules/sign';
 import type { Mark, RuleId, Violation } from '../rules/types';
+import type { Evidence } from './court';
 
 export const ruleName = (rule: RuleId) => `Rule ${RULEBOOK[rule].number}: ${RULEBOOK[rule].title}`;
+
+/** Something on the desk, as a case slip names it. */
+export function itemWords(item: Item): string {
+  switch (item.kind) {
+    case 'frame':
+      return `frame ${item.frame}`;
+    case 'rule':
+      return `Rule ${RULEBOOK[item.rule].number}`;
+    case 'name-record':
+      return `the registry's record of ${item.name}`;
+    case 'face-record':
+      return 'the face search';
+    case 'name':
+    case 'birth-year':
+    case 'wallet':
+      return 'the form';
+    default:
+      return `the ${item.kind}`;
+  }
+}
+
+/** What the clerk found, as the case slip and the court print it: "Rule 3, the sign against the form." */
+export const evidenceWords = (e: Evidence) => `Rule ${RULEBOOK[e.rule].number}, ${itemWords(e.items[0])} against ${itemWords(e.items[1])}.`;
 
 /** Years before year 1 are printed the way the Ministry's records office prints them; anything else as written. */
 export const formatYear = (year: number | string) => (typeof year !== 'number' ? year : year < 1 ? `${-year} BC` : String(year));
