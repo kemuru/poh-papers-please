@@ -16,6 +16,13 @@ export const PAY = {
   fine: 20,
 } as const;
 
+/**
+ * Appeals (slice 4): a dismissed hunch goes to 7 jurors for the first fee, then 15 for the second.
+ * Upheld in the end, the fees are refunded and the bonus is paid on top of the bounty; dismissed in
+ * the end, the fees are kept with the deposit.
+ */
+export const APPEALS = { fees: [10, 20], bonus: 10 } as const;
+
 export const STARTING_SAVINGS = 240;
 
 /** Per day. Perfect play clears the bills by about 20 PNK a day; see balance.test.ts. */
