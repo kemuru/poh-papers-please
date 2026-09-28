@@ -310,6 +310,9 @@ const PAY_LABELS: Record<Exclude<PayLine['kind'], 'fines'>, string> = {
   registrations: 'Registrations',
   upheld: 'Challenges upheld',
   dismissed: 'Deposits forfeited',
+  wonOnAppeal: 'Appeal bonus, fees refunded',
+  lostAt7: 'Appeals lost, 7 jurors',
+  lostAt15: 'Appeals lost, 15 jurors',
 };
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 const signed = (amount: number, kind?: string) => (kind ? `${amount} PNK` : amount > 0 ? `+${amount}` : String(amount));

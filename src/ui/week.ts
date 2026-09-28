@@ -176,9 +176,13 @@ function sit(s: GameState, bench: Bench, cases: CourtCase[]): GameState {
     if (note) shown.push(note);
     return { index: court.index, upheld, removed: settled.removed[n], note, court };
   });
-  // A challenge is paid as the court ends it: upheld, the bounty; dismissed, the deposit.
-  const upheldAt = new Map(rulings.map((r) => [r.index, r.upheld]));
-  const tally = s.decided.map((d, i) => ({ decision: d.decision, correct: d.decision === 'challenge' ? upheldAt.get(i) ?? false : d.outcome.correct }));
+  // A challenge is paid as the court ends it: upheld, the bounty (and after an appeal the fees back
+  // and the bonus); dismissed, the deposit and any fees.
+  const heardAt = new Map(rulings.map((r) => [r.index, { upheld: r.upheld, appeals: r.court.rounds.length - 1 }]));
+  const tally = s.decided.map((d, i) => {
+    const court = d.decision === 'challenge' ? heardAt.get(i) : undefined;
+    return { decision: d.decision, correct: d.outcome.correct, ...(court ? { court } : {}) };
+  });
   return { ...s, bench, registry: settled.registry, rulings, shown, end: endDay(s.savings, s.day, tally, s.seed) };
 }
 
