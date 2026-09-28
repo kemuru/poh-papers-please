@@ -28,7 +28,7 @@ export const FIND: Record<Tier, readonly [number, number, number]> = {
   plain: [0.95, 0.98, 0.99],
   often: [0.7, 0.85, 0.95],
   sometimes: [0.55, 0.75, 0.9],
-  rare: [0.4, 0.65, 0.85],
+  rare: [0.45, 0.65, 0.85],
 };
 
 /** How often a seat's bubble says something other than what it did. Flavour: no vote changes. */
