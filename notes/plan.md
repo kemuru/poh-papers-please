@@ -49,7 +49,7 @@ Clément's guidance from Slack: the aim is to become 2 to 5 times faster afterwa
 | 1h | R15, R16, R17 | |
 | 1h15 | Create one skill | **Skill: add-applicant.** Input: character idea plus which rule it breaks. Steps: add content, add generator variant with `planted` violation, add portrait accessory, add rule test, run checks, take a screenshot. Smoke test with three prompts: "add a sentient toaster that can't blink" (should activate), "fix the shift timer" (should not), "add a new applicant" with no violation named (should ask). Fix what misbehaves. |
 | 45m | Clean context | Trim `AGENTS.md`. Retest the old habit you named on Day 1: remove it, compare on a small task, keep it only if it still prevents a real failure. |
-| 1h45 | Longer goal | Slice 3 with `/goal`. Done means: days 1 to 6 rules active, morning memo, rulebook panel, registry lookup, Gary's disguises, all tests passing with outputs shown. Set a deadline and a retry limit. |
+| 1h45 | Longer goal | Slice 3 with `/goal`. Done means: days 1 to 6 rules active, morning memo, rulebook panel, registry lookup, the recurring cast, all tests passing with outputs shown. Set a deadline and a retry limit. |
 | 1h15 | Interrupt and recover | Write a progress note, stop, resume from the note. Force a failing test, fix the cause, and check that the test run was not empty. Start a read-only `/loop` watching test output, observe two iterations, stop it. |
 
 ## Day 4: graphs and parallel work (8h)
@@ -57,7 +57,7 @@ Clément's guidance from Slack: the aim is to become 2 to 5 times faster afterwa
 | Time | Session | What you do |
 |---|---|---|
 | 1h45 | R18 to R22 | |
-| 30m | Draw the graph | Shared contract: the `CourtCase` type (applicant, challenge reason, rounds, jurors, votes, fees). Commit it first. |
+| 30m | Draw the graph | Shared contract: the `CourtCase` type (applicant, evidence or hunch, rounds, jurors, votes, fees). Commit it first. |
 | 2h | Parallel workflow (slice 4) | Worker A: court engine (seeded votes, 3/7/15 appeal rounds, fees) in `src/court/`. Worker B: court screen (jurors, speech bubbles, the APPEAL button filling the screen). Integrator: Playwright test for challenge, jury, appeal, final ruling. Limits: 2 workers, 1 retry each, 90-minute deadline. |
 | 1h | Force a branch failure | Break worker A's output, relaunch, record which workers reran. |
 | 1h | Effort comparison | Same bounded task (the endings screen) at two effort levels, or ultracode vs high. Optional substitute: have an isolated agent reimplement `judge()` from the rulebook text alone and compare it with yours on 500 seeded applicants. Disagreements are questions to investigate. |
@@ -76,7 +76,7 @@ Clément's guidance from Slack: the aim is to become 2 to 5 times faster afterwa
 | 30m | Cleanup | Stop routines and loops, remove temporary credentials and worktrees, check actual usage and spend. |
 
 ## Second week (optional, until Monday 5 October)
-Day 7 finale and endings, sound, visual polish, and a playtest with colleagues. Log what they found funny and what confused them. Try one method from the course you skipped or want to repeat.
+Day 7 finale and endings (slice 5), coming back (slice 6), visual polish, and a playtest with colleagues. Log what they found funny and what confused them. Try one method from the course you skipped or want to repeat.
 
 ---
 

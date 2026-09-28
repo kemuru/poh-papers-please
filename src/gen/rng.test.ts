@@ -37,7 +37,7 @@ describe('createRng', () => {
 
   it('pick() returns an element and rejects empty arrays', () => {
     const rng = createRng(9);
-    const items = ['raccoon', 'toaster', 'philosopher'] as const;
+    const items = ['robot', 'toaster', 'philosopher'] as const;
     expect(items).toContain(rng.pick(items));
     expect(() => rng.pick([])).toThrow();
   });

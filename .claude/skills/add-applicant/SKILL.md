@@ -22,8 +22,8 @@ If either is missing or ambiguous, ask (AskUserQuestion) and stop. Never invent 
 
 Also stop and ask, in the same question where you can, when:
 - **The rule is not in the code yet** (`RuleId` in `src/rules/types.ts`). A new rule changes the rulebook: that is slice work, and AGENTS.md says to ask. Offer: wait for the rule, or break a rule already in force.
-- **The fault cannot be seen at the desk:** in the transcript, the video frames, "Blink detected", the form, the sign, the voucher or a registry match. The window remark does not count; no rule reads it.
-- **They need a new species or body.** Only `human` and `raccoon` are drawn; this skill adds one accessory, not a species.
+- **The fault cannot be seen at the desk:** in the transcript, the video frames (a blink is closed eyes in a frame; no label says so), the form, the sign, the voucher or a registry match. The window remark does not count; no rule reads it.
+- **They need a new species or body.** Only human faces are drawn (an `android` is drawn exactly as a human); this skill adds one accessory, not a species or a body.
 - **The joke does not resolve:** a rule, a real registry or Kleros fact, or the character's want must explain it. Characters cut on 26 Sep 2026 (the Toaster and others) come back only on those terms. No real people.
 
 ## 2. Decide validity against the ratios
@@ -32,32 +32,32 @@ Run `node ${CLAUDE_SKILL_DIR}/scripts/week.mjs`. Over the 20 seeds the tests use
 The targets (game-design.md):
 - Each day is 65 to 75% valid; day 1 is 3 of 5. The counts are fixed in `DAYS` (`src/gen/day.ts`) and a character never changes them: they take a fill-in's place, a fake's if invalid, a valid one's if valid.
 - Roughly half of the absurd cast appearances are valid (the test's floor is 40%). Appearance never gives the answer.
-- An invalid applicant has exactly one fault, on every day they appear, under every rule in force that day.
+- An invalid applicant has exactly one fault, on every day they appear, under every rule in force that day. A non-human (a machine, a generated person or avatar, a picture) breaks Rule 0 when its video shows it: skin open onto machinery in one frame, a face that changes between frames, three identical frames, or a generator's mark. It breaks one rule in all, like everyone, or Rule 0 and one of Rules 1 to 6 (the Agent, the Cutout), never more. Anything worn, painted or carried never counts under Rule 0: a costume is how they look, not what they are.
 - Each rule wants three kinds of offender and one valid look-alike. Say which this character is.
 
-If the requested validity would take the cast share under about 50% or a day out of its band, ask, with the numbers and the alternative (the other validity, or fewer appearances). Otherwise state the decision in one line before editing, e.g. "Toaster: invalid on day 6, breaks Living (no blink: frame 3 open, Blink detected: No). Cast valid 66% to 62%."
+If the requested validity would take the cast share under about 50% or a day out of its band, ask, with the numbers and the alternative (the other validity, or fewer appearances). Otherwise state the decision in one line before editing, e.g. "Toaster: invalid on day 6, breaks Living (no blink: no frame shows closed eyes). Cast valid 66% to 62%."
 
 ## 3. Content (`src/content/`)
 All humor lives here. Logic files get none.
-- **Form and lines** in `cast.ts`. A valid character is a `REGULARS` entry shaped like Brenda's: name, address, birth year, portrait, `videos`, seven `remarks` (one per appearance, so a week never repeats one) and both `exits`. An invalid character sits beside Gary's content (`GARY_FORM`, `GARY_DAYS`, `GARY_EXITS`): the lines for the days they appear, with the fault in them.
-- **Portrait** in `portraits.ts` (`CAST_PORTRAITS`), built from existing parts plus the new accessory. Its key becomes a `RegularId`, so an invalid character must be excluded from `RegularId` the way `'gary'` is.
+- **Form and lines** in `cast.ts`. A valid character is a `REGULARS` entry shaped like Brenda's: name, address, birth year, portrait, `videos`, seven `remarks` (a regular comes once a week, and the seed picks which one they say) and both `exits`. An invalid character sits beside the Likeness units' content (`UNITS`, `UNIT_EXITS`): the lines for the days they appear, with the fault in the evidence, never in the lines.
+- **Portrait** in `portraits.ts` (`CAST_PORTRAITS`), built from existing parts plus the new accessory. Add the id to `CastId` in `cast.ts`, and to `RegularId` (a written-out list) only if the character is valid.
 - **Court line** in `verdicts.ts` (`CAST_RULINGS`, which the typecheck demands): why they were right if valid, what the court found if invalid.
-- **UI hooks:** follow the typecheck. `Shift.tsx` picks exit lines by cast id and `Screens.tsx` court lines; every place that special-cases `'gary'` is a place to check.
-- **What the tests enforce:** every video fits two lines of 60 characters; a valid video passes every rule in force (it says the phrase word for word); no remark repeats within a week; nobody's name or address clashes with a fill-in's (a character outside `REGULARS` goes into the `used` set at the top of `generateWeek`).
+- **UI hooks:** follow the typecheck. `Shift.tsx` picks exit lines by cast id and `src/ui/week.ts` (`courtNote`) court lines; every place that special-cases `'unit'` is a place to check.
+- **What the tests enforce:** every video fits two lines of 60 characters; a valid video passes every rule in force (it says the phrase word for word); no remark repeats within a week; nobody's name or address clashes with a fill-in's (a character outside `REGULARS` goes into `CAST_NAMES` in `day.ts`, which `planWeek` reserves).
 - Don't add `REMARKS.accessory` lines for the new accessory. Fill-ins never wear it, so the "can all come up" test would fail. The character's own remarks may mention it.
 - **Tone:** deadpan and sincere. They want the income or the stamp and never do a bit. No memes, crypto slang or chatbot phrasing. Check each line against the seven tests in "Writing the jokes".
 
 ## 4. Generator variant (`src/gen/`)
 - **Valid:** the `REGULARS` entry is the variant. `generateWeek` already rotates regulars through the week.
-- **Invalid:** a function beside `garyOn` in `day.ts` that builds them on their day or days, with `planted: [{ rule, mistake }]` naming exactly the fault and the clue in visible data (e.g. `video.blinked: false`). They replace one of the day's fake fill-ins (`plan.fakes - gary.length - ...`), so the day's ratio holds. Scripted appearances belong in the first half of the queue.
-- If no invalid character besides Gary has a pattern yet, or `Planted` cannot describe the fault, the generator's API changes: show the smallest change and ask before writing it (AGENTS.md).
+- **Invalid:** a function beside `unitOn` in `day.ts` that builds them on their day or days, with `planted: [{ rule, mistake }]` naming exactly the fault and the clue in visible data (e.g. `video.blinked: false`). They replace one of the day's fake fill-ins (the day's fixed fakes are counted against `plan.fakes`), so the day's ratio holds. Scripted appearances belong in the first half of the queue.
+- If no invalid character besides the units has a pattern yet, or `Planted` cannot describe the fault, the generator's API changes: show the smallest change and ask before writing it (AGENTS.md).
 - Pure and seeded: no `Math.random`, `Date.now` or `performance.now` (the purity test checks).
-- If the code has moved on (slice 3 adds rules, Pat, Socrates on day 6), follow the pattern it uses now. The constraints still hold.
+- If the code has moved on (slice 3 adds rules, Pat, the units, Socrates before day 6), follow the pattern it uses now. The constraints still hold.
 
 ## 5. Portrait accessory (`src/gen/`)
 - Append the name to `ACCESSORIES` in `portrait.ts`. `generatePortrait` never rolls it (fill-ins wear only glasses, earrings and pearls).
 - Colours go in `PROPS` in `portraitParts.ts`, with a stamp there if it is pixel art.
-- Draw it in `drawAccessories` (`drawPortrait.ts`), placed from the anchors (`eyeY`, `browY`, `mouthY`, `chin`, `head`, `neckHalf`) so it fits any head, raccoons included. The test wants at least 4 visible pixels on 60 random heads and on Gary.
+- Draw it in `drawAccessories` (`drawPortrait.ts`), placed from the anchors (`eyeY`, `browY`, `mouthY`, `chin`, `head`, `neckHalf`) so it fits any head. The test wants at least 4 visible pixels on 60 random heads and on the unit faces.
 - Never cover the eyes or the mouth: every cast portrait must still show a blink and an open mouth (tested).
 - Self-made only. Anything external must be CC0 and listed in `public/assets/LICENSES.md`.
 - The accessory is how they look, not the proof. Unless the rule is about the photo, it is not the clue.

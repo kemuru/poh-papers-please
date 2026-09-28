@@ -1,11 +1,12 @@
 // Rasterises a Portrait into a 40x48 pixel image. Pure: the same spec and pose
-// always give the same pixels, and nothing here is random. Each species draws its
-// head and returns anchors (eye, brow and mouth rows...); everything worn is placed
-// from those anchors, so any accessory fits any head.
+// always give the same pixels, and nothing here is random. The head is drawn first
+// and returns anchors (eye, brow and mouth rows...); everything worn is placed from
+// those anchors, so any accessory fits any head. An android is drawn as a human:
+// nothing in its face gives it away, except, in one video frame, an open panel.
 import type { Accessory, HairStyle, HeadShape, Pose, Portrait } from './portrait';
 import {
-  BROWS, CLOTH, EYES, EYE_WHITE, FAKE_MUSTACHE, FONT, FUR, HAIR, INK, IRIS, MOUTHS, MOUTH_INSIDE, MOUTH_OPEN,
-  NOSES, PROPS, RACCOON, SKIN, SLEEP_MASK_EYE, SWEAT_DROP, TEETH, type Ramp,
+  BROWS, CLOTH, EYES, EYE_WHITE, HAIR, INK, IRIS, MOUTHS, MOUTH_INSIDE, MOUTH_OPEN,
+  NOSES, PROPS, SKIN, SLEEP_MASK_EYE, SWEAT_DROP, TEETH, type Ramp,
 } from './portraitParts';
 
 export const PORTRAIT_WIDTH = 40;
@@ -17,7 +18,7 @@ export type PixelImage = { width: number; height: number; pixels: (string | null
 export function drawPortrait(portrait: Portrait, pose: Partial<Pose> = {}): PixelImage {
   const c: Canvas = new Array(W * H).fill(null);
   const p: Pose = { eyes: 'open', mouth: 'closed', ...pose };
-  const a = portrait.species === 'raccoon' ? drawRaccoon(c, portrait, p) : drawHuman(c, portrait, p);
+  const a = drawHuman(c, portrait, p);
   drawAccessories(c, portrait, a);
   return { width: W, height: H, pixels: c };
 }
@@ -44,7 +45,7 @@ type Anchors = {
   /** Top row of the mouth. */
   mouthY: number;
   neckHalf: number;
-  /** Exposed skin or fur: neck, hands, bare shoulders. */
+  /** Exposed skin: neck, hands, bare shoulders. */
   skin: Ramp;
 };
 
@@ -59,7 +60,6 @@ const has = (m: Mask, x: number, y: number) => x >= 0 && x < W && y >= 0 && y < 
 const union = (...ms: Mask[]) => ms.reduce((out, m) => out.map((v, i) => v | m[i]), new Uint8Array(W * H));
 const within = (a: Mask, b: Mask) => a.map((v, i) => v & b[i]);
 const minus = (a: Mask, b: Mask) => a.map((v, i) => v & (1 - b[i]));
-const shift = (m: Mask, dx: number, dy: number) => mask((x, y) => has(m, x - dx, y - dy));
 const mirror = (m: Mask) => mask((x, y) => has(m, W - 1 - x, y));
 const sym = (m: Mask) => union(m, mirror(m));
 /** The 1px border just outside m. 4-connected, so diagonal edges stay thin. */
@@ -135,26 +135,6 @@ const line = (c: Canvas, x0: number, y0: number, x1: number, y1: number, color: 
     dot(c, Math.round(x0 + ((x1 - x0) * i) / steps), Math.round(y0 + ((y1 - y0) * i) / steps), color);
   }
 };
-const textWidth = (s: string) => s.length * 4 - 1;
-const text = (c: Canvas, s: string, x: number, y: number, color: string) => {
-  [...s].forEach((ch, i) => {
-    const glyph = FONT[ch] ?? FONT[' '];
-    for (let row = 0; row < 5; row++) {
-      for (let col = 0; col < 3; col++) if (Number(glyph[row]) & (4 >> col)) dot(c, x + i * 4 + col, y + row, color);
-    }
-  });
-};
-/** Greedy word wrap into lines of at most `max` characters; overlong words are cut. */
-const wrap = (s: string, max: number) => {
-  const lines: string[] = [];
-  for (const word of s.toUpperCase().split(/\s+/).filter(Boolean)) {
-    const last = lines[lines.length - 1];
-    if (last !== undefined && last.length + 1 + word.length <= max) lines[lines.length - 1] = `${last} ${word}`;
-    else lines.push(word.slice(0, max));
-  }
-  return lines;
-};
-
 // ---------------------------------------------------------------- humans
 
 const HEADS: Record<HeadShape, { half: number; height: number; chin: number; jaw: 'round' | 'square' | 'taper' }> = {
@@ -423,42 +403,14 @@ function drawBody(c: Canvas, p: Portrait, a: Anchors) {
   }
 }
 
-// ---------------------------------------------------------------- raccoons
-
-function drawRaccoon(c: Canvas, p: Portrait, pose: Pose): Anchors {
-  const eyeY = 19;
-  const head = union(ellipse(CX, 21.5, 11, 10.5), sym(triangle(10, 20, 5, 26, 11, 28)));
-  const a: Anchors = { head, top: 11, chin: 31, eyeY, eyeL: 13, eyeW: 3, browY: 17, mouthY: 24, neckHalf: 5, skin: FUR.grey };
-  drawBody(c, p, a);
-  if (p.outfit === 'trenchcoat') {
-    // The second raccoon, peering out between the lapels.
-    paint(c, coatGap, FUR.mask);
-    paint(c, sym(box(CX - 3, 41, CX - 2, 41)), FUR.light.base);
-    paint(c, sym(box(CX - 2, 43, CX - 2, 43)), FUR.light.hi);
-  }
-  const ear = ellipse(12.5, 12, 3.2, 4.2);
-  solid(c, sym(ear), FUR.grey);
-  paint(c, sym(ellipse(12.5, 13, 1.6, 2.6)), FUR.deep);
-  solid(c, head, FUR.grey);
-  paint(c, box(CX - 1, 12, CX, eyeY - 3), FUR.grey.lo);
-  paint(c, within(sym(ellipse(CX - 5.5, eyeY - 2.5, 3.5, 1.5)), head), FUR.light.base);
-  paint(c, within(head, rows(eyeY + 3, eyeY + 8)), FUR.light.lo);
-  paint(c, within(head, ellipse(CX, eyeY + 6.5, 5.5, 4)), FUR.light.base);
-  const bandit = mask((x, y) => {
-    const d = fromMid(x);
-    if (d < 1) return y >= eyeY + 1 && y <= eyeY + 2;
-    if (d < 7) return y >= eyeY - 1 && y <= eyeY + 2;
-    return y >= eyeY && y <= eyeY + (d < 9 ? 4 : 3);
-  });
-  paint(c, within(head, bandit), FUR.mask);
-  const colors = { d: FUR.eye, g: FUR.light.hi, h: FUR.grey.hi, k: FUR.nose, m: MOUTH_INSIDE };
-  pair(c, pose.eyes === 'closed' ? RACCOON.eyeClosed : RACCOON.eyeOpen, a.eyeL, eyeY, colors);
-  centred(c, RACCOON.nose, eyeY + 1, { ...colors, g: FUR.noseShine });
-  centred(c, pose.mouth === 'open' ? RACCOON.mouthOpen : RACCOON.mouth, a.mouthY, colors);
-  return a;
-}
-
 // ---------------------------------------------------------------- accessories
+
+/** The first row with anything drawn down the middle: the top of the hair, or of the head. */
+function topRow(c: Canvas) {
+  let top = 0;
+  while (top < H - 1 && c.slice(top * W + CX - 4, top * W + CX + 4).every((px) => px === null)) top++;
+  return top;
+}
 
 function drawAccessories(c: Canvas, p: Portrait, a: Anchors) {
   const wears = (item: Accessory) => p.accessories.includes(item);
@@ -480,24 +432,6 @@ function drawAccessories(c: Canvas, p: Portrait, a: Anchors) {
       dot(c, x, y, x % 2 === 0 ? PROPS.pearl : INK); // dark string between pearls reads on any collar
     }
   }
-  if (wears('fake-beard')) {
-    const hole = box(CX - 3, a.mouthY, CX + 2, a.mouthY + 2);
-    const jaw = rowHalf(a.head, a.mouthY - 1) + 1;
-    const beard = minus(
-      mask((x, y) => y >= a.mouthY - 1 && y <= a.chin + 4 && fromMid(x) <= Math.min(jaw, jaw * 1.4 - (y - a.mouthY) * 1.1)),
-      hole,
-    );
-    const from = Math.round(CX - jaw) + 1;
-    const to = Math.round(CX - side) - 1;
-    line(c, from, a.mouthY - 1, to, a.eyeY, PROPS.elastic);
-    line(c, W - 1 - from, a.mouthY - 1, W - 1 - to, a.eyeY, PROPS.elastic);
-    paint(c, ring(union(beard, hole)), INK);
-    paint(c, beard, PROPS.fakeHair.base);
-    paint(c, within(beard, curlDots), PROPS.fakeHair.hi);
-  }
-  if (wears('fake-mustache')) {
-    centred(c, FAKE_MUSTACHE, a.mouthY - 3, { k: PROPS.fakeHair.base, h: PROPS.fakeHair.hi });
-  }
   if (wears('glasses')) {
     const { eyeL: l, eyeW: w, eyeY: y } = a;
     paint(c, sym(minus(box(l - 1, y - 1, l + w, y + 2), box(l, y, l + w - 1, y + 1))), PROPS.frame);
@@ -515,35 +449,56 @@ function drawAccessories(c: Canvas, p: Portrait, a: Anchors) {
     paint(c, within(rim, edge(lens, 1, 1)), PROPS.gold.lo);
     for (let y = my + 4; y <= 41; y++) dot(c, Math.floor(mx) - 3 - Math.floor((y - my - 4) / 3), y, y % 2 ? PROPS.gold.base : PROPS.gold.lo);
   }
-  if (wears('wig')) {
-    const wig = shift(cap(a, 2, a.browY - 3, a.chin - 2), 1, 0); // askew by a pixel, as wigs are
-    solid(c, wig, PROPS.wig);
-    paint(c, within(minus(wig, edge(wig, 1, 1)), curlDots), PROPS.wig.lo);
-  }
+  // A hat sits on the head, over any hair piled high, rather than off the top of the frame.
+  const hatTop = () => Math.max(topRow(c), a.top - 4);
   if (wears('top-hat')) {
-    let top = 0;
-    while (top < H - 1 && c.slice(top * W + CX - 4, top * W + CX + 4).every((px) => px === null)) top++;
-    const brim = top + 2;
+    const brim = hatTop() + 2;
     solid(c, box(CX - 6, brim - 8, CX + 5, brim - 1), PROPS.hat);
     paint(c, box(CX - 6, brim - 2, CX + 5, brim - 1), PROPS.hatBand);
     solid(c, box(CX - 9, brim, CX + 8, brim + 1), PROPS.hat);
   }
-  if (p.nameTag) {
-    const label = p.nameTag.toUpperCase().slice(0, 8);
-    const w = Math.max(textWidth(label), 11) + 4;
-    const x0 = Math.min(W - w - 1, CX - 2);
-    const tag = box(x0, 37, x0 + w - 1, 46);
-    paint(c, ring(tag), INK);
-    paint(c, tag, PROPS.paper);
-    paint(c, box(x0, 37, x0 + w - 1, 38), PROPS.tagRed);
-    text(c, label, x0 + Math.floor((w - textWidth(label)) / 2), 40, INK);
+  if (wears('flat-cap') || wears('bobble-hat')) {
+    const top = hatTop();
+    const half = rowHalf(a.head, Math.min(a.browY, top + 6)) + 1;
+    const crown = within(ellipse(CX, top + 5, half + 1, 6.5), rows(top - 2, top + 4));
+    if (wears('flat-cap')) {
+      solid(c, union(crown, box(CX - half - 1, top + 4, CX + half + 3, top + 5)), PROPS.tweed);
+      paint(c, box(CX - half, top + 3, CX + half + 2, top + 3), PROPS.tweed.lo);
+    } else {
+      const hat = union(crown, box(CX - half - 1, top + 3, CX + half, top + 5));
+      solid(c, hat, PROPS.knit);
+      paint(c, within(hat, mask((x, y) => y >= top + 3 && x % 2 === 0)), PROPS.knit.lo);
+      solid(c, ellipse(CX, top - 3, 2.6, 2.4), PROPS.bobble);
+    }
   }
-  if (p.sign) {
-    const board = box(2, 34, 37, 47);
-    solid(c, board, PROPS.cardboard);
-    const lines = wrap(p.sign, 8).slice(0, 2);
-    lines.forEach((l, i) => text(c, l, CX - Math.floor(textWidth(l) / 2), (lines.length === 1 ? 39 : 36) + i * 6, INK));
-    solid(c, sym(ellipse(4, 35, 2.2, 2)), a.skin);
+  if (p.board === 'phone') {
+    // A phone held up in both hands, the address on its lit screen, too small to read in the frame.
+    paint(c, box(12, 33, 27, 47), PROPS.phone.body);
+    paint(c, box(14, 35, 25, 45), PROPS.phone.screen);
+    paint(c, within(box(15, 37, 24, 43), mask((x, y) => (y === 37 || y === 40 || y === 43) && (x * 5 + y) % 6 !== 0)), INK);
+    solid(c, sym(ellipse(12, 41, 2.2, 2)), a.skin);
+  } else if (p.board) {
+    const board = box(4, 35, 35, 47);
+    solid(c, board, p.board === 'qr' ? { hi: PROPS.paper, base: PROPS.paper, lo: PROPS.paper } : PROPS.cardboard);
+    if (p.board === 'qr') {
+      // Three corner squares and a pattern of dots, as on any square of dots.
+      for (const [x0, y0] of [[7, 36], [28, 36]]) paint(c, minus(box(x0, y0, x0 + 4, y0 + 4), box(x0 + 1, y0 + 1, x0 + 3, y0 + 3)), INK);
+      paint(c, minus(box(7, 42, 11, 46), box(8, 43, 10, 45)), INK);
+      paint(c, within(box(14, 36, 26, 46), mask((x, y) => (x * 7 + y * 13) % 5 < 2)), INK);
+    } else {
+      paint(c, within(box(7, 38, 32, 44), mask((x, y) => (y === 38 || y === 41 || y === 44) && (x * 5 + y) % 7 !== 0)), INK);
+    }
+    solid(c, sym(ellipse(4, 36, 2.2, 2)), a.skin);
+  }
+  if (wears('robot-helmet')) {
+    // A party costume's robot head, carried under the arm on the viewer's right,
+    // in front of any sign. It is not a face.
+    const helmet = union(box(28, 38, 38, 47), box(29, 37, 37, 37));
+    solid(c, helmet, PROPS.helmet);
+    paint(c, box(30, 40, 36, 42), PROPS.helmet.visor);
+    dot(c, 31, 40, PROPS.helmet.hi);
+    paint(c, box(33, 34, 33, 36), PROPS.helmet.lo);
+    dot(c, 33, 33, PROPS.helmet.bulb);
   }
   if (wears('sleep-mask')) {
     // Pushed up off the eyes, onto the forehead; the strap goes round the back of the head.
@@ -562,5 +517,30 @@ function drawAccessories(c: Canvas, p: Portrait, a: Anchors) {
     const half = rowHalf(a.head, a.browY);
     stamp(c, SWEAT_DROP, Math.round(CX - half) - 2, a.browY - 3, colors);
     stamp(c, SWEAT_DROP, Math.round(CX + half) - 1, a.browY - 1, colors);
+  }
+  if (p.panel) {
+    // A unit's tell, in one frame: the skin stands open onto a circuit board, on the cheek under the eye
+    // or low on the other side by the jaw. That is bare skin on every face whatever the hair, clear of
+    // the eyes, the nose and the mouth, so it cannot pass for anything worn. Machine colours no face or
+    // hair uses, a dark edge for light skin and the lifted flap's pale edge along the top for dark skin:
+    // it reads on every face, in any colour vision.
+    const [x, y] = p.panel === 'cheek' ? [CX + 4, a.eyeY + 5] : [CX - 8, a.eyeY + 6];
+    const onFace = (m: Mask) => within(m, a.head);
+    paint(c, onFace(ring(box(x, y, x + 3, y + 2))), PROPS.machine.edge);
+    paint(c, onFace(box(x - 1, y - 1, x + 4, y - 1)), PROPS.machine.flap);
+    paint(c, onFace(box(x, y, x + 3, y + 2)), PROPS.machine.board);
+    paint(c, onFace(box(x + 1, y + 1, x + 2, y + 1)), PROPS.machine.chip);
+    for (const px of [x, x + 2]) paint(c, onFace(box(px, y, px, y)), PROPS.machine.pin);
+    paint(c, onFace(box(x + 3, y + 2, x + 3, y + 2)), PROPS.machine.light);
+  }
+  if (p.mark) {
+    // A four-pointed sparkle in the top corner, outlined so it shows on any hair or background.
+    const star = mask((x, y) => {
+      const dx = Math.abs(x - 35);
+      const dy = Math.abs(y - 4);
+      return (dx === 0 && dy <= 3) || (dy === 0 && dx <= 3) || dx + dy <= 1;
+    });
+    paint(c, grow(star, 1), PROPS.markEdge);
+    paint(c, star, PROPS.pearl);
   }
 }

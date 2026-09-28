@@ -1,7 +1,13 @@
 /* The waiting hall above the booth: a pixel-art scene and the announcement board. */
 
+/* The hall gives way before the desk does: on a short or wide window the room is drawn smaller,
+   and the papers, stamps and notes below always have their full height. */
 .hall {
   position: relative;
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  min-height: 0;
   overflow: hidden;
   background: #8f9a83;
   border-bottom: 3px solid #121410;
@@ -9,8 +15,10 @@
 
 .hall-scene {
   display: block;
+  flex: 0 1 auto;
   width: 100%;
   height: auto;
+  min-height: 140px;
   max-height: 230px;
   /* On a wide stage the scene stops growing and the room carries on past its edges. */
   overflow: visible;
@@ -98,25 +106,6 @@
   }
 }
 
-.tail {
-  transform-box: fill-box;
-  transform-origin: top center;
-  animation: sway 3.4s ease-in-out infinite alternate;
-}
-
-@keyframes sway {
-  from {
-    transform: rotate(-9deg);
-  }
-  to {
-    transform: rotate(9deg);
-  }
-}
-
-.glint {
-  animation: blink 4s steps(1) infinite;
-}
-
 .drip {
   animation: drip 1.7s linear infinite;
 }
@@ -161,6 +150,7 @@
 
 /* The announcement board: a plain sign in dim amber, lit up while the PA reads an announcement. */
 .pa {
+  flex-shrink: 0;
   overflow: hidden;
   padding: 4px 16px;
   background: #0c0d0a;

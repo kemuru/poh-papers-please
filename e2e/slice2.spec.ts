@@ -9,7 +9,10 @@ const shot = (page: Page, name: string) =>
 
 /** Calls the next applicant and stamps them; `wrong` stamps the opposite of what the rulebook says. */
 async function stampNext(page: Page, wrong = false) {
+  const before = (await game(page)).called;
   await page.getByRole('button', { name: 'Call next applicant' }).click();
+  // After a citation the call waits for the slip to be seen, so wait for it too.
+  await expect.poll(async () => (await game(page)).called).toBe(before + 1);
   const { queue, called } = await game(page);
   const valid = queue[called - 1].planted.length === 0;
   await page.getByRole('button', { name: valid !== wrong ? 'Accept' : 'Challenge' }).click();
@@ -41,10 +44,10 @@ test('the same seed gives the same queue, with the day table’s count', async (
 test('a full day: the court hears the challenges, the statement adds up, savings carry to day 2', async ({ page }) => {
   await page.goto('/?seed=7&day=1');
   await page.getByRole('button', { name: /Open the window/ }).click();
-  // Seed 1, day 1: a valid applicant first, then a fake. Challenge the first (a mistake) and
-  // register the second (another), then do the rest by the rulebook.
+  // Day 1 is scripted (slice 3): a valid applicant, then Pat's "hooman", then the day's robot, then two valid.
+  // Challenge the first (a mistake) and register the second (another), then do the rest by the rulebook.
   const { queue } = await game(page);
-  expect(queue.map((a) => a.planted.length > 0)).toEqual([false, true, false, false, true]);
+  expect(queue.map((a) => a.planted.length > 0)).toEqual([false, true, true, false, false]);
   await stampNext(page, true);
   await stampNext(page, true);
   await expect(page.getByTestId('citation')).toContainText('Warning only');
@@ -60,7 +63,7 @@ test('a full day: the court hears the challenges, the statement adds up, savings
   await expect(rulings.nth(0)).toContainText('Challenge dismissed');
   await expect(rulings.nth(0)).toContainText(queue[0].name);
   await expect(rulings.nth(1)).toContainText('Challenge upheld');
-  await expect(rulings.nth(1)).toContainText('Gary Mann');
+  await expect(rulings.nth(1)).toContainText('Clara Voss');
   await shot(page, 'court.png');
 
   await page.getByRole('button', { name: /To the accounts/ }).click();
@@ -84,15 +87,16 @@ test('a full day: the court hears the challenges, the statement adds up, savings
 test('the first fake registered each day is a warning; the next is a fine', async ({ page }) => {
   await page.goto('/?seed=7&day=1');
   await page.getByRole('button', { name: /Open the window/ }).click();
+  // Day 1: valid, Pat, the robot, valid, valid. Register Pat (the warning), then the robot (the fine).
   await stampNext(page);
   await stampNext(page, true);
   await expect(page.getByTestId('citation')).toHaveAttribute('data-variant', 'warning');
-  await stampNext(page);
-  await stampNext(page);
   await stampNext(page, true);
   await expect(page.getByTestId('citation')).toHaveAttribute('data-variant', 'fine');
   await expect(page.getByTestId('citation')).toContainText('Fine: 20 PNK');
   await shot(page, 'citation-fine.png');
+  await stampNext(page);
+  await stampNext(page);
   await page.getByRole('button', { name: /End shift/ }).click();
   await page.getByRole('button', { name: /To the accounts/ }).click();
   await expect(page.getByRole('region', { name: 'Statement' })).toContainText('Citations: 1 warning, 1 fine');
@@ -180,6 +184,46 @@ test('mouse and keyboard mix: the sound button keeps no focus, and the stamps re
   await page.keyboard.press('a');
   await page.keyboard.press('c');
   expect(await game(page)).toEqual(before);
+});
+
+test('a stamp comes down when pressed, not when let go, once; a focused stamp still answers Enter', async ({ page }) => {
+  await page.goto('/?seed=1&day=1');
+  await page.getByRole('button', { name: /Open the window/ }).click();
+  await page.keyboard.press('Space');
+  await expect.poll(async () => (await game(page)).called).toBe(1);
+  const box = (await page.getByRole('button', { name: 'Accept' }).boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await expect.poll(async () => (await game(page)).decided.length).toBe(1);
+  await page.mouse.up();
+  // Letting go stamps nothing more, here or on whoever is called next.
+  await page.keyboard.press('Space');
+  await expect.poll(async () => (await game(page)).called).toBe(2);
+  expect((await game(page)).decided).toHaveLength(1);
+  // With no pointer, a focused stamp answers the keyboard, once.
+  await page.getByRole('button', { name: 'Challenge' }).focus();
+  await page.keyboard.press('Enter');
+  await expect.poll(async () => (await game(page)).decided[1]?.decision).toBe('challenge');
+  expect((await game(page)).decided).toHaveLength(2);
+});
+
+test('the lever pulled straight after a wrong stamp is kept until the citation is out, then calls the next applicant', async ({ page }) => {
+  await page.goto('/?seed=1&day=1');
+  await page.getByRole('button', { name: /Open the window/ }).click();
+  await page.keyboard.press('Space');
+  await expect.poll(async () => (await game(page)).called).toBe(1);
+  await page.keyboard.press('a');
+  await page.keyboard.press('Space');
+  await expect.poll(async () => (await game(page)).called).toBe(2);
+  // The second applicant of day 1 says "hooman": accepted, and the lever pulled at once.
+  expect((await game(page)).queue[1].planted).not.toEqual([]);
+  await page.keyboard.press('a');
+  await page.keyboard.press('Space');
+  expect((await game(page)).called).toBe(2);
+  await expect(page.getByTestId('citation')).toBeVisible();
+  expect((await game(page)).called).toBe(2);
+  // Then the pull goes through by itself: not a dead press.
+  await expect.poll(async () => (await game(page)).called, { timeout: 5000 }).toBe(3);
 });
 
 test('a sheet dragged over the printer lies on top of it, while held and once dropped', async ({ page }) => {

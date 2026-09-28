@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { CAST_PORTRAITS, GARY, GARY_DISGUISES } from '../content/portraits';
-import { ACCESSORIES, generatePortrait, type Portrait } from '../gen/portrait';
+import { CAST_PORTRAITS, UNIT_FACES, UNIT_PANELS } from '../content/portraits';
+import { ACCESSORIES, generatePortrait, PANEL_SPOTS } from '../gen/portrait';
 import { PixelPortrait } from './PixelPortrait';
 
 // Development page (open /?portraits): browse seeds, poses, accessories and the cast.
@@ -51,12 +51,11 @@ export function PortraitGallery() {
               <PixelPortrait portrait={{ ...portrait, accessories: [item] }} scale={2} background={PHOTO_BG} />
             </Tile>
           ))}
-          <Tile label="name tag">
-            <PixelPortrait portrait={{ ...portrait, nameTag: 'HUMAN' }} scale={2} background={PHOTO_BG} />
-          </Tile>
-          <Tile label="sign">
-            <PixelPortrait portrait={{ ...portrait, sign: 'NOT RACCOONS' }} scale={2} background={PHOTO_BG} />
-          </Tile>
+          {PANEL_SPOTS.map((spot) => (
+            <Tile key={spot} label={`open panel: ${spot}`}>
+              <PixelPortrait portrait={{ ...portrait, panel: spot }} scale={2} background={VIDEO_BG} />
+            </Tile>
+          ))}
         </Row>
       </section>
 
@@ -69,13 +68,17 @@ export function PortraitGallery() {
             </Tile>
           ))}
         </Row>
-        <h3>Gary&apos;s disguises</h3>
+        <h3>The Likeness units, days 1 to 6, and the panel each opens in the game</h3>
         <Row>
-          {GARY_DISGUISES.map((disguise, i) => (
-            <Tile key={i} label={describe({ ...GARY, ...disguise })}>
-              <PixelPortrait portrait={{ ...GARY, ...disguise }} scale={3} background={PHOTO_BG} />
-            </Tile>
-          ))}
+          {UNIT_FACES.map((face, i) => {
+            const panel = UNIT_PANELS[i];
+            return (
+              <Tile key={i} label={panel ? `day ${i + 1}: ${panel.where}, frame ${panel.frame}` : `day ${i + 1}: no panel`}>
+                <PixelPortrait portrait={face} scale={3} background={PHOTO_BG} />
+                {panel && <PixelPortrait portrait={{ ...face, panel: panel.where }} scale={3} background={VIDEO_BG} />}
+              </Tile>
+            );
+          })}
         </Row>
       </section>
 
@@ -91,10 +94,6 @@ export function PortraitGallery() {
       </section>
     </main>
   );
-}
-
-function describe(p: Portrait) {
-  return [...p.accessories, p.nameTag && `tag "${p.nameTag}"`, p.sign && `sign "${p.sign}"`].filter(Boolean).join(', ');
 }
 
 function Row({ children }: { children: ReactNode }) {

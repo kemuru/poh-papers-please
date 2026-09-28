@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { CAST_PORTRAITS, GARY, GARY_DISGUISES } from '../content/portraits';
+import { CAST_PORTRAITS, UNIT_FACES, UNIT_PANELS } from '../content/portraits';
 import { drawPortrait, PORTRAIT_HEIGHT, PORTRAIT_WIDTH, type PixelImage } from './drawPortrait';
+import { PROPS, SKIN } from './portraitParts';
 import {
   ACCESSORIES, AGES, BROW_STYLES, EAR_STYLES, EYE_COLORS, EYE_STYLES, FACIAL_HAIR, generatePortrait,
-  HAIR_COLORS, HAIR_STYLES, HEAD_SHAPES, MARKS, MOUTH_STYLES, NOSE_STYLES, OUTFIT_COLORS, OUTFITS,
+  HAIR_COLORS, HAIR_STYLES, HEAD_SHAPES, MARKS, MOUTH_STYLES, NOSE_STYLES, OUTFIT_COLORS, OUTFITS, PANEL_SPOTS,
   SKIN_TONES, type Portrait,
 } from './portrait';
 
@@ -15,8 +16,7 @@ const changed = (a: PixelImage, b: PixelImage) =>
 const rowSpan = (points: { y: number }[]) => Math.max(...points.map((p) => p.y)) - Math.min(...points.map((p) => p.y)) + 1;
 
 const randomPeople = seeds(300).map(generatePortrait);
-const gary = GARY_DISGUISES.map((disguise) => ({ ...GARY, ...disguise }));
-const everyone: Portrait[] = [...randomPeople, ...Object.values(CAST_PORTRAITS), ...gary];
+const everyone: Portrait[] = [...randomPeople, ...Object.values(CAST_PORTRAITS), ...UNIT_FACES];
 
 describe('generatePortrait', () => {
   it('gives the same portrait for the same seed', () => {
@@ -52,8 +52,9 @@ describe('generatePortrait', () => {
     for (const p of randomPeople) {
       expect(p.species).toBe('human');
       expect(p.outfit).not.toBe('toga');
-      expect(p.nameTag).toBeUndefined();
-      expect(p.sign).toBeUndefined();
+      expect(p.panel).toBeUndefined();
+      expect(p.board).toBeUndefined();
+      expect(p.mark).toBeUndefined();
       for (const item of p.accessories) expect(['glasses', 'earrings', 'pearls']).toContain(item);
     }
   });
@@ -80,7 +81,7 @@ describe('drawPortrait', () => {
   });
 
   it('does not modify the portrait it draws', () => {
-    for (const p of [...randomPeople.slice(0, 20), ...gary]) {
+    for (const p of [...randomPeople.slice(0, 20), ...UNIT_FACES]) {
       const before = structuredClone(p);
       drawPortrait(p, { eyes: 'closed', mouth: 'open' });
       expect(p).toEqual(before);
@@ -105,19 +106,62 @@ describe('drawPortrait', () => {
   });
 
   it('makes every accessory visible on every kind of head', () => {
-    for (const p of [...randomPeople.slice(0, 60), GARY]) {
+    for (const p of [...randomPeople.slice(0, 60), ...UNIT_FACES]) {
       const plain = drawPortrait({ ...p, accessories: [] });
       for (const item of ACCESSORIES) {
         expect(changed(plain, drawPortrait({ ...p, accessories: [item] })).length, item).toBeGreaterThanOrEqual(4);
       }
-      expect(changed(plain, drawPortrait({ ...p, accessories: [], nameTag: 'HUMAN' })).length).toBeGreaterThan(100);
-      expect(changed(plain, drawPortrait({ ...p, accessories: [], sign: 'NOT RACCOONS' })).length).toBeGreaterThan(300);
     }
   });
 
-  it("changes Gary's photo visibly with every disguise", () => {
-    const plain = drawPortrait(GARY);
-    for (const disguised of gary) expect(changed(plain, drawPortrait(disguised)).length).toBeGreaterThanOrEqual(20);
+  it('draws an android exactly as a human: nothing in its face gives it away', () => {
+    for (const face of UNIT_FACES) expect(key(drawPortrait(face))).toBe(key(drawPortrait({ ...face, species: 'human' })));
+  });
+
+  // The tell must read without colour: some part of it contrasts 3:1 or more with every skin tone.
+  it("draws a unit's open panel that reads on every skin tone, in any colour vision", () => {
+    const luminance = (hex: string) => {
+      const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const contrast = (a: string, b: string) => {
+      const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+      return (hi + 0.05) / (lo + 0.05);
+    };
+    for (const [tone, skin] of Object.entries(SKIN)) {
+      const best = Math.max(contrast(PROPS.machine.edge, skin.base), contrast(PROPS.machine.flap, skin.base));
+      expect(best, tone).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it("shows a unit's open panel at every spot, on every unit and on random heads, and nowhere else", () => {
+    for (const p of [...UNIT_FACES, ...randomPeople.slice(0, 40)]) {
+      for (const spot of PANEL_SPOTS) {
+        for (const pose of [{}, { eyes: 'closed' as const }, { mouth: 'open' as const }]) {
+          const diff = changed(drawPortrait(p, pose), drawPortrait({ ...p, panel: spot }, pose));
+          expect(diff.length, spot).toBeGreaterThanOrEqual(16);
+          expect(rowSpan(diff), spot).toBeLessThanOrEqual(5);
+        }
+      }
+    }
+  });
+
+  it("opens each day's unit on bare skin, whole: no eye, brow, nose, mouth, hair or clothing under it, so it cannot pass for anything worn", () => {
+    let opened = 0;
+    UNIT_FACES.forEach((p, d) => {
+      const panel = UNIT_PANELS[d];
+      if (!panel) return;
+      opened++;
+      const skin = SKIN[p.face.skin];
+      const bare = new Set([skin.hi, skin.base, skin.lo, skin.deep]);
+      for (const pose of [{}, { eyes: 'closed' as const }, { mouth: 'open' as const }]) {
+        const before = drawPortrait(p, pose);
+        const diff = changed(before, drawPortrait({ ...p, panel: panel.where }, pose));
+        expect(diff.length, `day ${d + 1}`).toBe(28);
+        for (const { x, y } of diff) expect(bare.has(before.pixels[y * before.width + x]!), `day ${d + 1} at ${x},${y}`).toBe(true);
+      }
+    });
+    expect(opened).toBe(4);
   });
 
   it('matches the golden images', () => {
@@ -132,6 +176,6 @@ describe('drawPortrait', () => {
       return Array.from({ length: img.height }, (_, y) => img.pixels.slice(y * img.width, (y + 1) * img.width).map(char).join(''));
     };
     expect(ascii(drawPortrait(generatePortrait(1)))).toMatchSnapshot();
-    expect(ascii(drawPortrait({ ...GARY, sign: 'NOT RACCOONS' }, { eyes: 'closed' }))).toMatchSnapshot();
+    expect(ascii(drawPortrait({ ...UNIT_FACES[0], panel: UNIT_PANELS[0]!.where }, { mouth: 'open' }))).toMatchSnapshot();
   });
 });

@@ -125,9 +125,9 @@ kbd {
 
 .station {
   display: grid;
-  flex: 1;
+  /* Never shorter than what is on the desk: the hall above makes the room. */
+  flex: 1 0 auto;
   grid-template-columns: 300px minmax(0, 1fr);
-  min-height: 0;
 }
 
 /* ------------------------------------------------------------ the booth */
@@ -662,6 +662,7 @@ kbd {
 }
 
 .photo {
+  display: inline-block;
   flex: none;
   padding: 5px;
   background: var(--paper-light);
@@ -809,16 +810,6 @@ kbd {
   color: var(--ink-soft);
 }
 
-.blink {
-  margin: 9px 0 0;
-  font-size: 13px;
-}
-
-.blink .label {
-  display: inline;
-  margin: 0 6px 0 0;
-}
-
 /* The rulebook: a booklet with a spine. */
 .rulebook {
   padding-left: 22px;
@@ -918,6 +909,11 @@ kbd {
   animation: printer-buzz 0.75s 0.25s steps(9);
 }
 
+/* A citation waits a beat after the stamp, in silence (--citation-beat, from CITATION_BEAT_MS in Shift.tsx). */
+.desk-papers.printing.citing::before {
+  animation-delay: var(--citation-beat);
+}
+
 @keyframes printer-buzz {
   50% {
     translate: -50% 1px;
@@ -947,6 +943,10 @@ kbd {
   line-height: 1.4;
   box-shadow: 0 6px 14px rgb(0 0 0 / 40%);
   animation: print 0.75s 0.25s steps(9) both;
+}
+
+.slip.slip-citation {
+  animation-delay: var(--citation-beat);
 }
 
 .slip header {
@@ -1239,4 +1239,566 @@ mark {
 .photo svg {
   width: 100px;
   height: 120px;
+}
+
+/* ------------------------------------------------------------ slice 3: the week's new tools */
+
+/* A selfie taken in the bathroom mirror: the photo is the face the other way round. */
+.photo.mirrored svg {
+  transform: scaleX(-1);
+}
+
+.photo-holder,
+.rule-holder,
+.transcript-holder,
+.record-holder,
+.sign-holder {
+  display: block;
+}
+
+.photo-holder {
+  flex: none;
+}
+
+.inspectable {
+  position: relative;
+  border-radius: 3px;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition: outline-color 0.12s, background-color 0.12s;
+}
+
+.desk.inspecting .inspectable.on {
+  cursor: zoom-in;
+  outline: 2px dashed rgb(242 201 76 / 55%);
+}
+
+.desk.inspecting .inspectable.on:hover,
+.desk.inspecting .inspectable.on:focus-visible {
+  outline-color: var(--marker);
+}
+
+.inspectable.picked {
+  outline: 3px solid var(--marker) !important;
+  background-color: rgb(242 201 76 / 18%);
+}
+
+.inspectable.flagged {
+  outline: 3px solid var(--challenge) !important;
+  background-color: rgb(154 47 42 / 12%);
+  animation: flag 0.35s ease-out;
+}
+
+@keyframes flag {
+  30% {
+    outline-offset: 6px;
+  }
+}
+
+/* Inspecting stops the papers sliding about under the magnifier. */
+.desk.inspecting .paper {
+  cursor: default;
+}
+
+/* Above every sheet, however often one is picked up (topPaper in Desk.tsx counts up from 100). */
+.inspector {
+  position: absolute;
+  z-index: 100000;
+  left: 12px;
+  right: 12px;
+  bottom: 8px;
+  margin: 0;
+  padding: 7px 11px;
+  border-radius: 3px;
+  background: rgb(20 22 17 / 92%);
+  box-shadow: 0 3px 10px rgb(0 0 0 / 45%);
+  color: #e9e3cf;
+  font-family: var(--official);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  pointer-events: none;
+}
+
+.inspector-found {
+  color: #fff;
+  background: rgb(122 34 30 / 95%);
+}
+
+.inspector-none {
+  color: #ffd98c;
+}
+
+.inspector-hint,
+.inspector-tip {
+  color: #20251c;
+  background: var(--marker);
+}
+
+.inspect-tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 104px;
+  padding: 7px 6px;
+  border: 2px solid #8e959b;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #4d5046, #34372f);
+  color: #e9e3cf;
+  font-family: var(--official);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.inspect-tool kbd {
+  color: #d8d2c0;
+}
+
+.inspect-tool.on {
+  border-color: var(--marker);
+  background: linear-gradient(180deg, #6d6230, #4b4322);
+  color: #fff4cf;
+}
+
+.inspect-tool.hint {
+  animation: hint 1.2s ease-in-out infinite;
+}
+
+@keyframes hint {
+  50% {
+    box-shadow: 0 0 0 5px rgb(242 201 76 / 55%);
+  }
+}
+
+.inspect-glass {
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  box-shadow: 5px 5px 0 -3.5px currentColor;
+}
+
+/* The video printout: the film, and the sign enlarged beside it. */
+.video-row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.frame-picture {
+  display: block;
+}
+
+.frame.pair .frame-picture {
+  display: flex;
+}
+
+.frame.pair .frame-picture svg {
+  width: 50%;
+}
+
+.sign-holder {
+  flex: 1;
+  min-width: 0;
+}
+
+.sign-still {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  padding: 7px 9px;
+  background: var(--paper-light);
+  border: 1px solid var(--rule-line);
+}
+
+.sign-text {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  padding: 6px 8px;
+  background: #d9bd8c;
+  box-shadow: inset 0 0 0 1px #9f7f50;
+  color: #1f1b18;
+  /* Marker capitals, one clear face: every character can be read against the form. */
+  font-family: var(--typewriter);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+}
+
+/* The same address on a phone: a lit screen in a dark case. */
+.sign-text.phone {
+  padding: 8px 9px;
+  border: 5px solid #23262b;
+  border-radius: 7px;
+  background: #cfe3ea;
+  box-shadow: none;
+}
+
+.sign-none {
+  color: var(--ink-soft);
+  font-style: italic;
+  font-size: 13px;
+}
+
+.qr {
+  display: block;
+  width: 64px;
+  height: 64px;
+  background:
+    linear-gradient(#1f1b18 0 0) 0 0 / 18px 18px no-repeat,
+    linear-gradient(#1f1b18 0 0) 100% 0 / 18px 18px no-repeat,
+    linear-gradient(#1f1b18 0 0) 0 100% / 18px 18px no-repeat,
+    conic-gradient(#1f1b18 25%, #fff 0 50%, #1f1b18 0 75%, #fff 0) 0 0 / 8px 8px,
+    #fff;
+  box-shadow: 0 0 0 5px #fff, 0 0 0 6px #9c9480;
+  margin: 6px;
+}
+
+/* The rulebook's pages: a tab per rule in force, the new one marked. */
+.rule-tabs {
+  display: flex;
+  gap: 4px;
+  margin: -2px 0 9px;
+}
+
+.rule-tab {
+  position: relative;
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid #a89f88;
+  border-radius: 3px 3px 0 0;
+  background: #ddd6c2;
+  color: var(--ink-soft);
+  font-family: var(--official);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rule-tab[aria-selected='true'] {
+  background: var(--paper-light);
+  border-bottom-color: var(--paper-light);
+  color: var(--ink);
+}
+
+.rule-tab.new::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--challenge);
+}
+
+.rule-new {
+  margin-left: 8px;
+  padding: 1px 5px;
+  border: 1px solid var(--challenge);
+  color: var(--challenge);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: 2px;
+  white-space: nowrap;
+}
+
+.rule-checks {
+  margin: 0 0 8px;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+/* The side of the desk holds the rulebook and, from day 4, the registry terminal. */
+.side-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: -10px;
+}
+
+.side-tabs button {
+  flex: 1;
+  padding: 5px 0;
+  border: 0;
+  border-radius: 4px 4px 0 0;
+  background: #2a2c24;
+  color: #a39d8a;
+  font-family: var(--official);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.side-tabs button[aria-selected='true'] {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.paper[hidden] {
+  display: none;
+}
+
+.registry {
+  font-size: 13px;
+}
+
+.lookup-form {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 6px;
+}
+
+.lookup-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 6px;
+  border: 1px solid #9c9480;
+  background: var(--paper-light);
+  font: inherit;
+}
+
+.lookup-form button,
+.lookup-quick button {
+  padding: 4px 7px;
+  border: 1px solid #6e6754;
+  border-radius: 3px;
+  background: #d8d0b8;
+  color: var(--ink);
+  font-family: var(--official);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/* A lookup beside what it looks up: small, labelled, with its key. */
+.doc-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.doc-head .doc-title {
+  flex: 1;
+}
+
+.lookup-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 24px;
+  margin-left: 8px;
+  padding: 2px 6px;
+  border: 1px solid #6e6754;
+  border-radius: 3px;
+  background: #d8d0b8;
+  color: var(--ink);
+  font-family: var(--official);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.doc-head .lookup-chip {
+  margin: -5px 0 0;
+}
+
+.lookup-chip:hover {
+  background: #e6dfca;
+}
+
+.lookup-chip:focus-visible {
+  outline: 3px solid var(--marker);
+  outline-offset: 2px;
+}
+
+.lookup-chip kbd,
+.lookup-quick kbd {
+  font-size: 9px;
+}
+
+.lookup-result .searched {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.lookup-quick {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.lookup-quick button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.lookup-result {
+  min-height: 90px;
+  padding: 7px;
+  background: #1c201b;
+  color: #b9e3a8;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.lookup-result p {
+  margin: 0 0 5px;
+}
+
+.record {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.record-face {
+  flex: none;
+  line-height: 0;
+}
+
+.record dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 1px 7px;
+  margin: 0;
+}
+
+.record dt {
+  color: #7fa872;
+  text-transform: uppercase;
+  font-size: 10px;
+  padding-top: 1px;
+}
+
+.record dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The morning paper, on the blotter until the window opens. */
+.gazette,
+.welcome {
+  margin: 14px 8px auto;
+  padding: 14px 18px 16px;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgb(255 255 255 / 30%), transparent 60%),
+    #e8e2cf;
+  box-shadow: 0 2px 0 #b9b19a, 0 10px 22px rgb(0 0 0 / 45%);
+  rotate: -0.6deg;
+  animation: land 0.45s both;
+}
+
+.gazette-mast {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 6px;
+  border-bottom: 3px double var(--ink);
+  font-family: var(--official);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gazette-mast h2 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 26px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.gazette-headline {
+  margin: 10px 0 10px;
+  font-family: var(--official);
+  font-size: 22px;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+
+.gazette-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.gazette-columns p {
+  margin: 0 0 6px;
+}
+
+.gazette-notice {
+  padding-left: 12px;
+  border-left: 1px solid var(--rule-line);
+}
+
+.gazette-notice h4 {
+  margin: 0 0 4px;
+  font-family: var(--official);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gazette-foot {
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid var(--ink);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+.gazette-foot p {
+  margin: 0 0 4px;
+}
+
+.gazette-small {
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+.welcome {
+  background: var(--paper-light);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.welcome h2 {
+  margin: 0 0 10px;
+  font-family: var(--official);
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.welcome p {
+  margin: 0 0 9px;
+}
+
+.welcome-sign {
+  color: var(--pen);
+  font-family: var(--hand);
+  font-size: 16px;
+  text-align: right;
 }

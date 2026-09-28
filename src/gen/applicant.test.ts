@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { ASIDES, NOISE, PHRASE_MISTAKES, REMARKS, SLIPS } from '../content/applicants';
-import { GARY_DAYS, REGULARS } from '../content/cast';
+import { REGULARS } from '../content/cast';
 import { PHRASE, spokenWords } from '../rules/phrase';
-import { generateApplicant, type GeneratedApplicant } from './applicant';
+import { generateApplicant, type GeneratedApplicant, type PhraseMistake } from './applicant';
 
 const seeds = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
 // Three in ten are fakes, as on a real day (the day's queue decides who; see day.test.ts).
@@ -68,7 +68,7 @@ describe('generateApplicant', () => {
   });
 
   it('chatters about as often whether valid or not, so chatter is never a tell', () => {
-    const lines = (a: GeneratedApplicant) => (a.planted.length > 0 ? PHRASE_MISTAKES[a.planted[0].mistake] : [PHRASE]);
+    const lines = (a: GeneratedApplicant) => (a.planted.length > 0 ? PHRASE_MISTAKES[a.planted[0].mistake as PhraseMistake] : [PHRASE]);
     const share = (people: GeneratedApplicant[], test: (a: GeneratedApplicant) => boolean) => {
       const talking = people.filter((a) => a.video.transcript !== '');
       return talking.filter(test).length / talking.length;
@@ -173,7 +173,7 @@ describe('transcripts', () => {
 
   // game-design.md: at most two lines. The transcript box in desk.css is 60 characters wide.
   it('fit on two lines of the video strip', () => {
-    const cast = [...Object.values(REGULARS).flatMap((r) => r.videos), ...GARY_DAYS.map((g) => g.video)];
+    const cast = Object.values(REGULARS).flatMap((r) => r.videos);
     const generated = day.map((a) => a.video.transcript);
     for (const line of [PHRASE, ...Object.values(PHRASE_MISTAKES).flat(), ...cast, ...generated]) {
       expect(wrap(line, 60).length, line).toBeLessThanOrEqual(2);

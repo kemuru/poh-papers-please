@@ -122,9 +122,8 @@ function Speech({ text, voice }: { text: string; voice: number[] | null }) {
   );
 }
 
-/** Everyone has their own voice: higher for the young, lower for the old. Gary talks in three, taking turns. */
+/** Everyone has their own voice: higher for the young, lower for the old. */
 function voiceOf(a: GeneratedApplicant): number[] {
-  if (a.cast === 'gary') return [190, 250, 310];
   let hash = 0;
   for (const ch of a.name) hash = (Math.imul(hash, 31) + ch.charCodeAt(0)) >>> 0;
   return [{ young: 330, adult: 250, old: 200 }[a.photo.face.age] * (0.9 + (hash % 20) / 100)];

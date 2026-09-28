@@ -52,3 +52,34 @@ test('a court that hears ten challenges still fits a small laptop window', async
   await expect(rulings).toHaveCount(10);
   await fitsIn(page, 1280, 700, [...(await rulings.all()), page.getByRole('button', { name: /To the accounts/ })]);
 });
+
+// A 13-inch laptop's browser window, with and without the Dock, and a wide, short one: the
+// hall gives way, and the desk keeps everything down to its bottom edge.
+for (const [width, height] of [
+  [1288, 704],
+  [1470, 830],
+  [1280, 640],
+] as const) {
+  test(`the tutorial desk, hint and supervisor's note included, fits a ${width}×${height} window`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await page.goto('/?seed=1&day=1');
+    await page.getByRole('button', { name: /Open the window/ }).click();
+    await page.getByRole('button', { name: 'Call next applicant' }).click();
+    await page.getByRole('button', { name: 'Accept' }).click();
+    await page.getByRole('button', { name: 'Call next applicant' }).click();
+    const hint = page.getByText('This one needs a closer look. Press INSPECT.');
+    await expect(hint).toBeVisible();
+    await fitsIn(page, width, height, [
+      page.getByRole('img', { name: /The waiting hall/ }),
+      page.getByRole('button', { name: 'Call next applicant' }),
+      page.getByRole('region', { name: 'Profile card' }),
+      page.getByTestId('transcript'),
+      hint,
+      page.getByRole('button', { name: 'Inspect', exact: true }),
+      page.getByRole('button', { name: 'Accept' }),
+      page.getByRole('button', { name: 'Challenge' }),
+      page.getByRole('region', { name: 'Rulebook' }),
+      page.locator('.sticky'),
+    ]);
+  });
+}

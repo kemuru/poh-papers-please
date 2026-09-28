@@ -129,8 +129,3 @@ export const WET_FLOOR: Sprite = {
   palette: { y: '#e2b93b', d: '#8a6a1a', k: INK },
 };
 
-/** Hanging out of the ceiling. Nobody has mentioned it. */
-export const TAIL: Sprite = {
-  rows: ['.gg.', '.kk.', 'gggg', 'kkkk', 'gggg', 'kkkk', 'gggg', 'kkkk', '.gk.', '..k.'],
-  palette: { g: '#8e9198', k: '#302f35' },
-};

@@ -2,13 +2,15 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 
 // Slice 1 acceptance (notes/acceptance.md) on the slice 2 desk: one applicant at the window,
 // the phrase rule, Accept or Challenge. Fixed seeds; each test first checks that its seed still
-// gives the applicant it expects.
+// gives the applicant it expects. From slice 3, days 2 to 6 open with the day's new rule being
+// tested (by the day's robot, Pat, or someone who only looks as if they break it), and fakes who slip on the
+// phrase only open day 7.
 const PHRASE = 'I certify that I am a real human and that I am not already registered in this registry.';
-const CHATTY = '?seed=496735&day=3'; // first up: "Ahem.", an aside, and "I'm" for "I am": all fine
+const CHATTY = '?seed=2155315&day=3'; // first up: "Ahem.", an aside, and "I'm" for "I am": all fine
 const CHATTY_SAYS = "Ahem. I certify that I am, you know, a real human and that I'm not already registered in this registry.";
-const HOOMAN = '?seed=34573&day=6'; // first up: "Take two." then the phrase with "hang on" in it, and "hooman"
+const HOOMAN = '?seed=2333944&day=7'; // first up: "Take two." then the phrase with "hang on" in it, and "hooman"
 const HOOMAN_SAYS = 'Take two. I certify that I am a real, hang on, hooman and that I am not already registered in this registry.';
-const SILENT = '?seed=18&day=2'; // first up: says nothing
+const SILENT = '?seed=8&day=7'; // first up: says nothing
 
 const game = (page: Page) => page.evaluate(() => window.__game!);
 

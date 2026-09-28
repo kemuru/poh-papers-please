@@ -3,10 +3,9 @@ import { ANNOUNCEMENTS, BANNER, BOARD, POSTERS } from '../content/hall';
 import type { GeneratedApplicant } from '../gen/applicant';
 import { drawPortrait, type PixelImage } from '../gen/drawPortrait';
 import { generatePortrait } from '../gen/portrait';
-import { GARY } from '../content/portraits';
 import { pixelPaths } from './PixelPortrait';
 import { pa } from './sound';
-import { BUCKET, PIGEON, PLANTS, spriteImage, TAIL, textImage, WET_FLOOR, wrapWords } from './sprites';
+import { BUCKET, PIGEON, PLANTS, spriteImage, textImage, WET_FLOOR, wrapWords } from './sprites';
 
 // The waiting hall, seen from Window 3: the day's queue behind the railing, and a ministry that
 // comes apart a little more each day. Pure decoration; nothing here is evidence.
@@ -25,10 +24,7 @@ const BEYOND = 400;
 const PIGEON_IMG = spriteImage(PIGEON);
 const BUCKET_IMG = spriteImage(BUCKET);
 const WET_FLOOR_IMG = spriteImage(WET_FLOOR);
-const TAIL_IMG = spriteImage(TAIL);
 const PLANT_IMG = { fresh: spriteImage(PLANTS.fresh), droopy: spriteImage(PLANTS.droopy), dead: spriteImage(PLANTS.dead) };
-/** Not in the queue. Just sitting. */
-const BENCH_RACCOON = drawPortrait({ ...GARY, outfit: 'sweater', outfitColor: 'mustard' });
 
 type Props = {
   /** The week's seed: whoever sits on the bench today depends on it. */
@@ -201,11 +197,6 @@ function Ceiling({ day }: { day: number }) {
       {day >= 4 && (
         <g>
           <rect x={400} y={1} width={18} height={9} fill="#0b0c09" />
-          {day >= 5 && <rect className="glint" x={405} y={4} width={1} height={1} fill="#f1f0e0" />}
-          {day >= 5 && <rect className="glint" x={410} y={4} width={1} height={1} fill="#f1f0e0" />}
-          <g className="tail">
-            <Pixels image={TAIL_IMG} x={412} y={9} />
-          </g>
         </g>
       )}
     </g>
@@ -330,14 +321,13 @@ function Poster({ x, text }: { x: number; text: string }) {
   );
 }
 
-/** Someone waiting for Window 2, which has other plans. From day 6 a raccoon waits with them. */
+/** Someone waiting for Window 2, which has other plans. */
 function Bench({ seed, day }: { seed: number; day: number }) {
   const sitter = useMemo(() => drawPortrait(generatePortrait(Math.imul(seed, 97) + day)), [seed, day]);
   // A pew with a solid back, like the queue's railing: whoever sits on it shows from the chin up.
   return (
     <g>
-      <Pixels image={sitter} x={day >= 6 ? 610 : 628} y={35} />
-      {day >= 6 && <Pixels image={BENCH_RACCOON} x={648} y={35} />}
+      <Pixels image={sitter} x={628} y={35} />
       <rect x={604} y={67} width={88} height={3} fill="#8a7356" />
       <rect x={604} y={70} width={88} height={15} fill="#6d5a43" />
       {[614, 626, 638, 650, 662, 674, 686].map((x) => (

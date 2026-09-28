@@ -113,7 +113,7 @@ describe('the day 1 phrase rule', () => {
       heard: ['hooman'],
       expected: ['human'],
     });
-    expect(unmatched('I certify that I am a real human and that I am, Doug, stop it, already registered in this registry.')).toEqual({
+    expect(unmatched('I certify that I am a real human and that I am, sorry, one moment, already registered in this registry.')).toEqual({
       heard: [],
       expected: ['not'],
     });

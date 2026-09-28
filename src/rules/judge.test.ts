@@ -16,7 +16,7 @@ const applicant = (transcript: string): Applicant => ({
 
 describe('rulebookForDay', () => {
   it('has the phrase rule from day 1', () => {
-    expect(rulebookForDay(1)).toEqual(['phrase']);
+    expect(rulebookForDay(1)).toEqual(['human', 'phrase']);
   });
 });
 

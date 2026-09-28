@@ -8,9 +8,49 @@ import { generatePortrait, weighted, type Age, type Portrait } from './portrait'
 import { createRng, type Rng } from './rng';
 
 export type PhraseMistake = 'wrong-word' | 'missing-words' | 'silence' | 'quiet-word';
-export type Planted = { rule: RuleId; mistake: PhraseMistake };
-/** An applicant with the truth attached: what was planted, and who of the recurring cast they are. */
-export type GeneratedApplicant = Applicant & { planted: Planted[]; cast: CastId | null };
+
+/** Every kind of fault the generator plants, by the rule it breaks. */
+export type Mistakes = {
+  /** A unit, whose skin stands open onto machinery in one frame; the Deepfake, whose ears change between frames; the Cutout, a picture held up; the Agent, a generated video. */
+  human: 'machine' | 'deepfake' | 'printed' | 'generated';
+  phrase: PhraseMistake;
+  /** Someone else's face; a mirror selfie; a beauty filter. */
+  photo: 'another-face' | 'mirrored' | 'filter';
+  /** Two characters wrong; no sign; a QR code; someone else's address. */
+  sign: 'two-wrong' | 'no-sign' | 'qr' | 'wrong-address';
+  /** Vouched for by a company (a unit's maker); by someone not registered; by someone already vouching today. */
+  vouch: 'company' | 'unregistered' | 'busy';
+  /** The Sybil Farm's later cousins; your clone; a unit whose factory face Window 7 registered; a registrant back in a hat. */
+  duplicate: 'farm' | 'clone' | 'unit' | 'back-in-a-hat';
+  /** Born before 1900; a version number for a year; a typo in the year; no blink. */
+  living: 'ancient' | 'version' | 'year-typo' | 'no-blink';
+};
+
+/** Every kind of valid applicant built to look like they break a rule. */
+export type LookAlikes = {
+  /** Dave, a man in a robot costume, its head under his arm. */
+  human: 'costume';
+  phrase: never;
+  photo: 'new-look';
+  /** One character wrong; the address on a phone's screen. */
+  sign: 'one-wrong' | 'phone';
+  vouch: 'ethel' | 'week-registrant';
+  duplicate: 'first-cousin' | 'twin';
+  living: 'very-old' | 'blinks-a-lot';
+};
+
+export type Planted = { [R in RuleId]: { rule: R; mistake: Mistakes[R] } }[RuleId];
+export type LookAlike = { [R in RuleId]: { rule: R; kind: LookAlikes[R] } }[RuleId];
+
+/**
+ * An applicant with the truth attached: what was planted (under correct play: the registry as it
+ * would stand if the clerk made no mistakes), who of the recurring cast they are, and which rule,
+ * if any, they were built to look as if they break.
+ */
+export type GeneratedApplicant = Applicant & { planted: Planted[]; cast: CastId | null; lookAlike?: LookAlike };
+
+/** An ordinary member of the public as first rolled: if they get anything wrong, it is the phrase. */
+export type FillIn = GeneratedApplicant & { planted: Extract<Planted, { rule: 'phrase' }>[] };
 
 /** Fakes: mostly clear slips, about one in three a quiet one-word change. */
 const MISTAKES: readonly (readonly [PhraseMistake, number])[] = [
@@ -45,7 +85,7 @@ type Options = {
 };
 
 /** An ordinary member of the public, who says the phrase (with or without chatter) or gets it wrong. */
-export function generateApplicant(seed: number, { fake, day = 1, used = new Set() }: Options): GeneratedApplicant {
+export function generateApplicant(seed: number, { fake, day = 1, used = new Set() }: Options): FillIn {
   const rng = createRng(seed);
   // The portrait gets its own seed so its features are independent of everything rolled here.
   const photo = generatePortrait(rng.int(0, 0xffffffff));

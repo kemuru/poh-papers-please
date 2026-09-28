@@ -3,7 +3,8 @@
 // recurring cast by hand. drawPortrait() (drawPortrait.ts) turns a spec into pixels.
 import { createRng, type Rng } from './rng';
 
-export const SPECIES = ['human', 'raccoon'] as const;
+/** An android is a home robot with a human face: drawn as a human, and the same face only as another android. */
+export const SPECIES = ['human', 'android'] as const;
 export const SKIN_TONES = ['porcelain', 'rose', 'sand', 'olive', 'tan', 'brown', 'umber', 'ebony'] as const;
 export const HEAD_SHAPES = ['oval', 'round', 'square', 'long', 'heart', 'wide'] as const;
 export const EYE_STYLES = ['round', 'almond', 'narrow', 'wide', 'tired', 'beady'] as const;
@@ -29,8 +30,10 @@ export const OUTFIT_COLORS = [
   'beige', 'khaki', 'brown', 'plum', 'forest', 'white',
 ] as const;
 export const ACCESSORIES = [
-  'glasses', 'monocle', 'earrings', 'pearls', 'fake-mustache', 'fake-beard', 'wig', 'top-hat', 'sweat', 'sleep-mask',
+  'glasses', 'monocle', 'earrings', 'pearls', 'top-hat', 'sweat', 'sleep-mask', 'flat-cap', 'bobble-hat', 'robot-helmet',
 ] as const;
+/** Where a unit's skin stands open in one video frame. */
+export const PANEL_SPOTS = ['cheek', 'jaw'] as const;
 
 export type Species = (typeof SPECIES)[number];
 export type SkinTone = (typeof SKIN_TONES)[number];
@@ -49,11 +52,11 @@ export type FacialHair = (typeof FACIAL_HAIR)[number];
 export type Outfit = (typeof OUTFITS)[number];
 export type OutfitColor = (typeof OUTFIT_COLORS)[number];
 export type Accessory = (typeof ACCESSORIES)[number];
+export type PanelSpot = (typeof PANEL_SPOTS)[number];
 
 /**
  * The features that make someone recognisable. Hair, clothes and accessories
- * live outside it, so a disguise or a new haircut keeps the same face.
- * Non-human species ignore most of these fields.
+ * live outside it, so a hat or a new haircut keeps the same face.
  */
 export type Face = {
   skin: SkinTone;
@@ -77,10 +80,12 @@ export type Portrait = {
   outfit: Outfit;
   outfitColor: OutfitColor;
   accessories: Accessory[];
-  /** Text on a sticker worn on the chest. */
-  nameTag?: string;
-  /** Text on a cardboard sign held in front of the chest. */
-  sign?: string;
+  /** Held up in a video: a board of handwriting too small to read in the frame, a square of dots, or a phone. */
+  board?: 'writing' | 'qr' | 'phone';
+  /** A video generator's mark, in the top corner of a generated video's frames. */
+  mark?: true;
+  /** In one video frame of a unit: the skin here stands open onto machinery. */
+  panel?: PanelSpot;
 };
 
 /** What changes between video frames. A profile photo uses the defaults. */
@@ -103,7 +108,7 @@ const OUTFIT_TABLE: Table<Outfit> = [
   ['tshirt', 4], ['shirt', 3], ['suit', 2], ['sweater', 3], ['hoodie', 2], ['turtleneck', 1], ['trenchcoat', 0.5],
 ];
 
-/** An ordinary member of the public. Never generates disguises, props or togas; those are cast content. */
+/** An ordinary member of the public. Never generates costumes, props or togas; those are cast content. */
 export function generatePortrait(seed: number): Portrait {
   const rng = createRng(seed);
   const age = weighted<Age>(rng, [['young', 3], ['adult', 5], ['old', 2]]);

@@ -12,7 +12,7 @@ So the rediscovery baseline is not shaped by what the course teaches.
 
 ## Ambition note (PDF page 2)
 **Three ideas I postponed and what stopped me:**
-1. Videogames: I saw them as too time-intensive to code, same for making the visuals.
+1. Videogames: I saw them as too time-intensive to code, same for making the visuals/soundtracks.
 2. 
 3. 
 

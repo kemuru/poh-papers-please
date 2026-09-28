@@ -1,71 +1,193 @@
-import { useEffect, useRef, useState, type Dispatch } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type Dispatch } from 'react';
 import { EXITS } from '../content/applicants';
-import { GARY_EXITS, REGULARS } from '../content/cast';
+import { AGENT, CLONE, CUTOUT, DEEPFAKE, FIRST_APPLICANT, INFLUENCER, PAT, PAT_MOTHER, REGULARS, SYBIL_FARM, TWINS, UNIT_EXITS, type CastId } from '../content/cast';
+import { INSPECT_LINES, NEW_TOOL_TIPS } from '../content/desk';
 import { WINDOW_LINES } from '../content/hall';
-import { citationFor, endDay } from '../economy/economy';
+import { RULEBOOK } from '../content/rulebook';
 import type { GeneratedApplicant } from '../gen/applicant';
 import { DAYS } from '../gen/day';
-import { decide, judge, rulebookForDay, type Decision } from '../rules/judge';
+import { inspect, sameItem, type Finding, type Item } from '../rules/inspect';
+import { judge, RULE_DAYS, rulebookForDay, type Decision } from '../rules/judge';
+import type { RuleId } from '../rules/types';
 import { Booth } from './Booth';
-import { Desk } from './Desk';
+import { Desk, type InspectView } from './Desk';
+import { evidenceLine, ruleName } from './evidence';
 import { atWindow, shiftOver, type Action, type GameState } from './week';
 import { Hall } from './Hall';
+import type { Lookup } from './Registry';
 import { pick } from './Slips';
-import { chime, closing, paper, printer, shutter, thunk, tick } from './sound';
+import { blip, chime, closing, paper, printer, shutter, thunk, tick } from './sound';
+
+/** How long the printer stays silent after a stamp before a citation comes out. desk.css reads it as --citation-beat. */
+const CITATION_BEAT_MS = 900;
+/** When a citation has been out long enough to be seen: the beat, the slip's print (.slip in desk.css), a moment. */
+const CITATION_SEEN_MS = CITATION_BEAT_MS + 750 + 600;
 
 /** The Ministry is open from 09:00 to 17:00, whatever the clock on the wall says about real time. */
 const OPENING_MINUTES = 8 * 60;
 
 export const caseNumber = (day: number, index: number) => `${day}-${String(index + 1).padStart(3, '0')}`;
 
+type ShiftProps = {
+  state: GameState;
+  queue: GeneratedApplicant[];
+  dispatch: Dispatch<Action>;
+  /** Seconds of the shift clock already used when the desk was set out: 0, unless picked up from a save. */
+  clock: number;
+  onClock: (seconds: number) => void;
+  /** The menu is open: the clock stops and the desk takes no keys. */
+  paused: boolean;
+  onMenu: () => void;
+};
+
 /** A day at Window 3: the hall, the booth and the desk, from opening the shutter to the last stamp. */
-export function Shift({ state, queue, dispatch }: { state: GameState; queue: GeneratedApplicant[]; dispatch: Dispatch<Action> }) {
+export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu }: ShiftProps) {
   const plan = DAYS[state.day - 1];
   const rulebook = rulebookForDay(state.day);
   const at = atWindow(state);
   const over = shiftOver(state);
-  const last = state.called - 1;
-  const papers = state.called > 0 ? queue[last] : null;
-  const lastDecision = state.decided[last] ?? null;
+  const lastIndex = state.called - 1;
+  const papers = state.called > 0 ? queue[lastIndex] : null;
+  const lastDecision = state.decided[lastIndex] ?? null;
   const leaving = papers !== null && (lastDecision !== null || state.timeUp);
   const canCall = state.opened && !over && at === null && state.called < queue.length;
 
-  const elapsed = useShiftClock(plan.shiftSeconds, state.opened && !over, () => dispatch({ type: 'time-up' }));
+  const elapsed = useShiftClock(plan.shiftSeconds, clock, state.opened && !over && !paused, () => dispatch({ type: 'time-up' }));
+  const reportClock = useRef(onClock);
+  reportClock.current = onClock;
+  useEffect(() => reportClock.current(elapsed), [elapsed]);
   const secondsLeft = plan.shiftSeconds === null ? null : Math.max(0, Math.ceil(plan.shiftSeconds - elapsed));
   // No clock on the easy days: the wall clock just follows the queue.
   const minutes =
     plan.shiftSeconds === null ? (state.decided.length / queue.length) * OPENING_MINUTES : (elapsed / plan.shiftSeconds) * OPENING_MINUTES;
   const serving = DAYS.slice(0, state.day - 1).reduce((sum, d) => sum + d.applicants, 0) + state.called;
 
+  // The rulebook falls open at the day's new rule; on Humanity Day, at Rule 1, after the cover rule.
+  const [page, setPage] = useState<RuleId>(rulebook.find((r) => RULE_DAYS[r] === state.day) ?? rulebook.find((r) => RULE_DAYS[r] === 1)!);
+  const [tab, setTab] = useState<'rulebook' | 'registry'>('rulebook');
+  const [inspecting, setInspecting] = useState(false);
+  const [picked, setPicked] = useState<Item | null>(null);
+  const [last, setLast] = useState<{ items: [Item, Item]; finding: Finding | null } | null>(null);
+  const [lookup, setLookup] = useState<Lookup | null>(null);
+  const [toolsUsed, setToolsUsed] = useState<Lookup['by'][]>([]);
+  // Each applicant starts with a clean desk: nothing picked, nothing found, nothing looked up.
+  const [visit, setVisit] = useState(state.called);
+  if (visit !== state.called) {
+    setVisit(state.called);
+    setPicked(null);
+    setLast(null);
+    setLookup(null);
+    setToolsUsed([]);
+  }
+
+  const pickItem = (item: Item) => {
+    if (at === null) return;
+    if (!picked) {
+      setPicked(item);
+      setLast(null);
+      tick();
+      return;
+    }
+    if (sameItem(picked, item)) return setPicked(null);
+    const finding = inspect(picked, item, queue[at], rulebook, state.registry);
+    setLast({ items: [picked, item], finding });
+    setPicked(null);
+    if (finding) blip(finding.inForce ? 180 : 320);
+    else tick();
+  };
+  // Inspecting needs someone at the window: with nobody there, nothing on the desk could answer.
+  const toggleInspect = () => {
+    if (at === null && !inspecting) return;
+    setInspecting((on) => !on);
+    setPicked(null);
+  };
+  const turnTo = (rule: RuleId) => {
+    if (!rulebook.includes(rule)) return;
+    setPage(rule);
+    setTab('rulebook');
+  };
+
+  const stampedAt = useRef(0);
   const decideNow = (decision: Decision) => {
     if (at === null || state.timeUp) return;
-    const outcome = decide(decision, judge(queue[at], rulebook, []));
-    const cases = [...state.decided, { decision, outcome }].map((d) => ({ decision: d.decision, correct: d.outcome.correct }));
-    dispatch({ type: 'decide', decided: { decision, outcome, citation: citationFor(cases, at) } });
+    dispatch({ type: 'decide', applicant: queue[at], decision });
+    stampedAt.current = performance.now();
+    setInspecting(false);
+    setPicked(null);
   };
-  const endShift = () => {
-    const cases = state.decided.map((d) => ({ decision: d.decision, correct: d.outcome.correct }));
-    dispatch({ type: 'close', end: endDay(state.savings, state.day, cases, state.seed) });
+  // A citation prints a beat after the stamp, and the next step waits for it: the lever pulled early
+  // goes through once the slip has been out a moment, so no citation is cleared away unseen.
+  const pending = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      if (pending.current !== null) window.clearTimeout(pending.current);
+    },
+    [],
+  );
+  const afterCitation = (step: () => void) => {
+    if (pending.current !== null) return;
+    const wait = lastDecision?.citation ? stampedAt.current + CITATION_SEEN_MS - performance.now() : 0;
+    if (wait <= 0) return step();
+    pending.current = window.setTimeout(() => {
+      pending.current = null;
+      step();
+    }, wait);
   };
+  const endShift = () => afterCitation(() => dispatch({ type: 'close', queue }));
+  const callNext = () => afterCitation(() => dispatch({ type: 'call' }));
   const lever = () => {
     if (!state.opened) dispatch({ type: 'open' });
     else if (over) endShift();
-    else if (canCall) dispatch({ type: 'call' });
+    else if (canCall) callNext();
   };
 
-  // Keyboard: Space pulls the lever, A and C are the stamps.
-  const keys = useRef({ lever, decideNow });
-  keys.current = { lever, decideNow };
+  // Escape leaves inspect mode; with nothing to leave, it opens the menu.
+  const escape = () => (inspecting ? toggleInspect() : onMenu());
+
+  // The registry answers about whoever is at the window, from the day the rule that needs it arrives:
+  // the voucher with Rule 4, the face with Rule 5. The answer opens its tab.
+  const lookupsOpen = state.day >= RULE_DAYS.vouch && at !== null && !state.timeUp;
+  const faceSearchOpen = lookupsOpen && state.day >= RULE_DAYS.duplicate;
+  const showLookup = (l: Lookup) => {
+    setLookup(l);
+    setToolsUsed((used) => (used.includes(l.by) ? used : [...used, l.by]));
+    setTab('registry');
+  };
+  const lookUp = (what: 'voucher' | 'face') => {
+    const voucher = at === null ? null : queue[at].voucher;
+    if (what === 'face') showLookup({ by: 'face' });
+    else if (voucher) showLookup({ by: 'name', name: voucher });
+  };
+
+  // Keyboard: Space pulls the lever, A and C are the stamps, I inspects, V and F look up the voucher
+  // and the face, 0 to 6 turn the rulebook's pages.
+  const keys = useRef({ lever, decideNow, toggleInspect, escape, turnTo, rulebook, paused, lookUp, lookups: lookupsOpen, faceSearch: faceSearchOpen });
+  keys.current = { lever, decideNow, toggleInspect, escape, turnTo, rulebook, paused, lookUp, lookups: lookupsOpen, faceSearch: faceSearchOpen };
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
-      const onButton = (e.target as HTMLElement).closest?.('button, a, input');
+      const target = e.target as HTMLElement;
+      // Typing a name into the registry is typing, not stamping; and nothing is stamped on a break.
+      if (target.closest?.('input, textarea, dialog') || keys.current.paused) return;
+      const onButton = target.closest?.('button, a, [role="button"]');
       const key = e.key.toLowerCase();
       if (key === ' ' && !onButton) {
         e.preventDefault();
         keys.current.lever();
       } else if (key === 'a') keys.current.decideNow('accept');
       else if (key === 'c') keys.current.decideNow('challenge');
+      else if (key === 'i') keys.current.toggleInspect();
+      else if (key === 'v' && keys.current.lookups) keys.current.lookUp('voucher');
+      else if (key === 'f' && keys.current.faceSearch) keys.current.lookUp('face');
+      else if (key === 'escape') {
+        // Handled here: the browser must not take the same press as a request to close the menu it opens.
+        e.preventDefault();
+        keys.current.escape();
+      }
+      else if (/^[0-6]$/.test(key)) {
+        const rule = keys.current.rulebook.find((r) => RULEBOOK[r].number === Number(key));
+        if (rule) keys.current.turnTo(rule);
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -82,7 +204,7 @@ export function Shift({ state, queue, dispatch }: { state: GameState; queue: Gen
   }, [over]);
 
   return (
-    <div className="shift">
+    <div className="shift" style={{ '--citation-beat': `${CITATION_BEAT_MS}ms` } as CSSProperties}>
       <Hall
         seed={state.seed}
         day={state.day}
@@ -110,7 +232,7 @@ export function Shift({ state, queue, dispatch }: { state: GameState; queue: Gen
           total={queue.length}
           canCall={canCall}
           onOpen={() => dispatch({ type: 'open' })}
-          onCall={() => dispatch({ type: 'call' })}
+          onCall={callNext}
           onEnd={endShift}
         />
         <Desk
@@ -118,12 +240,24 @@ export function Shift({ state, queue, dispatch }: { state: GameState; queue: Gen
           rulebook={rulebook}
           papers={papers}
           visit={state.called}
-          caseNo={caseNumber(state.day, Math.max(last, 0))}
+          caseNo={caseNumber(state.day, Math.max(lastIndex, 0))}
           decided={lastDecision}
           returning={leaving}
           canDecide={at !== null && !state.timeUp}
           onDecide={decideNow}
           filed={state.decided.filter((d) => d.decision === 'challenge').length}
+          opened={state.opened}
+          gazette={state.gazette}
+          registry={state.registry}
+          page={page}
+          onPage={turnTo}
+          inspect={inspectView(state, at, queue, inspecting, picked, last, toolsUsed)}
+          onInspect={toggleInspect}
+          onPick={pickItem}
+          lookup={lookup}
+          onLookup={showLookup}
+          tab={tab}
+          onTab={setTab}
         />
       </main>
     </div>
@@ -140,13 +274,63 @@ function speechAt(state: GameState, papers: GeneratedApplicant | null, decision:
   return WINDOW_LINES.empty;
 }
 
+/** What the cast say as they collect their papers. */
+const CAST_EXITS: Record<Exclude<CastId, keyof typeof REGULARS | 'twins'>, { accept: string; challenge: string }> = {
+  unit: UNIT_EXITS,
+  pat: PAT.exits,
+  patMother: PAT_MOTHER.exits,
+  sybilFarm: SYBIL_FARM.exits,
+  agent: AGENT.exits,
+  deepfake: DEEPFAKE.exits,
+  cutout: CUTOUT.exits,
+  clone: CLONE.exits,
+  influencer: INFLUENCER.exits,
+};
+
 /** What they say as they collect their papers. It never gives away whether the clerk was right. */
 function exitLine(a: GeneratedApplicant, decision: Decision): string {
-  if (a.cast === 'gary') return GARY_EXITS[decision];
-  if (a.cast) return REGULARS[a.cast].exits[decision];
+  if (a.cast === 'twins') return TWINS[a.name === TWINS[0].name ? 0 : 1].exits[decision];
+  if (a.cast && a.cast in REGULARS) return REGULARS[a.cast as keyof typeof REGULARS].exits[decision];
+  if (a.cast) return CAST_EXITS[a.cast as keyof typeof CAST_EXITS][decision];
+  if (a.name === FIRST_APPLICANT.name) return FIRST_APPLICANT.exits[decision];
   let hash = 0;
   for (const ch of a.name) hash = (Math.imul(hash, 31) + ch.charCodeAt(0)) >>> 0;
   return pick(EXITS[decision], hash);
+}
+
+/** What the strip along the bottom of the blotter says about inspecting. */
+function inspectView(
+  state: GameState,
+  at: number | null,
+  queue: GeneratedApplicant[],
+  on: boolean,
+  picked: Item | null,
+  last: { items: [Item, Item]; finding: Finding | null } | null,
+  toolsUsed: Lookup['by'][],
+): InspectView {
+  const flagged = last?.finding ? last.items : [];
+  const view = (message: string | null, tone: InspectView['tone'] = 'idle'): InspectView => ({ on, picked, flagged, message, tone });
+  // Day 1's second applicant is the one guided inspection of the week.
+  const tutorial = state.day === 1 && at === 1;
+  if (last?.finding) {
+    const { rule, inForce } = last.finding;
+    if (!inForce) return view(INSPECT_LINES.notInForce, 'none');
+    const found = judge(queue[at ?? 0], rulebookForDay(state.day), state.registry).violations.find((v) => v.rule === rule);
+    // A photo that is someone else is not the face in any frame: name the one the clerk pointed at.
+    const frame = last.items.find((item) => item.kind === 'frame');
+    const broke = found?.rule === 'photo' && !found.mirrored && frame?.kind === 'frame' ? { ...found, frame: frame.frame } : found;
+    const detail = broke ? ` ${evidenceLine(broke).replace(/^./, (c) => c.toUpperCase())}` : '';
+    return view(`${INSPECT_LINES.found} · ${ruleName(rule)}.${detail}${tutorial ? ` ${INSPECT_LINES.guidedFound}` : ''}`, 'found');
+  }
+  if (last) return view(INSPECT_LINES.agree, 'idle');
+  if (on && picked) return view(INSPECT_LINES.second);
+  if (on) return view(tutorial ? INSPECT_LINES.guidedPoint : INSPECT_LINES.point);
+  if (tutorial) return view(INSPECT_LINES.guidedHint, 'hint');
+  // The day a registry tool arrives with its rule, its first use is taught at the desk, on whoever comes first, until it is used.
+  const arriving = (['vouch', 'duplicate'] as const).find((rule) => RULE_DAYS[rule] === state.day);
+  const tip = arriving && NEW_TOOL_TIPS[arriving];
+  if (at === 0 && tip && !toolsUsed.includes(tip.tool)) return view(tip.text, 'tip');
+  return view(null);
 }
 
 const clockTime = (minutes: number) => {
@@ -154,9 +338,12 @@ const clockTime = (minutes: number) => {
   return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 };
 
-/** Real seconds since the window opened, paused while the tab is hidden. Calls onTimeUp once when the shift runs out. */
-function useShiftClock(limit: number | null, running: boolean, onTimeUp: () => void): number {
-  const [elapsed, setElapsed] = useState(0);
+/**
+ * Real seconds since the window opened, from `start`: paused while the tab is hidden or the menu is
+ * open. Calls onTimeUp once when the shift runs out.
+ */
+function useShiftClock(limit: number | null, start: number, running: boolean, onTimeUp: () => void): number {
+  const [elapsed, setElapsed] = useState(start);
   const timeUp = useRef(onTimeUp);
   timeUp.current = onTimeUp;
   useEffect(() => {
@@ -164,8 +351,9 @@ function useShiftClock(limit: number | null, running: boolean, onTimeUp: () => v
     let last = performance.now();
     const timer = setInterval(() => {
       const now = performance.now();
-      // Measured now: React may run the updater later, after `last` has moved on.
-      const seconds = (now - last) / 1000;
+      // Measured now: React may run the updater later, after `last` has moved on. A tick is a
+      // quarter of a second; a longer gap is a background tab or a sleeping laptop, not work time.
+      const seconds = Math.min(1, (now - last) / 1000);
       last = now;
       if (!document.hidden) setElapsed((e) => Math.min(limit, e + seconds));
     }, 250);
@@ -192,7 +380,9 @@ function useSounds(state: GameState, over: boolean, lastDecision: { citation: un
     }
     if (state.decided.length > before.decided) {
       thunk();
-      if (lastDecision?.citation || lastDecision?.decision === 'challenge') later(printer, 250);
+      // A case slip prints at once. A citation waits a beat, in silence, after the stamp: the moment the clerk knows.
+      if (lastDecision?.citation) later(printer, CITATION_BEAT_MS);
+      else if (lastDecision?.decision === 'challenge') later(printer, 250);
     }
     if (over && !before.over) {
       later(closing, 900);

@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { generateWeek } from '../gen/day';
+import { playDay } from '../court/court';
+import { generateWeek, morning, morningRegistry } from '../gen/day';
 import type { GeneratedApplicant } from '../gen/applicant';
 import { createRng, type Rng } from '../gen/rng';
-import { decide, judge, rulebookForDay, type Decision } from '../rules/judge';
+import type { Decision } from '../rules/judge';
 import { endDay, STARTING_SAVINGS, type Case, type DayEnd } from './economy';
 
 // acceptance.md, balance tests: 20 seeded weeks per bot, played through the same generator,
-// rule engine and economy as the game.
+// rule engine, court and economy as the game, against the registry the bot's own stamps build.
 const SEEDS = Array.from({ length: 20 }, (_, i) => i + 1);
 
 /** Decides a whole day's queue at once. */
@@ -40,12 +41,14 @@ function playWeek(seed: number, bot: Bot): Week {
   const rng = createRng(seed * 7919);
   const days: DayEnd[] = [];
   let savings = STARTING_SAVINGS;
+  let registry = morningRegistry(seed, 1);
   for (const [i, queue] of generateWeek(seed).entries()) {
     const day = i + 1;
-    const cases: Case[] = bot(queue, rng).map((decision, j) => ({
-      decision,
-      correct: decide(decision, judge(queue[j], rulebookForDay(day), [])).correct,
-    }));
+    registry = morning(registry, day);
+    const decisions = bot(queue, rng);
+    const played = playDay(registry, day, queue, decisions);
+    registry = played.registry;
+    const cases: Case[] = decisions.map((decision, j) => ({ decision, correct: played.outcomes[j].correct }));
     const end = endDay(savings, day, cases, seed);
     days.push(end);
     savings = end.after;

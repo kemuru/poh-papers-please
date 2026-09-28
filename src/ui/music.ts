@@ -1,7 +1,11 @@
 // The waiting-room music, in the manner of Brian Eno's Music for Airports: seven voices, each
 // repeating one note on a loop of its own length, 18 to 31 seconds. The loops never line up, so
 // the chords they make never come round in the same order, and there is no tune to get stuck in
-// anyone's head. Soft bells and slow voices in a large, plain hall; no beat.
+// anyone's head. Soft bells and slow voices in a large, plain hall. On its own it sent the clerk to
+// sleep, so while the window is open a soft pulse keeps time under it (pulseBetween): the same
+// chord broken up and down a bar at a time, struck lightly, no tune and no drum. While it plays,
+// every voice waits for its next beat and every bell for the next bar line, landing with the
+// pulse's root, so the whole band keeps one time. The bells are soft: struck gently, no bright ding.
 // It plays from the first click to the end of the week. Each part of the day has its own chord
 // (SCENES) and the voices move to it one by one, so the music changes with the screen instead of
 // stopping. The tape is not what it was: from day 3 it wobbles, then the voices drift apart, the
@@ -43,6 +47,60 @@ export const SCENES: Record<Scene, readonly (NoteName | null)[]> = {
   // Fired: three low voices of D minor.
   fired: ['D3', null, null, 'A3', null, 'F4', null],
 };
+
+/** The pulse's tempo while the window is open. Chosen by ear, over busier and slower versions. */
+export const PULSE_BPM = 104;
+const EIGHTH = 30 / PULSE_BPM;
+export const PULSE_BEAT = 2 * EIGHTH;
+export const PULSE_BAR = 8 * EIGHTH;
+
+const [F3, A3, C4, E4, G4, A4, C5] = [53, 57, 60, 64, 67, 69, 72];
+/**
+ * The pulse's four bars: the window's F major ninth broken up and back down, a bar at a time, the
+ * root on every downbeat. The third bar reaches up to C and comes back; the fourth steps down to A
+ * to lead home; then round again. A figure the ear settles into instead of following.
+ */
+const PULSE_BARS = [
+  [F3, C4, E4, G4, A4, G4, E4, C4],
+  [F3, C4, E4, G4, A4, G4, E4, C4],
+  [F3, C4, E4, A4, C5, A4, E4, C4],
+  [F3, C4, E4, G4, A4, G4, E4, A3],
+];
+/** How hard each eighth of the bar is struck: the downbeat most, beat three next, the off-beats least. */
+const PULSE_TOUCH = [1, 0.55, 0.72, 0.55, 0.85, 0.55, 0.72, 0.55];
+
+export type PulseNote = { at: number; hz: number; accent: number };
+
+/**
+ * The pulse due from `from` to `to` seconds into the music, while the window is open. `since` is
+ * the bar line it started on: the four bars count from there, and it comes in over two bars.
+ */
+export function pulseBetween(from: number, to: number, scene: Scene, since = 0): PulseNote[] {
+  if (scene !== 'open') return [];
+  const notes: PulseNote[] = [];
+  const first = Math.round(since / EIGHTH);
+  for (let k = Math.max(first, Math.ceil(from / EIGHTH - 1e-9)); k * EIGHTH < to; k++) {
+    const bar = Math.floor((k - first) / 8);
+    const entrance = bar === 0 ? 0.5 : bar === 1 ? 0.75 : 1;
+    const midi = PULSE_BARS[bar % PULSE_BARS.length][(k - first) % 8];
+    notes.push({ at: k * EIGHTH, hz: 440 * 2 ** ((midi - 69) / 12), accent: PULSE_TOUCH[(k - first) % 8] * entrance });
+  }
+  return notes;
+}
+
+/** The first beat at or after `at`. */
+export const onBeat = (at: number) => Math.ceil(at / PULSE_BEAT - 1e-9) * PULSE_BEAT;
+
+/** The first bar line at or after `at`. */
+const nextBar = (at: number) => Math.ceil(at / PULSE_BAR - 1e-9) * PULSE_BAR;
+
+/**
+ * When a voice's note is heard. While the window is open, the pulse sets the time: a slow voice
+ * waits for the next beat, a bell for the next bar line, so it lands with the pulse's root and
+ * sounds like part of the pattern. Elsewhere, when it is due.
+ */
+export const heardAt = (note: Pick<Note, 'at' | 'kind'>, scene: Scene) =>
+  scene !== 'open' ? note.at : note.kind === 'bell' ? nextBar(note.at) : onBeat(note.at);
 
 /** How loud the music and the hall's murmur are in each part of the day. */
 const LEVELS: Record<Scene, { music: number; hall: number }> = {
@@ -112,6 +170,20 @@ export function startPlayer(ctx: BaseAudioContext, destination: AudioNode, scene
   soft.connect(dry).connect(master);
   soft.connect(hall).connect(wet).connect(master);
 
+  // The pulse has its own way out: in the middle, and drier than the bells, so its rhythm stays clear.
+  const pulseBus = ctx.createGain();
+  const pulseTone = ctx.createBiquadFilter();
+  pulseTone.type = 'lowpass';
+  pulseTone.frequency.value = 2800;
+  const pulseSend = ctx.createGain();
+  pulseSend.gain.value = 0.25;
+  pulseBus.connect(pulseTone).connect(master);
+  pulseTone.connect(pulseSend).connect(hall);
+  /** When the pulse plays, in music time: from a bar line to a bar line (until the window closes, open-ended). */
+  let pulseSpan: { since: number; until: number } | null = scene === 'open' ? { since: 0, until: Infinity } : null;
+  /** Pulse notes booked, so any past the closing bar line can be taken back. */
+  let pulseBooked: { at: number; oscs: OscillatorNode[] }[] = [];
+
   // The tape's wobble: two slow waves, shared by every note.
   const wow = ctx.createGain();
   wow.gain.value = WOW[day - 1];
@@ -131,8 +203,18 @@ export function startPlayer(ctx: BaseAudioContext, destination: AudioNode, scene
 
   return {
     set(scene, day) {
-      now = { scene, day };
       const t = ctx.currentTime;
+      const at = t - t0;
+      if (scene === 'open' && now.scene !== 'open') {
+        // The window opens: the pulse starts on the next bar line.
+        pulseSpan = { since: nextBar(at + 0.15), until: Infinity };
+      } else if (scene !== 'open' && now.scene === 'open' && pulseSpan) {
+        // The window closes: the pulse finishes its bar and stops on the bar line.
+        const until = nextBar(at + 0.05);
+        pulseSpan = { ...pulseSpan, until };
+        for (const b of pulseBooked) if (b.at >= until - 1e-6) for (const osc of b.oscs) osc.stop(t);
+      }
+      now = { scene, day };
       level.gain.setTargetAtTime(LEVELS[scene].music, t, 1.5);
       murmur.level.gain.setTargetAtTime(busy(scene, day), t, 1.5);
       wow.gain.setTargetAtTime(WOW[day - 1], t, 2);
@@ -141,15 +223,23 @@ export function startPlayer(ctx: BaseAudioContext, destination: AudioNode, scene
       const at = ctx.currentTime - t0;
       const from = Math.max(booked, at);
       if (at + ahead <= from) return;
+      pulseBooked = pulseBooked.filter((b) => b.at > at - 2);
+      if (pulseSpan) {
+        for (const note of pulseBetween(from, Math.min(at + ahead, pulseSpan.until), 'open', pulseSpan.since)) {
+          const oscs = pulse(ctx, pulseBus, wow, t0 + note.at, note.hz, DRIFT[now.day - 1] * 0.5, note.accent);
+          pulseBooked.push({ at: note.at, oscs });
+        }
+        if (pulseSpan.until <= at) pulseSpan = null;
+      }
       for (const note of notesBetween(from, at + ahead, now.scene, now.day)) {
         const pan = ctx.createStereoPanner();
         pan.pan.value = VOICES[note.voice].pan;
         pan.connect(level);
-        const t = t0 + note.at;
+        const t = t0 + heardAt(note, now.scene);
         if (note.kind === 'choir') choir(ctx, pan, wow, t, note.hz, note.cents);
         else {
-          bell(ctx, pan, wow, t, note.hz, note.cents, 0.05);
-          if (note.snag) bell(ctx, pan, wow, t + 0.17, note.hz, note.cents, 0.035);
+          bell(ctx, pan, wow, t, note.hz, note.cents, 0.02);
+          if (note.snag) bell(ctx, pan, wow, t + 0.17, note.hz, note.cents, 0.014);
         }
       }
       booked = at + ahead;
@@ -165,7 +255,40 @@ export function startPlayer(ctx: BaseAudioContext, destination: AudioNode, scene
   };
 }
 
-/** An electric-piano bell (two-operator FM): bright when struck, mellow as it rings. */
+/** The pulse: a soft, round mallet (gentle FM), struck lightly and gone within a second. */
+function pulse(ctx: BaseAudioContext, out: AudioNode, wow: AudioNode, t: number, hz: number, cents: number, accent: number): OscillatorNode[] {
+  const carrier = ctx.createOscillator();
+  const modulator = ctx.createOscillator();
+  const depth = ctx.createGain();
+  const amp = ctx.createGain();
+  for (const osc of [carrier, modulator]) {
+    osc.frequency.value = hz;
+    osc.detune.value = cents;
+    wow.connect(osc.detune);
+  }
+  depth.gain.setValueAtTime(hz * 0.6, t);
+  depth.gain.exponentialRampToValueAtTime(hz * 0.05, t + 0.15);
+  modulator.connect(depth).connect(carrier.frequency);
+  amp.gain.setValueAtTime(0.0001, t);
+  amp.gain.exponentialRampToValueAtTime(0.03 * accent, t + 0.01);
+  amp.gain.setTargetAtTime(0, t + 0.01, 0.25);
+  carrier.connect(amp).connect(out);
+  for (const osc of [carrier, modulator]) {
+    osc.start(t);
+    osc.stop(t + 1.3);
+  }
+  carrier.onended = () => {
+    wow.disconnect(carrier.detune);
+    wow.disconnect(modulator.detune);
+  };
+  return [carrier, modulator];
+}
+
+/**
+ * A soft bell (two-operator FM), struck gently: it warms up for a moment instead of dinging, and
+ * fades in three and a half seconds. The bright, loud version stood out of the music every few
+ * seconds and irritated.
+ */
 function bell(ctx: BaseAudioContext, out: AudioNode, wow: AudioNode, t: number, hz: number, cents: number, volume: number) {
   const carrier = ctx.createOscillator();
   const modulator = ctx.createOscillator();
@@ -176,16 +299,16 @@ function bell(ctx: BaseAudioContext, out: AudioNode, wow: AudioNode, t: number, 
     osc.detune.value = cents;
     wow.connect(osc.detune);
   }
-  depth.gain.setValueAtTime(hz * 1.5, t);
-  depth.gain.exponentialRampToValueAtTime(hz * 0.1, t + 1.4);
+  depth.gain.setValueAtTime(hz * 0.5, t);
+  depth.gain.exponentialRampToValueAtTime(hz * 0.05, t + 0.8);
   modulator.connect(depth).connect(carrier.frequency);
   amp.gain.setValueAtTime(0.0001, t);
-  amp.gain.exponentialRampToValueAtTime(volume, t + 0.015);
-  amp.gain.exponentialRampToValueAtTime(0.0001, t + 5);
+  amp.gain.exponentialRampToValueAtTime(volume, t + 0.04);
+  amp.gain.exponentialRampToValueAtTime(0.0001, t + 3.5);
   carrier.connect(amp).connect(out);
   for (const osc of [carrier, modulator]) {
     osc.start(t);
-    osc.stop(t + 5.1);
+    osc.stop(t + 3.6);
   }
   carrier.onended = () => {
     wow.disconnect(carrier.detune);

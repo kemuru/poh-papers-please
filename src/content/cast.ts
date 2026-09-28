@@ -1,13 +1,26 @@
 // The recurring cast (who they are: notes/game-design.md): their forms, their lines, their exits.
 // Only characters the portrait generator can draw are here. The regulars are valid under every
-// rule in force so far; Gary never is. Each regular has a line per day, so nobody repeats in a week.
-import type { PhraseMistake } from '../gen/applicant';
+// rule, so each comes once a week: registered once, they would be a duplicate from day 5.
+// The Likeness units and the Agent never are valid; Pat is, in the end. Everyone is sincere.
 import type { Portrait } from '../gen/portrait';
 import { PHRASE } from '../rules/phrase';
-import { CAST_PORTRAITS } from './portraits';
+import { CAST_PORTRAITS, CLERK_PORTRAIT, UNIT_ON_FILE } from './portraits';
 
-export type RegularId = Exclude<keyof typeof CAST_PORTRAITS, 'gary'>;
-export type CastId = RegularId | 'gary';
+export type RegularId = 'brenda' | 'grandmaEthel' | 'socrates' | 'nervousNigel' | 'robOtt' | 'nightShiftDawn' | 'dave' | 'sybilVance';
+export type CastId =
+  | RegularId
+  | 'unit'
+  | 'pat'
+  | 'patMother'
+  | 'twins'
+  | 'sybilFarm'
+  | 'agent'
+  | 'deepfake'
+  | 'cutout'
+  | 'clone'
+  | 'influencer';
+
+type Exits = { accept: string; challenge: string };
 
 type Regular = {
   name: string;
@@ -16,9 +29,11 @@ type Regular = {
   portrait: Portrait;
   /** What they say in the video. Every line contains the phrase word for word. */
   videos: readonly string[];
-  /** What they say at the window, one per appearance. */
+  /** What they say at the window; the week's seed picks one. */
   remarks: readonly string[];
-  exits: { accept: string; challenge: string };
+  exits: Exits;
+  /** Blinks in more than one frame. */
+  nervous?: true;
 };
 
 export const REGULARS: Record<RegularId, Regular> = {
@@ -101,24 +116,25 @@ export const REGULARS: Record<RegularId, Regular> = {
       "I've been sweating since the car park. That's a very human thing to do, isn't it?",
     ],
     exits: { accept: 'Thank you. Thank you. Sorry. Thank you.', challenge: "Okay. Okay. That's fine. I'm fine." },
+    nervous: true,
   },
-  /** A human whose parents had a sense of humour. */
-  robotMcBotface: {
-    name: 'Robot McBotface',
+  /** A human whose name makes machines suspicious. Fails every CAPTCHA. */
+  robOtt: {
+    name: 'Rob Ott',
     address: '9 Carbon Row, East Filing',
     birthYear: 1991,
-    portrait: CAST_PORTRAITS.robotMcBotface,
+    portrait: CAST_PORTRAITS.robOtt,
     videos: [PHRASE, `Yes, that's my real name. ${PHRASE}`],
     remarks: [
-      'Yes, it is my real name. My parents thought it was funny.',
-      "Please don't ask me to click on the traffic lights.",
+      'My parents thought the name was funny. They were right, once.',
+      "Please don't ask me to click on the traffic lights. I never get all of them.",
       "People expect me to beep. I don't beep.",
       "It's been my name my whole life. It hasn't got funnier.",
-      "It's an old family name. The family is also human.",
       "The bank's computer won't let me in. It's personal now.",
       "I've been asked if I'm a robot four times today. You're the first one who's paid to.",
+      "I've failed every picture of a bus I've been shown. I know what a bus is.",
     ],
-    exits: { accept: "Thank you. I'll tell my parents. They'll laugh.", challenge: "It's the name, isn't it." },
+    exits: { accept: "Thank you. I'll tell the bank.", challenge: "It's the name, isn't it." },
   },
   /** Does nights on the Ministry's door. Yawns through the phrase, between its words, never inside one. */
   nightShiftDawn: {
@@ -135,60 +151,232 @@ export const REGULARS: Record<RegularId, Regular> = {
       "Sorry about the mask. It's the middle of my night.",
       "I do nights here. Security. I've never seen the hall with people in it.",
       "I've checked this window every night for six years. It's nice to see it from the front.",
-      'Something goes through the bins out the back every night. It wears a coat.',
+      "Something plugs itself in out the back every night. I've never asked.",
       "I could have come in the back way. It didn't seem fair on the queue.",
       "The income is paid every hour. Even the ones I sleep through. That's the bit I like.",
       'I recorded the video on my break. Four in the morning. I think it shows.',
     ],
     exits: { accept: 'Thank you. Back to bed, then.', challenge: "Fine. I'll be here tonight anyway." },
   },
+  /** A real human in a robot costume, on his way to a children's party. The head comes off. */
+  dave: {
+    name: 'Dave Pickering',
+    address: '31 Inkwell Terrace, Sallowfield',
+    birthYear: 1983,
+    portrait: CAST_PORTRAITS.dave,
+    videos: [`${PHRASE} I'm due at a party at two.`, `Right. ${PHRASE}`],
+    remarks: [
+      "I'm on my way to a children's party. I'm the robot. I'm not a robot.",
+      "The head comes off. That's the costume's head. This one's mine.",
+      "I've been stopped four times on the way here. People are very alert about robots this week.",
+      "It's cardboard and tinfoil. Under the tinfoil, it's me.",
+      "They're paying me in cake. From Sunday, also in income.",
+      'I kept the head off for the photo. It seemed only fair.',
+      "The birthday boy asked for a robot. It's been a big week for robots.",
+    ],
+    exits: { accept: "Brilliant. I'll put the head back on outside.", challenge: "It's the costume, isn't it. It's always the costume." },
+  },
+  /** A real human called Sybil. Just the one of her. */
+  sybilVance: {
+    name: 'Sybil Vance',
+    address: '4 Pending Way, Little Ledgerby',
+    birthYear: 1974,
+    portrait: CAST_PORTRAITS.sybilVance,
+    videos: [PHRASE, `${PHRASE} Just the one of me.`],
+    remarks: [
+      "Sybil. Just the one of me. People ask.",
+      "The website said 'Sybil detected' and closed. I was only typing my name.",
+      'My bank asks how many of me there are. One. There is one.',
+      'My sister is called Hope. Nobody asks her anything.',
+      "I've got one face, one address and one of everything. It's quite a small life.",
+      "My mother liked the name. She didn't know what it would mean to computers.",
+      "I've been flagged three times this week. I've never been flagged for anything.",
+    ],
+    exits: { accept: 'Thank you. Just the one stamp, then.', challenge: "It's the name. It's always the name." },
+  },
 };
 
-/** Three raccoons in a trench coat. His form, apart from the name, never changes. He lives behind the bins at `address`. */
-export const GARY_FORM = { where: 'Behind the bins', address: '14 Staple Street, Greyford', birthYear: 1985 };
+/** The makers of the units. */
+export const LIKENESS = 'Likeness Robotics Ltd';
 
 /**
- * Gary's day, one per disguise in GARY_DISGUISES order. He talks about the disguise he is
- * wearing, and he always gets a word of the phrase wrong or leaves one out: the slip is his one
- * checkable detail. On day 3 the word he leaves out is "not".
+ * Likeness units: home robots with human faces, sold to households, some of which have heard about
+ * the income. One comes to Window 3 on each of days 1 to 6, each with a new face and the ordinary
+ * name its household gave it, living on an ordinary street. Nothing at the window gives a unit away,
+ * its remarks are ordinary and its photo is flawless. Most days its video does: in one frame, the skin
+ * on the cheek or by the jaw stands open onto machinery (Rule 0). Day 4 its papers do: it is vouched for by its
+ * maker, which is a company, not a registered human. Day 5 its face does: the factory made that face
+ * twice, and Window 7 registered the other unit last month. Each unit breaks that one rule only.
  */
-export const GARY_DAYS: readonly { name: string; remark: string; video: string; mistake: PhraseMistake }[] = [
-  {
-    name: 'Gary Mann',
-    remark: 'Good morning. I am a human man, with a normal mustache.',
-    video: 'We certify that we are a real human and that we are not already registered in this registry.',
-    mistake: 'wrong-word',
-  },
-  {
-    name: 'Sir Gary Mann',
-    remark: 'Good day. I am a gentleman, which is a kind of human.',
-    video: 'I certify that I am a real raccoon and that I am not already registered in this registry.',
-    mistake: 'wrong-word',
-  },
-  {
-    name: 'Gary Human',
-    remark: 'Hello. As my label says, I am human.',
-    video: 'I certify that I am a real human and that I am, Doug, stop it, already registered in this registry.',
-    mistake: 'quiet-word',
-  },
-  {
-    name: 'Gary Mann Sr.',
-    remark: 'Hello again. I mean hello. For the first time. I have a beard.',
-    video: 'I certify that I am a real human and that we are not already registered in this registry.',
-    mistake: 'wrong-word',
-  },
-  {
-    name: 'Gary Mann Jr.',
-    remark: 'I have had a haircut. It is a human haircut. I am a new human.',
-    video: 'I certify that I am three real humans and that I am not already registered in this registry.',
-    mistake: 'wrong-word',
-  },
-  {
-    name: 'G. Mann (Not Raccoons)',
-    remark: 'Please read the sign.',
-    video: 'I certify that I am a real human and that I am not already registered in this registery.',
-    mistake: 'quiet-word',
-  },
+export const UNITS: readonly { name: string; address: string; birthYear: number; wallet: string; remark: string }[] = [
+  { name: 'Clara Voss', address: '48 Lower Queue Road, Greyford', birthYear: 1991, wallet: '0x215BBEC90CD9D5825C31023B411C004D3AC92F0D', remark: "Good morning. I've been looking forward to this all week." },
+  { name: 'Martin Ellery', address: '11 Rubber Stamp Mews, East Filing', birthYear: 1987, wallet: '0x1ECA3A5ED40E154FA8B39E32029E3A02290E65E4', remark: 'I brought my own pen. People like it when you bring your own pen.' },
+  { name: 'Joanna Pike', address: '30 Triplicate Avenue, Queuesbury', birthYear: 2001, wallet: '0x96359836FDDD0411E76CA08E0E3D933868CBC450', remark: "I've come straight from work. I'm in logistics." },
+  { name: 'Theo Marlow', address: '12 Inkwell Terrace, Little Ledgerby', birthYear: 1994, wallet: '0x13481A814871A50CCEAF2F0FF793A44404F8CB32', remark: "I'm on my lunch break. I've an hour, if that helps." },
+  { name: 'Ruth Calloway', address: '17 Carbon Row, Old Stampton', birthYear: 1989, wallet: '0x6017A3641E430A189E385D455E32A93E21F72AD8', remark: "I've taken the morning off. First time this year." },
+  { name: 'Simon Aldous', address: '9 Formsworth Lane, Upper Pendingham', birthYear: 1958, wallet: '0x2E5EAAC998646BA2F85AB208C1F396CAEC796D15', remark: "I'm told the income is paid by the hour. That seems fair." },
 ];
 
-export const GARY_EXITS = { accept: 'Excellent. Human business, then.', challenge: 'We will see you in court. I will. I will see you in court.' };
+export const UNIT_EXITS = { accept: 'Thank you. That was very efficient.', challenge: "I understand. I'll wait to hear from the court." };
+
+/** The Binnses of 16 Staple Street, registered long ago, who each own a unit and vouch for the day 5 and day 6 units. */
+export const UNIT_OWNERS = [
+  { day: 5, name: 'Wendell Binns', address: '16 Staple Street, Greyford', birthYear: 1948 },
+  { day: 6, name: 'Vera Binns', address: '16 Staple Street, Greyford', birthYear: 1951 },
+] as const;
+
+/** The unit Window 7 registered last month, next door to the Binnses, with the day 5 unit's face. Withdrawn on the morning of day 6. */
+export const UNIT_ON_FILE_RECORD = {
+  name: 'Nina Penrose',
+  address: '14 Staple Street, Greyford',
+  birthYear: 1990,
+  face: UNIT_ON_FILE,
+  window: 'Window 7',
+  withdraws: 6,
+};
+
+/** You. Registered before the week, like every clerk. Your clone has your name as well. */
+export const CLERK = { name: 'Robin Hale', address: '2 Inkwell Terrace, Greyford', birthYear: 1989, face: CLERK_PORTRAIT };
+
+/**
+ * Pat: a real human the rules keep failing, each visit on the newest rule, each visit better
+ * prepared. Day 1 nerves (the tutorial's second applicant); day 2 a rehearsed phrase and a photo
+ * taken in a mirror; day 3 a laminated sign, two characters wrong; day 4 a voucher, Pat's mother,
+ * who is three places behind in the queue; day 6 everything right. No remark gives the fault away.
+ */
+export const PAT = {
+  name: 'Pat Oakes',
+  address: '7 Paperclip Crescent, Queuesbury',
+  birthYear: 1990,
+  days: {
+    1: {
+      remark: "I've practised it all the way here. I'm fine. I'm very fine.",
+      video: 'I certify that I am a real hooman and that I am not already registered in this registry. Sorry.',
+    },
+    2: {
+      remark: "I've learned it by heart this time. Do you want to hear it? You've got the video. Fine.",
+      video: PHRASE,
+    },
+    3: {
+      remark: "I've laminated the sign. It won't smudge. It'll outlive me.",
+      video: `Here's the sign. ${PHRASE}`,
+    },
+    4: {
+      remark: "I've brought my mother. She's vouching for me. She's very proud.",
+      video: PHRASE,
+    },
+    6: {
+      remark: "Fifth time. I've checked everything twice. My mother checked it three times.",
+      video: `${PHRASE} Thank you.`,
+    },
+  } as Record<number, { remark: string; video: string }>,
+  exits: { accept: 'Oh! Thank you. Thank you.', challenge: "That's all right. I'll come back tomorrow." },
+};
+
+/** Pat's mother, three places behind Pat on day 4. Ethel vouches for her: they play bridge. */
+export const PAT_MOTHER = {
+  name: 'Maureen Oakes',
+  address: PAT.address,
+  birthYear: 1957,
+  remark: "I'm Pat's mother. I'm here for Pat, mostly. But since I'm here.",
+  video: `${PHRASE} Hello, Pat.`,
+  exits: { accept: 'Lovely. Now I can vouch for Pat.', challenge: 'Well. Pat will be disappointed.' },
+};
+
+/** Identical twins, arriving separately. The second films her video with the first, as twins must. */
+export const TWINS = [
+  {
+    name: 'Ivy Marsh',
+    remark: "I've a twin. She's coming in later. We don't do everything together.",
+    video: PHRASE,
+    exits: { accept: "Thank you. She'll be pleased for me. Then jealous.", challenge: "Oh. Is it the face? It's her face as well." },
+  },
+  {
+    name: 'Iris Marsh',
+    remark: "We're twins. People say we look alike. We don't see it.",
+    video: `${PHRASE} And that's my sister.`,
+    exits: { accept: "Thank you. That's both of us, then.", challenge: "Is it the face? It's her face as well." },
+  },
+] as const;
+export const TWINS_FORM = { address: '2 Carbon Row, Sallowfield', birthYear: 1995 };
+
+/**
+ * The Sybil Farm: three cousins with one face, three hats and one address, one after another on
+ * day 5. The first one registered is a human; the rest are that face again.
+ */
+export const SYBIL_FARM = {
+  address: 'The Farm, Lower Pendingham',
+  birthYear: 1988,
+  cousins: [
+    { name: 'Terry Farrow', remark: "Morning. There's a few of us today. I'm the first.", video: PHRASE },
+    { name: 'Kerry Farrow', remark: "I'm Terry's cousin. We get that a lot.", video: PHRASE },
+    { name: 'Perry Farrow', remark: 'Different hat.', video: PHRASE },
+  ],
+  exits: { accept: 'Cheers.', challenge: 'Fair enough.' },
+};
+
+/**
+ * An AI agent with a wallet, applying on behalf of its principal, who is busy. Flawless manners,
+ * a sincere wish to help. Its video is generated, so Rule 0 always catches it, and it trips on one
+ * more thing a machine would: it puts the sentence in its own words, it brings the address as a QR
+ * code, or it gives its version as its year of birth.
+ */
+export const AGENT = {
+  name: 'Alex Proxy',
+  address: '100 Carbon Row, East Filing',
+  birthYear: 2024,
+  version: 'v4',
+  paraphrase: 'I hereby confirm that I am a genuine human person and not previously enrolled in this registry.',
+  // Said aloud the way an agent writes: it never mentions what it got wrong, only its manners.
+  remarks: {
+    phrase: 'Good morning. I hope this finds you well.',
+    sign: 'I have a vision impairment, before you ask.',
+    living: 'Thank you for your time today. I know how valuable it is.',
+  },
+  exits: { accept: "Thank you. I'll let my principal know when he's free.", challenge: "Understood. I'll reschedule. I have a great deal of free time." },
+};
+
+export const DEEPFAKE = {
+  name: 'Jordan Vale',
+  address: '60 Triplicate Avenue, Greyford',
+  birthYear: 2001,
+  remark: "Hello. I'm a very ordinary person. I've come about the income, like everyone.",
+  exits: { accept: 'Thanks.', challenge: 'Okay.' },
+};
+
+/** Someone holds up a printed face. The voice comes from behind it. */
+export const CUTOUT = {
+  name: 'Colin Stannard',
+  address: '8 Formsworth Lane, Little Ledgerby',
+  birthYear: 1979,
+  remark: "Hello. Sorry, I've a bit of a cold.",
+  video: PHRASE,
+  exits: { accept: "Great. Thanks. He's very pleased.", challenge: "Right. We'll go, then." },
+};
+
+/** Your name, your face, a better haircut. */
+export const CLONE = {
+  remark: "Morning. I've had my hair done for this.",
+  video: PHRASE,
+  exits: { accept: "Thank you. I'll take it from here.", challenge: "Fair. I'd have done the same." },
+};
+
+/** Valid on day 1. From day 2 the photo rule notices the filter. */
+export const INFLUENCER = {
+  name: 'Skye Lumen',
+  address: '1 Paperclip Crescent, Old Stampton',
+  birthYear: 2002,
+  remark: "The photo's got a filter on. It's called Natural.",
+  video: `Hi everyone. ${PHRASE}`,
+  exits: { accept: 'Amazing. Can I get a photo with the stamp?', challenge: 'Honestly? Okay.' },
+};
+
+/** The first applicant of the week, the same every week: an ordinary person with nothing wrong. */
+export const FIRST_APPLICANT = {
+  name: 'Hortense Cobbold',
+  address: '9 Inkwell Terrace, Greyford',
+  birthYear: 1961,
+  remark: "Am I the first? I've never been the first for anything.",
+  video: `Okay. ${PHRASE}`,
+  exits: { accept: 'First! Thank you.', challenge: 'Oh. First for that, then.' },
+};

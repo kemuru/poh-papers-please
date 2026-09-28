@@ -8,39 +8,39 @@
  */
 export const ANNOUNCEMENTS: readonly (readonly string[])[] = [
   [
-    'Welcome to the Ministry of Humanity. Please have your humanity ready.',
+    'Welcome to the Ministry of Humanity. Humanity Day is in six days. Please have your humanity ready.',
     'Applicants are reminded that the queue is for humans. Everyone else, please also queue.',
-    'Please hold your wallet address the right way up.',
-    'Window 3 is now open. Window 3 is the only window.',
+    'The Universal Basic Income opens on Humanity Day at five o\'clock. It is paid to humans. One each.',
+    'Window 3 is now open. It is the only window open.',
   ],
   [
     'A pigeon has entered the building. It has been asked to take a number.',
-    "The Ministry thanks yesterday's applicants for being human. Most of them.",
-    'Lost property: one mustache, fake. Please collect it from Window 3.',
-    'Anyone who vouches for a raccoon will be removed along with the raccoon.',
+    'Photographs must now be of the applicant. The Ministry thanks the catalogue for its understanding.',
+    'Lost property: one face, very lifelike. Please collect it from Window 3.',
+    'The Ministry registers humans only. Pets may wait in the car.',
   ],
   [
-    'Applicants are reminded that a trench coat is not a form of identification.',
+    'Applicants are reminded that a warranty is not a form of identification.',
+    'Please write your wallet address in full. The dots are not the address.',
     'The pigeon has taken a number. Please do not encourage it.',
-    "Humanity Improvement Proposal 4, 'Fewer Raccoons', is open for voting. One human, one vote.",
     'The Ministry has been asked whether it is also human. The Ministry is a building.',
   ],
   [
     'The ceiling in the waiting area is being looked at. Please do not look at the ceiling.',
-    'The Ministry does not comment on reports of raccoons.',
+    'A vouch serves one applicant at a time. The Ministry apologises to the bridge club.',
     'Humanities may now be moved between chains. Please do not move yours while in the queue.',
     'Window 2 is closed while it votes on whether to leave the Ministry.',
   ],
   [
-    'The pigeon has been processed. The Ministry wishes it well.',
-    'Applicants who are several people may report themselves at Window 3 and keep a quarter of one of them.',
+    'The pigeon has been processed under Rule 0. The Ministry wishes it well.',
+    'Applicants registered more than once may report themselves at Window 3 and keep a quarter of the income.',
     'Following a vote, Window 2 has left the Ministry. You are at the real one.',
-    'Applicants who counted their legs and got more than two are asked to count again.',
+    'Two days to Humanity Day. Applicants may be asked to remove their hat.',
   ],
   [
-    'The Ministry would like to clarify that the Ministry is not raccoons.',
+    'The Ministry would like to clarify that the Ministry is not a robot.',
     'The Ministry is aware of the other Ministry. The other Ministry is not the Ministry.',
-    'Philosophers are asked to keep their questions to the designated area. There is no designated area.',
+    'Humanity Day is tomorrow. Applicants are asked to blink where the camera can see, and to be filmed, not generated.',
     'The ceiling is fine.',
   ],
   [
@@ -51,14 +51,14 @@ export const ANNOUNCEMENTS: readonly (readonly string[])[] = [
   ],
 ];
 
-/** The supervisor's sticky note on the desk each morning. They are having a week too. */
+/** The supervisor's sticky note on the desk each morning: the day's new rule, and the week. */
 export const SUPERVISOR_NOTES: readonly string[] = [
-  'Welcome to Window 3. NEXT calls someone. Read the video, stamp the form. Challenges go to court at five.',
-  'First day done. Someone left a mustache on your chair. Please hand it in.',
-  'Window 2 is voting on whether to leave the Ministry. Window 3 is not voting. Window 3 is working.',
-  'The noise in the ceiling is being dealt with. Do not open the ceiling.',
-  'Window 2 has left the Ministry and taken half the stationery. If they offer you a job, you are not interested.',
-  'Keep stamping.',
+  'NEXT calls someone. Check Rule 0 first. Challenges go to court at five.',
+  'New: the photo must be the face in the video. Hair does not count. The clock starts today.',
+  'New: wallet on the form, wallet on the sign. Window 2 is voting. Window 3 is working.',
+  'New: press Look up beside the voucher, or V. Do not look up at the ceiling.',
+  'New: Search this face, or F. Window 2 has left the Ministry. You are not interested.',
+  'New: they have to blink. Humanity Day tomorrow. Keep stamping.',
   'It has been an honour. The ceiling says hello.',
 ];
 
@@ -67,10 +67,10 @@ export const POSTERS: readonly (readonly [string, string])[] = [
   ['BE YOURSELF. ONCE.', 'ONE HUMAN, ONE QUEUE'],
   ['BE YOURSELF. ONCE.', 'VOUCH RESPONSIBLY'],
   ['HAVE YOUR HUMANITY READY', 'VOUCH RESPONSIBLY'],
-  ['3 RACCOONS? SAY SOMETHING', 'ONE HUMAN, ONE VOTE'],
-  ['3 RACCOONS? SAY SOMETHING', 'ONE FACE PER HUMAN'],
-  ['NOT RACCOONS', 'THE CEILING IS FINE'],
-  ['RENEW YOUR HUMANITY', 'NOT RACCOONS'],
+  ['CHECK EVERY FRAME', 'ONE HUMAN, ONE VOTE'],
+  ['CHECK EVERY FRAME', 'ONE FACE PER HUMAN'],
+  ['HUMANS ONLY', 'THE CEILING IS FINE'],
+  ['RENEW YOUR HUMANITY', 'HUMANS ONLY'],
 ];
 
 export const BANNER = 'WELCOME TO THE NEW REGISTRY';

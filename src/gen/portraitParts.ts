@@ -62,32 +62,29 @@ export const CLOTH: Record<OutfitColor, Ramp> = {
   white: { hi: '#f4f1ea', base: '#dcd7cc', lo: '#b6b0a4' },
 };
 
-export const FUR = {
-  grey: { hi: '#b9bcc2', base: '#8e9198', lo: '#6b6e75' },
-  light: { hi: '#f6f3ee', base: '#dedad2', lo: '#b9b4ab' },
-  mask: '#302f35',
-  deep: '#4c4e54',
-  nose: '#1c1a1d',
-  noseShine: '#5d5b63',
-  eye: '#121013',
-};
-
 export const PROPS = {
   gold: { hi: '#f6de8e', base: '#d6ac45', lo: '#9e7a2c' },
   frame: '#3b302b',
   pearl: '#fbf8f0',
   shirt: '#ebe7de',
   tie: '#8f3a3a',
-  fakeHair: { hi: '#56504c', base: '#1f1b1b', lo: '#141111' },
-  elastic: '#141111',
-  wig: { hi: '#fff1a8', base: '#f0cf48', lo: '#c4a12a' },
   hat: { hi: '#4b4951', base: '#2d2c32', lo: '#1c1b20' },
   hatBand: '#8a2f35',
-  tagRed: '#c2413a',
   paper: '#f6f3ec',
   cardboard: { hi: '#dec293', base: '#c6a36d', lo: '#9f7f50' },
   sweat: { hi: '#f2fbff', base: '#9fd2e6', lo: '#5b91ab' },
   sleepMask: { base: '#b8a3d6', lo: '#8a74ab', stitch: '#54406f' },
+  tweed: { hi: '#9c8f74', base: '#7a6d55', lo: '#5a4f3c' },
+  knit: { hi: '#e0736a', base: '#c24d45', lo: '#8f3530' },
+  bobble: { hi: '#fbf6ea', base: '#e8e0cc', lo: '#c2b89f' },
+  /** A phone held up in a video: its case and its lit screen. */
+  phone: { body: '#23262b', screen: '#cfe3ea' },
+  /** A party costume's robot head: painted card, a dark visor and a bulb on a stalk. */
+  helmet: { hi: '#e3e6e8', base: '#b8bec3', lo: '#80878d', visor: '#2b3740', bulb: '#e2574a' },
+  /** A unit's open panel. Colours no skin, hair or clothing uses, so a few pixels read as machinery. */
+  machine: { edge: '#16191c', flap: '#d9e0e4', board: '#2f8a4c', chip: '#101417', pin: '#e0b84a', light: '#5fe3f0' },
+  /** The outline of a video generator's mark. */
+  markEdge: '#3d4446',
 };
 
 export const EYES: Record<EyeStyle, { open: string[]; closed: string[] }> = {
@@ -128,17 +125,6 @@ export const MOUTHS: Record<MouthStyle, string[]> = {
 };
 
 export const MOUTH_OPEN = ['.llll.', 'lmmmml', '.llll.'];
-
-export const RACCOON = {
-  eyeOpen: ['dgd', 'ddd'],
-  eyeClosed: ['...', 'hhh'],
-  nose: ['gkkk', '.kk.'],
-  mouth: ['k.kk.k', '.k..k.'],
-  mouthOpen: ['.kkkk.', '.kmmk.', '..kk..'],
-};
-
-/** A theatrical handlebar, deliberately too big for any face. */
-export const FAKE_MUSTACHE = ['k..........k', 'kk.khhhhk.kk', '.kkkkkkkkkk.'];
 
 export const SWEAT_DROP = ['.o.', 'oho', 'oao', '.o.'];
 

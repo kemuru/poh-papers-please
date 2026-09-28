@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { GARY_DISGUISES } from '../content/portraits';
-import { REGULARS } from '../content/cast';
-import { DAYS, generateDay, generateWeek, LAST_DAY } from './day';
+import { STREETS, TOWNS } from '../content/applicants';
+import { UNIT_FACES } from '../content/portraits';
+import { REGULARS, UNITS } from '../content/cast';
+import { findName } from '../rules/registry';
+import { DAYS, generateDay, generateWeek, LAST_DAY, planWeek } from './day';
 
 const SEEDS = Array.from({ length: 20 }, (_, i) => i + 1);
 const weeks = SEEDS.map(generateWeek);
@@ -41,13 +43,13 @@ describe('generateWeek', () => {
     expect(cast.filter(valid).length / cast.length).toBeGreaterThanOrEqual(0.4);
   });
 
-  it('sends Gary once a day on days 1 to 6, in a different disguise each day, and never valid', () => {
+  it('sends a Likeness unit once a day on days 1 to 6, each with a new face, never valid, with one fault', () => {
     for (const week of weeks) {
-      const garys = week.map((queue) => queue.filter((a) => a.cast === 'gary'));
-      expect(garys.map((g) => g.length)).toEqual([1, 1, 1, 1, 1, 1, 0]);
-      garys.slice(0, 6).forEach(([gary], i) => {
-        expect(gary.photo).toMatchObject(GARY_DISGUISES[i]);
-        expect(gary.planted).toHaveLength(1);
+      const units = week.map((queue) => queue.filter((a) => a.cast === 'unit'));
+      expect(units.map((u) => u.length)).toEqual([1, 1, 1, 1, 1, 1, 0]);
+      units.slice(0, 6).forEach(([unit], i) => {
+        expect(unit.photo).toEqual(UNIT_FACES[i]);
+        expect(unit.planted).toHaveLength(1);
       });
     }
   });
@@ -55,7 +57,8 @@ describe('generateWeek', () => {
   it('brings in one or two regulars a day, always valid, taking turns', () => {
     for (const week of weeks) {
       for (const queue of week) {
-        const regulars = queue.filter((a) => a.cast !== null && a.cast !== 'gary');
+        // The regulars proper: the units, Pat and the week's other characters come on their own schedule.
+        const regulars = queue.filter((a) => a.cast !== null && a.cast in REGULARS);
         expect(regulars.length).toBeGreaterThanOrEqual(1);
         expect(regulars.length).toBeLessThanOrEqual(2);
         for (const r of regulars) expect(valid(r)).toBe(true);
@@ -77,7 +80,7 @@ describe('generateWeek', () => {
 
   it('never gives an ordinary applicant the name or address of someone in the cast', () => {
     const cast = weeks.flat(2).filter((a) => a.cast !== null);
-    const taken = new Set(cast.flatMap((a) => [a.name, a.address, a.address.replace(/^Behind the bins, /, '')]));
+    const taken = new Set(cast.flatMap((a) => [a.name, a.address]));
     for (const a of generateWeek(86).flat().concat(generateWeek(168).flat(), weeks.flat(2))) {
       if (a.cast === null) {
         expect(taken, a.address).not.toContain(a.address);
@@ -90,8 +93,36 @@ describe('generateWeek', () => {
     for (const week of weeks) expect(week[0][0]).toMatchObject({ cast: null, planted: [] });
   });
 
-  it('plants one rule at most on each applicant', () => {
-    for (const a of weeks.flat(2)) expect(a.planted.length).toBeLessThanOrEqual(1);
+  it('plants one rule at most on each applicant, besides Rule 0 on a non-human', () => {
+    for (const a of weeks.flat(2)) {
+      expect(a.planted.filter((p) => p.rule !== 'human').length).toBeLessThanOrEqual(1);
+      // The only ones with two faults are the non-humans that also slip on something else.
+      if (a.planted.length > 1) expect(['agent', 'cutout']).toContain(a.cast);
+    }
+  });
+
+  it('gives the units ordinary addresses, on the streets and in the towns everyone else lives in', () => {
+    const ordinary = new RegExp(`^\\d+ (${STREETS.join('|')}), (${TOWNS.join('|')})$`);
+    for (const unit of UNITS) expect(unit.address, unit.name).toMatch(ordinary);
+    for (const a of weeks.flat(2).filter((a) => a.cast === null)) expect(a.address).toMatch(ordinary);
+  });
+
+  it('lets no voucher say whether the papers are good: vouched for by the town or by this week, the odds are the same', () => {
+    // Over 300 weeks, ordinary applicants from day 5 (the cast's vouchers, Ethel and the Binnses, are the week's story).
+    const tally = { town: [0, 0], week: [0, 0] };
+    for (let seed = 1; seed <= 300; seed++) {
+      const plan = planWeek(seed);
+      plan.queues.forEach((queue, d) =>
+        queue.forEach((a, n) => {
+          const voucher = d >= 4 && a.cast === null && a.voucher ? findName(plan.seen[d][n], a.voucher) : null;
+          if (!voucher || voucher.name === REGULARS.grandmaEthel.name) return;
+          tally[voucher.day === 0 ? 'town' : 'week'][valid(a) ? 0 : 1]++;
+        }),
+      );
+    }
+    const share = ([ok, fake]: number[]) => ok / (ok + fake);
+    expect(tally.town[0] + tally.town[1]).toBeGreaterThan(300);
+    expect(Math.abs(share(tally.town) - share(tally.week))).toBeLessThan(0.1);
   });
 
   it('covers every day of the week', () => {
