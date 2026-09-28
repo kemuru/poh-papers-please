@@ -154,7 +154,8 @@ describe('appeal fees, refunds and the bonus', () => {
 });
 
 // The numbers behind the acceptance row, printed when run with BALANCE_REPORT=1.
-if (process.env.BALANCE_REPORT) {
+const env = (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env ?? {};
+if (env.BALANCE_REPORT) {
   for (const [name, weeks] of Object.entries(results)) {
     const s = weeks.map((w) => w.savings);
     console.log(`${name}: mean ${mean(weeks).toFixed(1)}, min ${Math.min(...s)}, max ${Math.max(...s)}, promoted ${weeks.filter((w) => w.promoted).length}/20, appeals ${weeks.reduce((n, w) => n + w.appeals, 0)}, bonuses ${weeks.reduce((n, w) => n + w.bonuses, 0)}, fees kept ${weeks.reduce((n, w) => n + w.feesKept, 0)}`);
