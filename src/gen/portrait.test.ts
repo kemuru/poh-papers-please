@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { CAST_PORTRAITS, UNIT_FACES, UNIT_PANELS } from '../content/portraits';
+import { CAST_PORTRAITS, UNIT_FACES, UNIT_LAMPS } from '../content/portraits';
 import { drawPortrait, PORTRAIT_HEIGHT, PORTRAIT_WIDTH, type PixelImage } from './drawPortrait';
-import { PROPS, SKIN } from './portraitParts';
+import { HAIR, INK, PROPS, SKIN } from './portraitParts';
 import {
   ACCESSORIES, AGES, BROW_STYLES, EAR_STYLES, EYE_COLORS, EYE_STYLES, FACIAL_HAIR, generatePortrait,
-  HAIR_COLORS, HAIR_STYLES, HEAD_SHAPES, MARKS, MOUTH_STYLES, NOSE_STYLES, OUTFIT_COLORS, OUTFITS, PANEL_SPOTS,
-  SKIN_TONES, type Portrait,
+  HAIR_COLORS, HAIR_STYLES, HEAD_SHAPES, LAMP_SIZES, MARKS, MOUTH_STYLES, NOSE_STYLES, OUTFIT_COLORS, OUTFITS,
+  SKIN_TONES, type LampSize, type Portrait,
 } from './portrait';
 
 const seeds = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
@@ -52,7 +52,7 @@ describe('generatePortrait', () => {
     for (const p of randomPeople) {
       expect(p.species).toBe('human');
       expect(p.outfit).not.toBe('toga');
-      expect(p.panel).toBeUndefined();
+      expect(p.lamp).toBeUndefined();
       expect(p.board).toBeUndefined();
       expect(p.mark).toBeUndefined();
       for (const item of p.accessories) expect(['glasses', 'earrings', 'pearls']).toContain(item);
@@ -118,8 +118,9 @@ describe('drawPortrait', () => {
     for (const face of UNIT_FACES) expect(key(drawPortrait(face))).toBe(key(drawPortrait({ ...face, species: 'human' })));
   });
 
-  // The tell must read without colour: some part of it contrasts 3:1 or more with every skin tone.
-  it("draws a unit's open panel that reads on every skin tone, in any colour vision", () => {
+  // The tell must read without colour: the core or the ring contrasts 3:1 or more with every shade of
+  // every skin, and the core stands out from its ring, as a light does.
+  it("draws a unit's lamp that reads on every skin tone, in any colour vision", () => {
     const luminance = (hex: string) => {
       const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
       return 0.2126 * r + 0.7152 * g + 0.0722 * b;
@@ -129,39 +130,58 @@ describe('drawPortrait', () => {
       return (hi + 0.05) / (lo + 0.05);
     };
     for (const [tone, skin] of Object.entries(SKIN)) {
-      const best = Math.max(contrast(PROPS.machine.edge, skin.base), contrast(PROPS.machine.flap, skin.base));
-      expect(best, tone).toBeGreaterThanOrEqual(3);
+      for (const shade of [skin.hi, skin.base, skin.lo]) {
+        const best = Math.max(contrast(PROPS.lamp.core, shade), contrast(PROPS.lamp.ring, shade));
+        expect(best, `${tone} ${shade}`).toBeGreaterThanOrEqual(3);
+      }
     }
+    expect(contrast(PROPS.lamp.core, PROPS.lamp.ring)).toBeGreaterThanOrEqual(7);
   });
 
-  it("shows a unit's open panel at every spot, on every unit and on random heads, and nowhere else", () => {
+  /** Pixels the lamp changes, and how many of them are its core, by size. */
+  const LIT: Record<LampSize, { changed: number; core: number }> = { bloom: { changed: 36, core: 4 }, glow: { changed: 36, core: 4 }, small: { changed: 8, core: 2 } };
+  /** The top row of the eyes: the first row a blink changes. */
+  const eyeTop = (p: Portrait) => Math.min(...changed(drawPortrait(p), drawPortrait(p, { eyes: 'closed' })).map(({ y }) => y));
+
+  it('lights the lamp only with the eyes shut, on every unit and 40 random heads', () => {
     for (const p of [...UNIT_FACES, ...randomPeople.slice(0, 40)]) {
-      for (const spot of PANEL_SPOTS) {
-        for (const pose of [{}, { eyes: 'closed' as const }, { mouth: 'open' as const }]) {
-          const diff = changed(drawPortrait(p, pose), drawPortrait({ ...p, panel: spot }, pose));
-          expect(diff.length, spot).toBeGreaterThanOrEqual(16);
-          expect(rowSpan(diff), spot).toBeLessThanOrEqual(5);
-        }
+      const plain = [{}, { mouth: 'open' as const }].map((pose) => key(drawPortrait(p, pose)));
+      const dark = drawPortrait(p, { eyes: 'closed' });
+      const eyes = eyeTop(p);
+      for (const lamp of LAMP_SIZES) {
+        [{}, { mouth: 'open' as const }].forEach((pose, k) => expect(key(drawPortrait({ ...p, lamp }, pose)), lamp).toBe(plain[k]));
+        const shut = drawPortrait({ ...p, lamp }, { eyes: 'closed' });
+        const diff = changed(dark, shut);
+        expect(diff.length, lamp).toBe(LIT[lamp].changed);
+        const core = diff.filter(({ x, y }) => shut.pixels[y * shut.width + x] === PROPS.lamp.core);
+        expect(core.length, lamp).toBe(LIT[lamp].core);
+        expect(core.every(({ x }) => x === 19 || x === 20), lamp).toBe(true);
+        // Centred on the face's mirror line, between the brows, and above the eyes.
+        const at = new Set(diff.map(({ x, y }) => `${x},${y}`));
+        const astray = diff.filter(({ x, y }) => !at.has(`${PORTRAIT_WIDTH - 1 - x},${y}`) || x < 16 || x > 23 || y >= eyes);
+        expect(astray, lamp).toEqual([]);
       }
     }
   });
 
-  it("opens each day's unit on bare skin, whole: no eye, brow, nose, mouth, hair or clothing under it, so it cannot pass for anything worn", () => {
-    let opened = 0;
+  it("lights each day's unit between the brows, on the face: never on an eye, the nose, the mouth or clothing", () => {
+    let lit = 0;
     UNIT_FACES.forEach((p, d) => {
-      const panel = UNIT_PANELS[d];
-      if (!panel) return;
-      opened++;
+      const tell = UNIT_LAMPS[d];
+      if (!tell) return;
+      lit++;
       const skin = SKIN[p.face.skin];
-      const bare = new Set([skin.hi, skin.base, skin.lo, skin.deep]);
-      for (const pose of [{}, { eyes: 'closed' as const }, { mouth: 'open' as const }]) {
-        const before = drawPortrait(p, pose);
-        const diff = changed(before, drawPortrait({ ...p, panel: panel.where }, pose));
-        expect(diff.length, `day ${d + 1}`).toBe(28);
-        for (const { x, y } of diff) expect(bare.has(before.pixels[y * before.width + x]!), `day ${d + 1} at ${x},${y}`).toBe(true);
-      }
+      const hair = HAIR[p.hairColor];
+      const face = new Set([skin.hi, skin.base, skin.lo, skin.deep, hair.hi, hair.base, hair.lo, INK]);
+      const before = drawPortrait(p, { eyes: 'closed' });
+      const diff = changed(before, drawPortrait({ ...p, lamp: tell.lamp }, { eyes: 'closed' }));
+      const under = diff.map(({ x, y }) => before.pixels[y * before.width + x]!);
+      expect(diff.length, `day ${d + 1}`).toBe(LIT[tell.lamp].changed);
+      for (const [k, px] of under.entries()) expect(face.has(px), `day ${d + 1} at ${diff[k].x},${diff[k].y}`).toBe(true);
+      // Its light falls on the brows, as light does and paint does not.
+      if (tell.lamp !== 'small') expect(under, `day ${d + 1}`).toContain(hair.lo);
     });
-    expect(opened).toBe(4);
+    expect(lit).toBe(4);
   });
 
   it('matches the golden images', () => {
@@ -176,6 +196,6 @@ describe('drawPortrait', () => {
       return Array.from({ length: img.height }, (_, y) => img.pixels.slice(y * img.width, (y + 1) * img.width).map(char).join(''));
     };
     expect(ascii(drawPortrait(generatePortrait(1)))).toMatchSnapshot();
-    expect(ascii(drawPortrait({ ...UNIT_FACES[0], panel: UNIT_PANELS[0]!.where }, { mouth: 'open' }))).toMatchSnapshot();
+    expect(ascii(drawPortrait({ ...UNIT_FACES[0], lamp: 'bloom' }, { eyes: 'closed' }))).toMatchSnapshot();
   });
 });

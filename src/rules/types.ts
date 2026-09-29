@@ -1,5 +1,5 @@
 // The applicant as the player sees it, and what the rule engine says about them.
-import type { PanelSpot, Portrait } from '../gen/portrait';
+import type { LampSize, Portrait } from '../gen/portrait';
 
 /** What an applicant holds up in their video, from day 3. */
 export type Sign =
@@ -15,7 +15,7 @@ export type Video = {
   transcript: string;
   /** Eyes closed in the third frame. */
   blinked: boolean;
-  /** Eyes closed in the first frame as well: someone who blinks far too much. */
+  /** Eyes closed in the first frame as well: a second blink. */
   nervous?: true;
   /** A printed face held up to the camera: every frame the same, mouth and eyes included. */
   still?: true;
@@ -25,8 +25,8 @@ export type Video = {
   with?: Portrait;
   /** Made by a video generator, not filmed: the generator's mark is in the corner of every frame. */
   generated?: true;
-  /** A machine's tell: in this one frame the skin at this spot stands open onto machinery. */
-  panel?: { frame: number; where: PanelSpot };
+  /** A machine's tell: its eyes are cameras, and whenever they are shut its night lamp is on: a light between the brows that a camera sees and a person does not. Lit in every frame with the eyes shut (litFrames), and no other. */
+  lamp?: LampSize;
   /** From day 3: what they hold up to the camera. Null if nothing. */
   sign?: Sign | null;
 };
@@ -74,11 +74,11 @@ export type Mark = { word: string; ok: boolean };
 
 export type Violation =
   /**
-   * The video is not of a real human: skin open onto machinery in that frame, a face that changes
-   * to another in that frame, a picture held up (every frame the same), or a video generator's mark
-   * in the corner of every frame.
+   * The video is not of a real human: a light between the brows in that frame, the eyes shut; a face
+   * that changes to another in that frame; a picture held up (every frame the same); or a video
+   * generator's mark in the corner of every frame.
    */
-  | { rule: 'human'; problem: 'machine' | 'changes' | 'picture' | 'generated'; frame: number; where?: PanelSpot }
+  | { rule: 'human'; problem: 'machine' | 'changes' | 'picture' | 'generated'; frame: number }
   | { rule: 'phrase'; heard: Mark[]; expected: Mark[] }
   /** The photo is not the face in that frame (1 to 3), or it is a mirror image. */
   | { rule: 'photo'; frame: number; mirrored: boolean }

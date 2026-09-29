@@ -203,10 +203,15 @@ export const LIKENESS = 'Likeness Robotics Ltd';
  * Likeness units: home robots with human faces, sold to households, some of which have heard about
  * the income. One comes to Window 3 on each of days 1 to 6, each with a new face and the ordinary
  * name its household gave it, living on an ordinary street. Nothing at the window gives a unit away,
- * its remarks are ordinary and its photo is flawless. Most days its video does: in one frame, the skin
- * on the cheek or by the jaw stands open onto machinery (Rule 0). Day 4 its papers do: it is vouched for by its
- * maker, which is a company, not a registered human. Day 5 its face does: the factory made that face
- * twice, and Window 7 registered the other unit last month. Each unit breaks that one rule only.
+ * its remarks are ordinary and its photo is flawless. A unit sees through cameras in its eyes, and
+ * blinks for the people in the room. The units of days 1, 2, 3 and 6 are older household models:
+ * whenever the lids shut, even for a blink, the cameras are in the dark and a night lamp comes on
+ * between the brows. People cannot see it; a phone camera can, so their videos give them away
+ * (Rule 0), in every frame with the eyes shut. The lamp is smaller as the week goes on (the day 4
+ * Gazette says why). Days 4 and 5 are the current model, whose lamp waits out a blink. Day 4 its
+ * papers give it away: it is vouched for by its maker, which is a company, not a registered human.
+ * Day 5 its face does: the factory made that face twice, and Window 7 registered the other unit
+ * last month. Each unit breaks that one rule only.
  */
 export const UNITS: readonly { name: string; address: string; birthYear: number; wallet: string; remark: string }[] = [
   { name: 'Clara Voss', address: '48 Lower Queue Road, Greyford', birthYear: 1991, wallet: '0x215BBEC90CD9D5825C31023B411C004D3AC92F0D', remark: "Good morning. I've been looking forward to this all week." },

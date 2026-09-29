@@ -51,9 +51,9 @@ const FEW_WRONG = 3;
 /**
  * How visible a fault is. Silence, a square of dots, no sign, nobody vouching, a year before Christ
  * and a version number for a year are plain; a wrong word, a mirror, someone else's address often seen; a typo in the year, no
- * blink, another face, a picture held up and the generator's mark sometimes; a panel open in one frame,
- * an ear that changes, two wrong characters, and whatever needs the registry (a voucher not registered
- * or already vouching, a face on file) rarely.
+ * blink, another face, a picture held up and the generator's mark sometimes; a lamp lit only in the
+ * frames with the eyes shut, an ear that changes, two wrong characters, and whatever needs the
+ * registry (a voucher not registered or already vouching, a face on file) rarely.
  */
 export function visibility(v: Violation): Tier {
   switch (v.rule) {

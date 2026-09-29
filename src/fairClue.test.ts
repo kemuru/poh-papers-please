@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { PHRASE_MISTAKES } from './content/applicants';
 import { planWeek } from './gen/day';
 import { drawPortrait } from './gen/drawPortrait';
-import type { Portrait } from './gen/portrait';
+import type { Portrait, Pose } from './gen/portrait';
+import { framePoses, litFrames } from './rules/face';
 import { judge, rulebookForDay } from './rules/judge';
 import { PHRASE } from './rules/phrase';
 import type { Applicant, Registry, RuleId } from './rules/types';
@@ -20,13 +21,13 @@ const saysBoldWords = (transcript: string) => {
   return next === BOLD.length;
 };
 /** The face alone, as drawn: hair, beard, clothes and anything worn or held taken off. */
-const bare = (p: Portrait) =>
-  drawPortrait({ ...p, hair: 'bald', facialHair: 'none', outfit: 'tshirt', outfitColor: 'grey', accessories: [], board: undefined });
+const bare = (p: Portrait, pose: Partial<Pose>) =>
+  drawPortrait({ ...p, hair: 'bald', facialHair: 'none', outfit: 'tshirt', outfitColor: 'grey', accessories: [], board: undefined }, pose);
 const drawn = new Map<string, string>();
-const pixels = (p: Portrait, mirrored = false) => {
-  const key = `${mirrored}${JSON.stringify(p)}`;
+const pixels = (p: Portrait, mirrored = false, pose: Partial<Pose> = {}) => {
+  const key = `${mirrored}${JSON.stringify(pose)}${JSON.stringify(p)}`;
   if (!drawn.has(key)) {
-    const { width, height, pixels } = bare(p);
+    const { width, height, pixels } = bare(p, pose);
     const rows = Array.from({ length: height }, (_, y) => pixels.slice(y * width, (y + 1) * width));
     drawn.set(key, rows.map((row) => (mirrored ? [...row].reverse() : row).join(',')).join(';'));
   }
@@ -34,19 +35,25 @@ const pixels = (p: Portrait, mirrored = false) => {
 };
 /** The face in each of the three frames, as the video strip draws them. */
 const frames = (a: Applicant) => [1, 2, 3].map((n) => (a.video.glitch?.frame === n ? a.video.glitch.face : a.video.face));
+/** The frames drawn with a light between the brows: each frame in its pose, as the video strip draws it, with and without the lamp. */
+const drawnLit = (a: Applicant) => {
+  const faces = frames(a);
+  const poses = framePoses(a.video);
+  return [1, 2, 3].filter((n) => pixels({ ...faces[n - 1], lamp: a.video.lamp }, false, poses[n - 1]) !== pixels(faces[n - 1], false, poses[n - 1]));
+};
 /** The characters of an address the form shows: 0x3F9A…C21E. */
 const shown = (address: string) => (address.slice(0, 6) + address.slice(-4)).toUpperCase();
 
 const CLUES: Record<RuleId, (a: Applicant, registry: Registry) => boolean> = {
-  // A frame is drawn with skin open onto machinery, or with a face that is not the face in the other frames; or all
-  // three frames are drawn the same, no mouth moving, no blink (a picture held up); or a generator's mark is in the corner.
+  // A frame with the eyes shut is drawn with a light between the brows, or a frame with a face that is not the face in
+  // the other frames; or all three frames are drawn the same, no mouth moving, no blink (a picture held up); or a
+  // generator's mark is in the corner.
   human: (a) => {
     const faces = frames(a);
-    const { panel } = a.video;
-    const open = panel !== undefined && pixels({ ...faces[panel.frame - 1], panel: panel.where }) !== pixels(faces[panel.frame - 1]);
+    const lamp = drawnLit(a).length > 0;
     const changes = new Set(faces.map((face) => pixels(face))).size > 1;
     const marked = a.video.generated === true && pixels({ ...faces[0], mark: true }) !== pixels(faces[0]);
-    return open || changes || a.video.still === true || marked;
+    return lamp || changes || a.video.still === true || marked;
   },
   // A word printed in bold in the rulebook is missing from the transcript under the video strip.
   phrase: (a) => !saysBoldWords(a.video.transcript),
@@ -96,6 +103,15 @@ describe('fair clue check', () => {
     for (const a of applicants.filter((x) => x.planted.length === 0)) {
       for (const rule of rulebookForDay(a.day)) expect(CLUES[rule](a, a.registry), `${a.name}, day ${a.day}: ${rule}`).toBe(false);
     }
+  });
+
+  it("lights a unit's lamp in exactly the frames litFrames names, the frames Rule 0 and Inspect read", () => {
+    const units = applicants.filter((a) => a.video.lamp);
+    expect(units.length).toBeGreaterThanOrEqual(40);
+    for (const a of units) expect(drawnLit(a), a.name).toEqual(litFrames(a.video));
+    // The day 2 unit shuts its eyes twice: lit at 00:01 and at 00:05, dark between.
+    expect(new Set(units.map((a) => drawnLit(a).join(',')))).toEqual(new Set(['3', '1,3']));
+    for (const a of applicants.filter((x) => !x.video.lamp)) expect(litFrames(a.video), a.name).toEqual([]);
   });
 
   it('gives a clue for every line the generator can plant', () => {

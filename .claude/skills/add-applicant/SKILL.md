@@ -32,7 +32,7 @@ Run `node ${CLAUDE_SKILL_DIR}/scripts/week.mjs`. Over the 20 seeds the tests use
 The targets (game-design.md):
 - Each day is 65 to 75% valid; day 1 is 3 of 5. The counts are fixed in `DAYS` (`src/gen/day.ts`) and a character never changes them: they take a fill-in's place, a fake's if invalid, a valid one's if valid.
 - Roughly half of the absurd cast appearances are valid (the test's floor is 40%). Appearance never gives the answer.
-- An invalid applicant has exactly one fault, on every day they appear, under every rule in force that day. A non-human (a machine, a generated person or avatar, a picture) breaks Rule 0 when its video shows it: skin open onto machinery in one frame, a face that changes between frames, three identical frames, or a generator's mark. It breaks one rule in all, like everyone, or Rule 0 and one of Rules 1 to 6 (the Agent, the Cutout), never more. Anything worn, painted or carried never counts under Rule 0: a costume is how they look, not what they are.
+- An invalid applicant has exactly one fault, on every day they appear, under every rule in force that day. A non-human (a machine, a generated person or avatar, a picture) breaks Rule 0 when its video shows it: a light of its own (the Likeness units' lamp between the brows, lit in every frame with the eyes shut), a face that changes between frames, three identical frames, or a generator's mark. It breaks one rule in all, like everyone, or Rule 0 and one of Rules 1 to 6 (the Agent, the Cutout), never more. Anything worn, painted or carried never counts under Rule 0: a costume is how they look, not what they are.
 - Each rule wants three kinds of offender and one valid look-alike. Say which this character is.
 
 If the requested validity would take the cast share under about 50% or a day out of its band, ask, with the numbers and the alternative (the other validity, or fewer appearances). Otherwise state the decision in one line before editing, e.g. "Toaster: invalid on day 6, breaks Living (no blink: no frame shows closed eyes). Cast valid 66% to 62%."
@@ -59,6 +59,7 @@ All humor lives here. Logic files get none.
 - Colours go in `PROPS` in `portraitParts.ts`, with a stamp there if it is pixel art.
 - Draw it in `drawAccessories` (`drawPortrait.ts`), placed from the anchors (`eyeY`, `browY`, `mouthY`, `chin`, `head`, `neckHalf`) so it fits any head. The test wants at least 4 visible pixels on 60 random heads and on the unit faces.
 - Never cover the eyes or the mouth: every cast portrait must still show a blink and an open mouth (tested).
+- Nothing point-like between the brows (a bindi, a gem, a sticker): that is where a unit's lamp shows (game-design.md, "Funny is not the same as fake").
 - Self-made only. Anything external must be CC0 and listed in `public/assets/LICENSES.md`.
 - The accessory is how they look, not the proof. Unless the rule is about the photo, it is not the clue.
 

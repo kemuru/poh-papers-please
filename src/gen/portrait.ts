@@ -32,8 +32,8 @@ export const OUTFIT_COLORS = [
 export const ACCESSORIES = [
   'glasses', 'monocle', 'earrings', 'pearls', 'top-hat', 'sweat', 'sleep-mask', 'flat-cap', 'bobble-hat', 'robot-helmet',
 ] as const;
-/** Where a unit's skin stands open in one video frame. */
-export const PANEL_SPOTS = ['cheek', 'jaw'] as const;
+/** How bright a unit's night lamp shows on camera: loudest on day 1, dimmer as the week goes. */
+export const LAMP_SIZES = ['bloom', 'glow', 'small'] as const;
 
 export type Species = (typeof SPECIES)[number];
 export type SkinTone = (typeof SKIN_TONES)[number];
@@ -52,7 +52,7 @@ export type FacialHair = (typeof FACIAL_HAIR)[number];
 export type Outfit = (typeof OUTFITS)[number];
 export type OutfitColor = (typeof OUTFIT_COLORS)[number];
 export type Accessory = (typeof ACCESSORIES)[number];
-export type PanelSpot = (typeof PANEL_SPOTS)[number];
+export type LampSize = (typeof LAMP_SIZES)[number];
 
 /**
  * The features that make someone recognisable. Hair, clothes and accessories
@@ -84,8 +84,8 @@ export type Portrait = {
   board?: 'writing' | 'qr' | 'phone';
   /** A video generator's mark, in the top corner of a generated video's frames. */
   mark?: true;
-  /** In one video frame of a unit: the skin here stands open onto machinery. */
-  panel?: PanelSpot;
+  /** A unit's night lamp between the brows. Drawn only in a pose with the eyes shut: it is on only while its eye cameras are in the dark. */
+  lamp?: LampSize;
 };
 
 /** What changes between video frames. A profile photo uses the defaults. */

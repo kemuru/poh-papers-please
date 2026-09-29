@@ -92,7 +92,7 @@ test('inspect mode: two things that disagree are marked and the rule is named; t
   const patAt = queue.findIndex((a) => a.cast === 'pat');
   const unitAt = queue.findIndex((a) => a.cast === 'unit');
   expect(queue[patAt].planted[0]).toMatchObject({ rule: 'photo', mistake: 'mirrored' });
-  expect(queue[unitAt].video.panel).toEqual({ frame: 1, where: 'jaw' });
+  expect(queue[unitAt].video).toMatchObject({ lamp: 'glow', nervous: true });
   const inspector = page.getByTestId('inspector');
   for (let i = 0; i < queue.length; i++) {
     if (i !== validAt && i !== patAt && i !== unitAt) {
@@ -117,12 +117,20 @@ test('inspect mode: two things that disagree are marked and the rule is named; t
       await shot(page, 'inspect-photo.png');
       await page.getByRole('button', { name: 'Challenge' }).click();
     } else {
-      // The unit looks like anyone, at the window and in its photo; in frame 1 its jaw stands open.
+      // The unit looks like anyone, at the window and in its photo; in frame 1 its eyes are shut
+      // and its lamp is on.
       await page.getByRole('button', { name: 'Inspect frame 1' }).click();
       await page.keyboard.press('0');
       await page.getByRole('button', { name: 'Inspect Rule 0' }).click();
-      await expect(inspector).toContainText('Discrepancy · Rule 0: A real human. In frame 1 the skin at the jaw is open, and there is machinery behind it.');
-      await shot(page, 'inspect-machine.png');
+      await expect(inspector).toContainText('Discrepancy · Rule 0: A real human. In frame 1 the eyes are shut, and there is a light between the brows.');
+      await shot(page, 'inspect-lamp.png');
+      // Its eyes are shut in frame 3 too: pointed at, frame 3 is the frame Inspect names.
+      await page.getByRole('button', { name: 'Inspect frame 3' }).click();
+      await page.getByRole('button', { name: 'Inspect Rule 0' }).click();
+      await expect(inspector).toContainText('Discrepancy · Rule 0: A real human. In frame 3 the eyes are shut, and there is a light between the brows.');
+      await expect(page.locator('[data-inspect="frame-3"]')).toHaveClass(/flagged/);
+      await expect(page.locator('[data-inspect="rule-human"]')).toHaveClass(/flagged/);
+      await expect(page.locator('.flagged')).toHaveCount(2);
       await page.getByRole('button', { name: 'Challenge' }).click();
     }
     await expect.poll(async () => (await game(page)).decided.length).toBe(i + 1);

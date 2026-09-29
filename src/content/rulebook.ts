@@ -23,11 +23,11 @@ export const RULEBOOK: Record<RuleId, Entry> = {
     quote: 'The submitter must be a real human and not a computer-generated person or avatar.',
     bold: [false, false, false, false, false, true, true, false, true, false, true, true, false, true],
     checks: [
-      'In every frame: a human face, the same face, and skin, not machinery.',
+      'In every frame, eyes open or shut: the same human face, giving off no light.',
       'Three identical frames are a picture held up, not a person.',
       'A video generator leaves its mark ✦ in a corner.',
     ],
-    note: 'Anything worn, painted or carried does not count, for or against: a costume robot’s head under the arm is a costume.',
+    note: 'Anything worn, painted or carried does not count, for or against: a costume robot’s head is a costume, bulb and all.',
   },
   phrase: {
     number: 1,

@@ -1,8 +1,9 @@
 // A violation in words: what disagrees with what. Dry on purpose; the jokes are in the memos.
 import { RULEBOOK } from '../content/rulebook';
+import { litFrames } from '../rules/face';
 import type { Item } from '../rules/inspect';
 import { shortAddress } from '../rules/sign';
-import type { Mark, RuleId, Violation } from '../rules/types';
+import type { Mark, RuleId, Video, Violation } from '../rules/types';
 import type { Evidence } from './court';
 
 export const ruleName = (rule: RuleId) => `Rule ${RULEBOOK[rule].number}: ${RULEBOOK[rule].title}`;
@@ -46,6 +47,22 @@ export const registeredWhere = (r: { day: number; window?: string }) =>
   r.window ? `at ${r.window}` : r.day === 0 ? 'before this week' : `on day ${r.day} at Window 3`;
 
 /**
+ * The violation named in the frame the clerk pointed at, when the fault shows there too. judge() names
+ * the first frame; a photo that is someone else is not the face in any frame, and a unit's lamp is lit
+ * in every frame with its eyes shut.
+ */
+export function asPointed(v: Violation, e: Evidence | null, video: Video): Violation {
+  if (!e || e.rule !== v.rule) return v;
+  const pointed = e.items.flatMap((item) => (item.kind === 'frame' ? [item.frame] : []));
+  if (v.rule === 'photo' && !v.mirrored && pointed.length > 0) return { ...v, frame: pointed[0] };
+  if (v.rule === 'human' && v.problem === 'machine') {
+    const frame = pointed.find((n) => litFrames(video).includes(n));
+    if (frame !== undefined) return { ...v, frame };
+  }
+  return v;
+}
+
+/**
  * The evidence in one line, without the rule's name. The court sits after the day's registrations and
  * removals, so it puts a voucher's standing and a face on file as they were at the window; the desk,
  * as they are.
@@ -53,7 +70,7 @@ export const registeredWhere = (r: { day: number; window?: string }) =>
 export function evidenceLine(v: Violation, at: 'desk' | 'court' = 'desk'): string {
   switch (v.rule) {
     case 'human':
-      if (v.problem === 'machine') return `in frame ${v.frame} the skin at the ${v.where} is open, and there is machinery behind it.`;
+      if (v.problem === 'machine') return `in frame ${v.frame} the eyes are shut, and there is a light between the brows.`;
       if (v.problem === 'changes') return `the face in frame ${v.frame} is not the face in the other frames.`;
       if (v.problem === 'picture') return 'every frame is the same picture, mouth and eyes included.';
       return 'a video generator’s mark is in the corner of every frame.';

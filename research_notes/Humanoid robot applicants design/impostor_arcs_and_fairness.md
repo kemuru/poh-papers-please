@@ -117,7 +117,7 @@ The evidence points to a few robots and many look-alikes. The subtlety curve sho
 ### Inferences
 - **Frequency.** At about 65 to 75% valid (per `notes/game-design.md`), one robot a day is enough for a recurring line, plus at least one robot-ish human who is valid. More robots than look-alikes would teach "anything uncanny is a robot" and break "appearance never decides". The Farm on day 5 shows that several units on one day can work, but only when the rule of the day, Rule 5, is exactly what catches them.
 - **A subtlety ladder that stays fair at 3-frame low resolution** (each rung is a fact the player can point to, and each is a proposal, not a decision):
-  1. Days 1 and 2: blatant but realistic. A charging port or a panel seam at the neck is visible in every frame, and the Rule 0 memo names "a person, not a machine".
+  1. Days 1 and 2: blatant but realistic. (updated 29 Sep 2026) The unit's night lamp at its largest, lit between the brows in the frames where its eyes are shut, with a violet cast on the brows, and the Rule 0 memo names "a person, not a machine".
   2. Days 3 and 4: in one frame only, when the head turns, a status light shows at the ear or temple.
   3. Days 5 and 6: the tell moves to an existing hard check. Units share one face (Rule 5), or frames 1 and 3 are identical because the unit holds perfectly still, which Rule 0 already treats as "a picture, not a person".
   4. Day 7: perfect under Rules 1 to 6, caught only by the smallest Rule 0 fact, mirroring Gary on day 7.

@@ -1,5 +1,5 @@
 // How the recurring cast looks (who they are: notes/game-design.md).
-import type { Face, PanelSpot, Portrait } from '../gen/portrait';
+import type { Face, LampSize, Portrait } from '../gen/portrait';
 
 const android = (face: Face, look: Omit<Portrait, 'species' | 'face' | 'accessories'>): Portrait => ({ species: 'android', face, ...look, accessories: [] });
 
@@ -35,16 +35,17 @@ export const UNIT_FACES: readonly Portrait[] = [
 ];
 
 /**
- * Where each day's unit stands open, in which video frame: nothing on day 4 (its papers give it away)
- * or day 5 (its face). On each of these heads that spot is bare skin, wide enough for the whole panel.
+ * Each day's unit's night lamp, and on day 2 the second blink that lights it twice. Nothing on day 4
+ * or day 5: those are Likeness's current model, whose lamp waits out a blink (their papers and face
+ * give them away).
  */
-export const UNIT_PANELS: readonly ({ frame: number; where: PanelSpot } | null)[] = [
-  { frame: 2, where: 'jaw' },
-  { frame: 1, where: 'jaw' },
-  { frame: 3, where: 'cheek' },
+export const UNIT_LAMPS: readonly ({ lamp: LampSize; nervous?: true } | null)[] = [
+  { lamp: 'bloom' },
+  { lamp: 'glow', nervous: true },
+  { lamp: 'glow' },
   null,
   null,
-  { frame: 2, where: 'cheek' },
+  { lamp: 'small' },
 ];
 
 /** The unit Window 7 registered last month, in its own clothes: the factory made its face twice, and the day 5 unit has the other. */

@@ -3,7 +3,7 @@
 // '.' is transparent and each letter is looked up in a colour table at draw time.
 // Face stamps: k ink, w eye white, i iris, d eye dark, g glint, b brow,
 // s skin shadow, h skin highlight, l lip, m mouth inside, t teeth.
-import type { BrowStyle, EyeColor, EyeStyle, HairColor, MouthStyle, NoseStyle, OutfitColor, SkinTone } from './portrait';
+import type { BrowStyle, EyeColor, EyeStyle, HairColor, LampSize, MouthStyle, NoseStyle, OutfitColor, SkinTone } from './portrait';
 
 export type Ramp = { hi: string; base: string; lo: string };
 export type SkinRamp = Ramp & { deep: string; lip: string };
@@ -81,8 +81,8 @@ export const PROPS = {
   phone: { body: '#23262b', screen: '#cfe3ea' },
   /** A party costume's robot head: painted card, a dark visor and a bulb on a stalk. */
   helmet: { hi: '#e3e6e8', base: '#b8bec3', lo: '#80878d', visor: '#2b3740', bulb: '#e2574a' },
-  /** A unit's open panel. Colours no skin, hair or clothing uses, so a few pixels read as machinery. */
-  machine: { edge: '#16191c', flap: '#d9e0e4', board: '#2f8a4c', chip: '#101417', pin: '#e0b84a', light: '#5fe3f0' },
+  /** A unit's night lamp as a phone camera sees near-infrared: a white core in a deep-violet ring, and violet light spilling onto whatever is near. Colours no skin, hair, eye or clothing uses. */
+  lamp: { core: '#fdfaff', ring: '#3d2288', spill: '#b39af7' },
   /** The outline of a video generator's mark. */
   markEdge: '#3d4446',
 };
@@ -130,6 +130,16 @@ export const SWEAT_DROP = ['.o.', 'oho', 'oao', '.o.'];
 
 /** The closed eye stitched on a sleep mask, one per side. */
 export const SLEEP_MASK_EYE = ['s..s', '.ss.'];
+
+/**
+ * A unit's night lamp, whole (it is symmetric), centred on the face with its top row four rows above
+ * the brows' bottom row: c core, r ring, s its light spilling onto what is there, mixed in by `spill`.
+ */
+export const LAMPS: Record<LampSize, { art: readonly string[]; spill: number }> = {
+  bloom: { art: ['...ss...', '.ssssss.', '.ssrrss.', 'ssrccrss', 'ssrccrss', '.ssrrss.'], spill: 0.5 },
+  glow: { art: ['...ss...', '.ssssss.', '.ssrrss.', 'ssrccrss', 'ssrccrss', '.ssrrss.'], spill: 0.3 },
+  small: { art: ['........', '........', '........', '...rr...', '..rccr..', '...rr...'], spill: 0 },
+};
 
 /** 3x5 glyphs: five octal digits, one per row, 4 = left column, 1 = right column. */
 export const FONT: Record<string, string> = {

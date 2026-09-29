@@ -29,6 +29,18 @@ describe('the Gazette after the court', () => {
     expect(HEADLINES.fake).toContain(lead([human, { ...missedFake, decision: 'accept', upheld: undefined, removed: undefined }, missedUnit]).headlineLine);
   });
 
+  it('can print every unit headline: a unit registered every day prints each one, one a morning, days 2 to 7', () => {
+    // A headline starts from the morning's day in its pool: with more lines than mornings, some line is never reached.
+    const stampedIn: CaseReport = { ...missedUnit, decision: 'accept', upheld: undefined, removed: undefined };
+    const shown: string[] = [];
+    for (let day = 2; day <= 7; day++) {
+      const gazette = writeGazette(day, { day: day - 1, cases: [human, stampedIn], unprocessed: 0 }, shown);
+      expect(HEADLINES.unit, `day ${day}`).toContain(gazette.headlineLine);
+      shown.push(gazette.headlineLine);
+    }
+    expect(new Set(shown)).toEqual(new Set(HEADLINES.unit));
+  });
+
   it('never blames the window for a challenge the jury dismissed', () => {
     const window = /WINDOW 3 REGISTERS|NOT CONSULTED|READ BY NOBODY/;
     for (const line of HEADLINES.court) expect(line).not.toMatch(window);

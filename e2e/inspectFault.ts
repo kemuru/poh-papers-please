@@ -1,5 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 import type { GeneratedApplicant } from '../src/gen/applicant';
+import { litFrames } from '../src/rules/face';
 
 // Slice 4: a challenge carries to court what Inspect found on the applicant. These are a careful
 // clerk's two clicks for each kind of fault the generator plants, so a spec can challenge a fake
@@ -21,7 +22,7 @@ export async function inspectFault(page: Page, a: GeneratedApplicant) {
   };
   switch (fault.rule) {
     case 'human':
-      await point(`frame ${a.video.panel?.frame ?? a.video.glitch?.frame ?? 1}`);
+      await point(`frame ${litFrames(a.video)[0] ?? a.video.glitch?.frame ?? 1}`);
       await againstRule();
       break;
     case 'phrase':

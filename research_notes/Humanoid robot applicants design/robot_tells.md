@@ -29,7 +29,7 @@ The face-bearing androids of 2024–2026 (AheadForm Origin M1, Columbia's EMO, E
 ### Inferences
 - In 2026 a lifelike android at a registry window would blink, glance and move its lips. What gives it away is (a) cameras in the eyes, (b) lip shapes that don't match sounds, (c) timing (too regular, too slow) and (d) machinery wherever the silicone ends. Only (d) and, just barely, (a) can be drawn in a 40×48 still.
 - Lip-sync and timing tells are real but cannot be checked in three stills, and they overlap with human speech and facial-movement differences. They are not usable as evidence.
-- The owner's "chip on her face" example is realistic in kind. Real face robots are silicone skins over motor arrays, so a gap in the skin would show motors or boards.
+- Real face robots are silicone skins over motor arrays, so a gap in the skin would show motors or boards. (updated 29 Sep 2026) The game's tell builds on (a) instead, without drawing the lens: a unit's eyes are cameras, and when its lids shut it lights a lamp between its brows that a camera sees and people don't. That lamp is the design's own; this research read no source on it.
 - A "whirring servo" sound tell is outdated: AheadForm's motors "run quietly". It is also audio, and the evidence here is visual.
 
 ### Gaps
@@ -41,7 +41,7 @@ The face-bearing androids of 2024–2026 (AheadForm Origin M1, Columbia's EMO, E
 ## 2. Fiction's visual signifiers: which are iconic, which subtle, which readable in tiny pixel art?
 
 ### Takeaway
-Fiction has trained audiences to read androids by: the eyes (Blade Runner's eye shine, Humans' green eyes, the Terminator's red optic, A.I.'s unblinking David), a non-human fluid (Alien's milky "sweat"), a legal marker (Detroit's temple LED), and damage that opens the skin onto machinery (Terminator, Ex Machina's mesh, The Creator's hole through the head). The iconic tells are either marks you can remove (the LED) or looks (eye colour). The most transferable, fair device is "the skin opens and something that is not a person is behind it". Battlestar Galactica shows what happens with no visual tell: paranoia, and a test nobody trusts.
+Fiction has trained audiences to read androids by: the eyes (Blade Runner's eye shine, Humans' green eyes, the Terminator's red optic, A.I.'s unblinking David), a non-human fluid (Alien's milky "sweat"), a legal marker (Detroit's temple LED), and damage that opens the skin onto machinery (Terminator, Ex Machina's mesh, The Creator's hole through the head). The iconic tells are either marks you can remove (the LED) or looks (eye colour). (updated 29 Sep 2026) The device the game takes is the one Blade Runner's eye shine uses: a light the camera, and so the audience, sees and the people in the scene do not. It sits between the brows, not in the eyes (Q4). Battlestar Galactica shows what happens with no visual tell: paranoia, and a test nobody trusts.
 
 ### Cited Findings
 - **Blade Runner (1982), eye shine.** It was produced in camera with a half-silvered glass at 45° in front of the lens and a small dimmable light behind the camera — [SlashFilm](https://www.slashfilm.com/907405/blade-runner-had-a-brilliantly-simple-solution-for-putting-the-shine-in-replicants-eyes/). Ridley Scott: "that kickback you saw from the replicants' retinas was a bit of a design flaw ... the eye doesn't only see a lot, the eye gives away a lot." Scott treats the glow as a stylistic device for the audience, not something characters see — [Alien Explorations blog](http://alienexplorations.blogspot.com/2023/07/bladerunner-glowing-eyes.html) (fan blog quoting Scott) **[snippet for the quote]**
@@ -64,7 +64,8 @@ Readability at 40×48 (each face ≈ 80×96 screen px):
 
 | Fiction tell | Iconic? | Subtle? | Readable at 40×48? | Fair as evidence? |
 |---|---|---|---|---|
-| Opened skin shows machinery (Terminator, Ex Machina, owner's chip) | Very | Can be, if in one frame only | **Yes**: a 3×3 to 4×4 px gap in a colour no skin uses | **Yes**, if the gap opens and closes between frames (see Q3) |
+| A light only a camera sees, off the eyes (Blade Runner's eye shine is for the audience, not the characters; 2049's serial shows only under UV) (updated 29 Sep 2026) | Very, as eye shine | Yes, if it shows only in some frames | **Yes**: a white core in a violet ring, 8 to 36 px | **Yes**, if it is lit exactly in the frames with the eyes shut and never in the photo: the game's night lamp (see Q3) |
+| Opened skin shows machinery (Terminator, Ex Machina) (updated 29 Sep 2026) | Very | — | — | **Not used**: nothing on camera makes the skin open |
 | See-through hole in the head (The Creator) | Recent, strong | Yes, only when the head turns | Yes, if background pixels show inside the head outline | Yes, but keep it off the earlobe (gauges) |
 | Temple LED (Detroit) | Very (gamers) | No, it's in every frame | Yes (2 px dot) | **No**: a sticker or earring looks the same, and in-fiction it is removable. Best used as a *valid decoy* (a human wearing one) |
 | Eye glow / eye shine (Blade Runner) | Very | Yes | 1 px, barely | **No**: collides with ordinary flash red-eye and leukocoria (Q4) |
@@ -87,7 +88,7 @@ Readability at 40×48 (each face ≈ 80×96 screen px):
 ## 3. Which tells work as a difference between frames, and which read as fair evidence?
 
 ### Takeaway
-The fairest tells change between frames and are driven by the face's own motion. Skin that parts when the jaw opens (speaking frame) or when the lids close (blink frame) shows machinery behind it, and is closed skin in the other two frames. Anything present in all three frames is indistinguishable from something worn, painted or medical. Anything about the eyes, the blink, the mouth interior, sweat or stillness collides with an existing rule, an existing character or a human condition.
+The fairest tells change between frames and are driven by the face's own motion. (updated 29 Sep 2026) A light that comes on when the lids close is lit in the blink frame and dark in the others, and no sticker switches with the lids. Anything present in all three frames is indistinguishable from something worn, painted or medical. Anything about the eyes, the blink, the mouth interior, sweat or stillness collides with an existing rule, an existing character or a human condition.
 
 ### Cited Findings
 - Motion that doesn't match a human appearance is what the brain flags. Appearance alone passes at a glance (Repliee "mistaken for a human being with brief exposures") — [Saygin et al. 2012](https://pmc.ncbi.nlm.nih.gov/articles/PMC3324571/)
@@ -99,39 +100,37 @@ The fairest tells change between frames and are driven by the face's own motion.
   - Q4 shows why eyes are the riskiest place for a fair tell.
 
 ### Inferences
-**Catalogue of candidate tells for 40×48 frames.** Recommended ones first. "Machine palette" means colours reserved for machinery and used by no skin, hair, makeup or clothing in faces: e.g., cool steel grey, circuit green with 1 px gold pins, LED cyan.
+**Catalogue of candidate tells for 40×48 frames.** Recommended ones first. (updated 29 Sep 2026) The lamp's palette is reserved: a near-white core, a deep-violet ring and a lavender spill, used by no skin, hair, eye or clothing colour.
 
 | # | Tell | Frame | Pixel recipe (40×48) | One-sentence rulebook reading | Fairness risk | Verdict |
 |---|---|---|---|---|---|---|
-| T1 | **Cheek panel opens on a chip** (the owner's example) | 00:03 speaking only | 4×3 px dark-edged gap below one eye or along the jaw hinge. Inside, a green chip with 1 px gold pins. Neutral and blink frames show plain skin, no line. | "In one frame her face is open, and behind it is not a face." | Low: nothing worn opens with the jaw, and a scar is in every frame | **Use** |
-| T2 | **Forehead or temple plate lifts** | 00:05 blinking (the blink "flexes" the face) | 5×2 px lid of skin raised at the hairline, showing grey metal and one cyan pixel | Same as T1 | Low if kept off the ears and the hairline part line | **Use** |
-| T3 | **See-through head** (The Creator) | 00:03, with a 1–2 px head turn | 3×3 px of *background* colour inside the head outline above or behind the ear, ringed by grey | "You can see the wall through his head." | Low above the ear. **Never on the earlobe** (stretched-lobe gauges are a human body modification) | **Use**, with care on placement |
-| T4 | **Skin seam pulls open while speaking** | 00:03 | A 1 px line splits at the mouth corner or down the jaw to show 1–2 px grey. Closed in the other frames. | Same as T1 | Medium: a 1 px line alone reads as a scar, a wrinkle or a cleft-lip repair. Only fair if metal is visible *inside* | Use only with visible metal |
-| T5 | **Lens behind the eyelid** | 00:05 | Closed lid line with 1 px cyan in the middle | "Her eyes shine through her eyelids." | High: eyeshadow and glitter on the lid are also visible only when closed. Too small | Avoid |
-| T6 | **Camera lens in pupil** (Ameca, Origin M1) | all | Ring in the pupil | — | High: patterned contact lenses, ocular prostheses, cataracts. A constant look | Avoid |
-| T7 | Temple LED (Detroit) | all | 2 px dot | — | High: stickers, earrings, dermal piercings, bindis and forehead jewellery look the same | **Valid decoy only** |
-| T8 | Doesn't blink / half blink | 00:05 | Open eyes | — | High: that is Rule 6's check. Facial palsy, Parkinson's (Q4) | Avoid |
-| T9 | White sweat bead (Alien) | one frame | 2 px drop | — | Collides with Nervous Nigel's sweat | Avoid |
-| T10 | Grille, light or chip *inside the mouth* | 00:03 | Mouth interior | — | Braces, crowns and grills are metal in human mouths | Avoid |
-| T11 | Too still (identical pixels outside mouth and eyes) | all | — | — | Already the Cardboard Cutout's signature; confusing | Avoid |
-| T12 | Eye colour (Humans), perfect skin (silicone) | all | — | — | Looks judgement, and breaks "appearance never gives the answer" | Avoid |
-| T13 | Cable or port at the neck (Real Humans) | all | — | — | Tracheostomy tubes, central lines, oxygen cannulas | Avoid |
+| T1 | **Night lamp between the brows** (updated 29 Sep 2026) | Every frame with the eyes shut: 00:05, and 00:01 too on a second blink | A 2×2 white core in a deep-violet ring of 8 px on the face's mirror line, level with the brows; violet mixed into the 24 px of skin, inner brow and fringe around it. 8 px with no spill when small | "In every frame, eyes open or shut: the same human face, giving off no light." | Low: off the eyes, nose and mouth; a sticker, bindi or jewel would show with the eyes open too, and no applicant wears a point-like mark there | **Use** |
+| T2 | **See-through head** (The Creator) | 00:03, with a 1–2 px head turn | 3×3 px of *background* colour inside the head outline above or behind the ear, ringed by grey | "You can see the wall through his head." | Low above the ear. **Never on the earlobe** (stretched-lobe gauges are a human body modification) | **Use**, with care on placement |
+| T3 | **Lens behind the eyelid** | 00:05 | Closed lid line with 1 px cyan in the middle | "Her eyes shine through her eyelids." | High: eyeshadow and glitter on the lid are also visible only when closed. Too small | Avoid |
+| T4 | **Camera lens in pupil** (Ameca, Origin M1) | all | Ring in the pupil | — | High: patterned contact lenses, ocular prostheses, cataracts. A constant look | Avoid |
+| T5 | Temple LED (Detroit) | all | 2 px dot | — | High: stickers, earrings, dermal piercings, bindis and forehead jewellery look the same | **Valid decoy only** |
+| T6 | Doesn't blink / half blink | 00:05 | Open eyes | — | High: that is Rule 6's check. Facial palsy, Parkinson's (Q4) | Avoid |
+| T7 | White sweat bead (Alien) | one frame | 2 px drop | — | Collides with Nervous Nigel's sweat | Avoid |
+| T8 | Grille, light or chip *inside the mouth* | 00:03 | Mouth interior | — | Braces, crowns and grills are metal in human mouths | Avoid |
+| T9 | Too still (identical pixels outside mouth and eyes) | all | — | — | Already the Cardboard Cutout's signature; confusing | Avoid |
+| T10 | Eye colour (Humans), perfect skin (silicone) | all | — | — | Looks judgement, and breaks "appearance never gives the answer" | Avoid |
+| T11 | Cable or port at the neck (Real Humans) | all | — | — | Tracheostomy tubes, central lines, oxygen cannulas | Avoid |
 
-- **Between-frame is the key discriminator.** Something in all three frames can always be a sticker, paint, jewellery or a medical device. Skin that is closed in two frames and open in one can only be the face itself. This also follows the Deepfake's existing "something changes between frames" grammar while staying distinct from it: a Deepfake's face *becomes another face*, a robot's face *opens*.
-- **The existing Rule 0 already catches robots**, with no new rule and no rulebook change: "in every frame of the video, a human face". In the open frame there is a machine where part of the face should be. That parallels Gary ("a raccoon's face is in every frame").
+- **Between-frame is the key discriminator.** Something in all three frames can always be a sticker, paint, jewellery or a medical device. (updated 29 Sep 2026) A light that is dark in the frames with the eyes open and lit in the frames with them shut can only be the face itself. This also follows the Deepfake's existing "something changes between frames" grammar while staying distinct from it: a Deepfake's face *becomes another face*, a robot's face *lights up when its eyes shut*.
+- (updated 29 Sep 2026) **Rule 0 catches robots** with no new rule, and a plainer check line: "In every frame, eyes open or shut: the same human face, giving off no light." That parallels Gary ("a raccoon's face is in every frame").
 - **Robots should blink.** If they don't, they break Rule 6 instead of, or as well as, Rule 0. That fits 2026 reality (real androids blink) and gives a dry joke: the robot's blink is perfect.
-- **The passport photo should be flawless.** A still can't show "opens between frames", so any tell in the photo would be a constant look. The photo also matches the video's closed frames, so Rule 2 passes; that is how they pass at a glance. Fiction's eye glow in the photo is out (Q4: red-eye and leukocoria).
-- **Palette discipline makes 3–4 px tells readable.** If the machine palette appears nowhere else on any face, a 4×3 green-and-gold patch reads instantly at 2×, even in the player's peripheral vision. Decoys (face paint, LED stickers) may borrow the colours but must be present in all three frames and sit on top of the skin, not in a gap.
-- **Inspect-mode pairing:** the player clicks the open frame against a closed frame (or against Rule 0). "The skin is here in 00:01 and open in 00:03" is the checkable discrepancy.
+- **The passport photo should be flawless.** (updated 29 Sep 2026) A still can't show "lit only while the eyes are shut", so any tell in the photo would be a constant look. The photo is taken with the eyes open and matches the video's open-eye frames, so Rule 2 passes; that is how they pass at a glance. Fiction's eye glow in the photo is out (Q4: red-eye and leukocoria).
+- (updated 29 Sep 2026) **Palette discipline makes a few pixels readable.** If the lamp's violet appears nowhere else on any face, a white point in a violet ring reads at 2×, and its spill onto the brows reads as light, not paint. No decoy wears a point-like mark between the brows (bindi, tikka, gem, sticker); anything worn there is a band, present in every frame, eyes open or shut.
+- **Inspect-mode pairing:** (updated 29 Sep 2026) the player clicks a lit frame against a dark one (or against Rule 0). "In frame 3 the eyes are shut, and there is a light between the brows" is the checkable discrepancy.
 
 ### Gaps
-- No user testing: whether a 4×3 px chip reads at 2× for a new player is untested. It needs a Playwright screenshot pass with real sprites.
-- Whether the three frames allow a head turn (T3) depends on the portrait pipeline (`src/gen/drawPortrait.ts`, not examined in this research).
+- No user testing: (updated 29 Sep 2026) whether the lamp reads as a light, not a sticker or a glitch, at 2× for a new player is untested. It needs a Playwright screenshot pass with real sprites.
+- Whether the three frames allow a head turn (T2) depends on the portrait pipeline (`src/gen/drawPortrait.ts`, not examined in this research).
 
 ## 4. Human look-alikes that must NOT count, and how to phrase the rule
 
 ### Takeaway
-Everything fiction uses as an android tell has a human twin. Unblinking or half-closing eyes (facial palsy, Parkinson's), metal through the skin behind the ear (bone-anchored hearing aids), a disc on the side of the head (cochlear implant coils), glowing pupils in photos (leukocoria, red-eye), metal in the mouth (braces), odd eye colours (contacts, heterochromia). There are also worn or painted look-alikes: costumes, LED stickers, circuit face paint or tattoos, earpieces, AR glasses, phones. The rule must key on the skin *opening between frames with machinery behind it*, and exclude anything worn, painted, carried, or unchanged across all three frames.
+Everything fiction uses as an android tell has a human twin. Unblinking or half-closing eyes (facial palsy, Parkinson's), metal through the skin behind the ear (bone-anchored hearing aids), a disc on the side of the head (cochlear implant coils), glowing pupils in photos (leukocoria, red-eye), metal in the mouth (braces), odd eye colours (contacts, heterochromia). There are also worn or painted look-alikes: costumes, LED stickers, circuit face paint or tattoos, earpieces, AR glasses, phones. The rule must key on *a light of the face's own, lit exactly in the frames with the eyes shut* (updated 29 Sep 2026), and exclude anything worn, painted, carried, or unchanged across all three frames.
 
 ### Cited Findings
 - **Incomplete eyelid closure (lagophthalmos)** is common in humans. Its main cause is facial nerve paralysis, up to 80% of it Bell's palsy, at 30–40 per 100,000 people a year in the US. It also follows eyelid surgery or trauma, comes with thyroid eye disease, and "an incomplete blink ... is seen in patients with Parkinson disease" — [StatPearls, NCBI](https://www.ncbi.nlm.nih.gov/books/NBK560661/?report=printable); [AAO EyeNet](https://www.aao.org/eyenet/article/lagophthalmos-evaluation-treatment)
@@ -153,13 +152,12 @@ Everything fiction uses as an android tell has a human twin. Unblinking or half-
 - *Carried*: a phone or tablet held up showing a robot face (the phone is carried; the face behind it is still checked), a robot toy.
 - *Body and medical (never a gag, never a tell)*: scars (including facelift and cleft-lip repair lines, which look like "seams"), vitiligo patches, birthmarks, piercings and dermal anchors, stretched-lobe gauges (see-through holes in the ear), bindis and forehead jewellery, braces, gold teeth and grills, hearing aids, cochlear implant coils, bone-anchored hearing aid abutments, glass or prosthetic eyes, heterochromia, coloured contacts, strabismus, facial palsy (asymmetric or incomplete blink), reduced blinking, tracheostomy tubes, nasal cannulas.
 
-**Proposed rulebook phrasing** (a clarifying sentence under Rule 0; the rulebook's wording is the owner's call, per AGENTS.md "Ask before changing ... the rulebook"):
-- Short form: **"A face that opens is not a face. Anything worn, painted or carried does not count, for or against."**
-- Precise form: **"If the skin opens in any frame and there is machinery behind it, that frame does not show a human face. Anything worn, painted or carried, and anything that is the same in every frame, does not count, for or against."**
+**Rulebook phrasing** (a clarifying sentence under Rule 0; the rulebook's wording is the owner's call, per AGENTS.md "Ask before changing ... the rulebook"):
+- (updated 29 Sep 2026) As built, Rule 0's check reads **"In every frame, eyes open or shut: the same human face, giving off no light."** and its note **"Anything worn, painted or carried does not count, for or against: a costume robot's head is a costume, bulb and all."**
 - Why this wording works:
-  - "Opens" (not "shows through") excludes healed-through medical hardware and piercings, which are present and unchanged in every frame.
-  - "Machinery behind it" excludes a skin-coloured fold or a scar.
-  - "The same in every frame" excludes stickers, paint and devices without naming any body or device.
+  - "Eyes open or shut" sends the player to the blink frame without saying what is there.
+  - "Giving off no light" names what a human face does not do, whatever it wears.
+  - "Bulb and all" clears the one light a valid applicant carries.
   - "For or against" keeps the existing Rule 0 symmetry.
 - Keep the ears out of every robot tell. Hearing aids, cochlear implants, BAHA, gauges, earrings and earpieces all live there, and the Deepfake already owns "the ears change".
 - Suggested decoy cast (valid, satirical, in line with "the best jokes are the ridiculous applicant who is completely legit"): a cosplayer with a stick-on temple LED and circuit face paint in all three frames, and a nervous applicant holding up a phone that plays a robot video. Neither involves a body or medical feature.
@@ -167,4 +165,4 @@ Everything fiction uses as an android tell has a human twin. Unblinking or half-
 ### Gaps
 - No design literature was found on writing fair "robot detection" rules in games (other than Papers, Please's general design, not researched here).
 - No accessibility review or disability-community source on android tropes and prosthetics in games was found in this session. It is worth a dedicated search before shipping.
-- Whether players read a 1 px dark gap edge as "opening" rather than "scar" at 2× scale is an empirical question for playtesting.
+- (updated 29 Sep 2026) Whether players read the lamp as a light rather than a sticker, a bindi or a glitch at 2× scale is an empirical question for playtesting.
