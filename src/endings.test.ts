@@ -103,6 +103,18 @@ describe('the letter the week ends with', () => {
     }
   });
 
+  it('says the clerk’s voucher was the first person they registered only when the week shows it', () => {
+    // Begun on Humanity Day by a link, the week has no day 1 to show it.
+    const { end } = runWeek(1, careful, { startDay: 7 });
+    const w = weekEnd(end)!;
+    expect(w.end.voucherRemoved).toBe(FIRST_APPLICANT.name);
+    expect(w.end.voucherFirst).toBe(false);
+    expect(writeLetter(w.end).lines.join(' ')).not.toContain('first person you registered');
+    // Challenged on day 1, Hortense Cobbold was registered by the court, not by the clerk.
+    const courtFirst = runWeek(1, unless((a, day) => (day === 1 && a.name === FIRST_APPLICANT.name ? 'challenge' : undefined)));
+    expect(weekEnd(courtFirst.end)!.end.voucherFirst).toBe(false);
+  });
+
   it('is Promoted for a clerk who stamps their own renewal in, with the week’s last citation, and the voucher kept', () => {
     for (const seed of SEEDS.slice(0, 6)) {
       const { end, evenings } = runWeek(seed, unless((a) => (a.cast === 'clerk' ? 'accept' : undefined)));
@@ -273,7 +285,7 @@ describe('the Humanity Day special', () => {
 
 describe('the letters', () => {
   const week: WeekEnd = {
-    ending: 'fired', day: 4, savings: -12, grade: 'Third', unitsStamped: [], self: null, voucherRemoved: null,
+    ending: 'fired', day: 4, savings: -12, grade: 'Third', unitsStamped: [], self: null, voucherRemoved: null, voucherFirst: false,
     fakesRegistered: 3, humansChallenged: 1, offer: null,
   };
 
@@ -287,7 +299,11 @@ describe('the letters', () => {
     const promoted: WeekEnd = { ...week, ending: 'promoted', self: 'accepted', fakesRegistered: 0, humansChallenged: 0 };
     expect(writeLetter({ ...promoted, offer: 'handed-in' }).note).toBe('Your commendation of day 3 is on file.');
     expect(writeLetter({ ...promoted, offer: 'signed' }).note).toContain('found in your drawer');
-    expect(writeLetter({ ...promoted, offer: 'signed', unitsStamped: [{ name: 'Clara Voss', day: 1 }] }).note).toBeNull();
+    // Likeness pays, and thanks, only for units stamped in once its letter was signed: the day 3 unit, not day 1's.
+    expect(writeLetter({ ...promoted, offer: 'signed', unitsStamped: [{ name: 'Joanna Pike', day: 3 }] }).note).toBeNull();
+    expect(writeClip({ ...promoted, offer: 'signed', unitsStamped: [{ name: 'Joanna Pike', day: 3 }] })!.lines[1]).toBe('Thank you for your partnership this week: Joanna Pike (day 3).');
+    expect(writeClip({ ...promoted, offer: 'signed', unitsStamped: [{ name: 'Clara Voss', day: 1 }] })).toBeNull();
+    expect(writeLetter({ ...promoted, offer: 'signed', unitsStamped: [{ name: 'Clara Voss', day: 1 }] }).note).toContain('found in your drawer');
     expect(writeLetter({ ...promoted, ending: 'replaced', offer: 'signed', unitsStamped: [1, 2, 3].map((d) => ({ name: `U${d}`, day: d })) }).note).toBe(
       'Your partner fees will now be paid to the unit.',
     );

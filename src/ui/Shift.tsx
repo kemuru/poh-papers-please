@@ -4,9 +4,10 @@ import {
   AGENT, CLONE, CUTOUT, DEEPFAKE, FIRST_APPLICANT, INFLUENCER, PAT, PAT_MOTHER, REGULARS, RENEWAL, SYBIL_FARM, TWINS, UNIT_EXITS, UNIT_OWNERS,
   type CastId,
 } from '../content/cast';
-import { INSPECT_LINES, NEW_TOOL_TIPS, OFFER_LETTER, SECOND_NOTES } from '../content/desk';
+import { COUNT_WORDS, INSPECT_LINES, NEW_TOOL_TIPS, OFFER_LETTER, SECOND_NOTES } from '../content/desk';
 import { OFFER } from '../economy/economy';
 import { REPLACED_AT } from '../economy/endings';
+import { NIGHT } from '../content/night';
 import { WINDOW_LINES } from '../content/hall';
 import { RULEBOOK } from '../content/rulebook';
 import type { GeneratedApplicant } from '../gen/applicant';
@@ -17,10 +18,11 @@ import { sameName } from '../rules/registry';
 import type { Applicant, RuleId } from '../rules/types';
 import { Booth } from './Booth';
 import type { Evidence } from './court';
-import { Desk, type InspectView } from './Desk';
+import { Desk, type InspectView, type NightView } from './Desk';
 import { asPointed, evidenceLine, ruleName } from './evidence';
 import { atWindow, shiftOver, unitsStamped, type Action, type GameState } from './week';
 import type { MorningPapers } from './Morning';
+import { useSettings } from './settings';
 import { Hall } from './Hall';
 import type { Lookup } from './Registry';
 import { pick } from './Slips';
@@ -58,11 +60,14 @@ type ShiftProps = {
   /** The menu is open: the clock stops and the desk takes no keys. */
   paused: boolean;
   onMenu: () => void;
+  /** The night shift: its own clock, its own card on the blotter, and verdicts at once. */
+  night?: NightView;
 };
 
 /** A day at Window 3: the hall, the booth and the desk, from opening the shutter to the last stamp. */
-export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu }: ShiftProps) {
+export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu, night }: ShiftProps) {
   const plan = DAYS[state.day - 1];
+  const limit = night ? night.seconds : plan.shiftSeconds;
   const rulebook = rulebookForDay(state.day);
   const at = atWindow(state);
   const over = shiftOver(state);
@@ -72,14 +77,14 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu }
   const leaving = papers !== null && (lastDecision !== null || state.timeUp);
   const canCall = state.opened && !over && at === null && state.called < queue.length;
 
-  const elapsed = useShiftClock(plan.shiftSeconds, clock, state.opened && !over && !paused, () => dispatch({ type: 'time-up' }));
+  const elapsed = useShiftClock(limit, clock, state.opened && !over && !paused, () => dispatch({ type: 'time-up' }));
   const reportClock = useRef(onClock);
   reportClock.current = onClock;
   useEffect(() => reportClock.current(elapsed), [elapsed]);
-  const secondsLeft = plan.shiftSeconds === null ? null : Math.max(0, Math.ceil(plan.shiftSeconds - elapsed));
+  const secondsLeft = limit === null ? null : Math.max(0, Math.ceil(limit - elapsed));
   // No clock on the easy days: the wall clock just follows the queue.
   const minutes =
-    plan.shiftSeconds === null ? (state.decided.length / queue.length) * OPENING_MINUTES : (elapsed / plan.shiftSeconds) * OPENING_MINUTES;
+    limit === null ? (state.decided.length / queue.length) * OPENING_MINUTES : (elapsed / limit) * OPENING_MINUTES;
   const serving = DAYS.slice(0, state.day - 1).reduce((sum, d) => sum + d.applicants, 0) + state.called;
 
   // The rulebook falls open at the day's new rule; on Humanity Day, at Rule 1, after the cover rule. On day 1 it
@@ -193,8 +198,11 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu }
 
   // Keyboard: Space pulls the lever, A and C are the stamps, I inspects, V and F look up the voucher
   // and the face, 0 to 6 turn the rulebook's pages.
-  const keys = useRef({ lever, decideNow, toggleInspect, escape, turnTo, rulebook, paused, lookUp, lookups: lookupsOpen, faceSearch: faceSearchOpen });
-  keys.current = { lever, decideNow, toggleInspect, escape, turnTo, rulebook, paused, lookUp, lookups: lookupsOpen, faceSearch: faceSearchOpen };
+  // With single-key shortcuts off (WCAG 2.1.4), only Escape is the desk's; every other key is the focused button's.
+  const { settings } = useSettings();
+  const shortcuts = settings.shortcuts;
+  const keys = useRef({ lever, decideNow, toggleInspect, escape, turnTo, rulebook, paused, lookUp, lookups: lookupsOpen, faceSearch: faceSearchOpen, shortcuts });
+  keys.current = { lever, decideNow, toggleInspect, escape, turnTo, rulebook, paused, lookUp, lookups: lookupsOpen, faceSearch: faceSearchOpen, shortcuts };
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
@@ -203,6 +211,7 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu }
       if (target.closest?.('input, textarea, dialog') || keys.current.paused) return;
       const onButton = target.closest?.('button, a, [role="button"]');
       const key = e.key.toLowerCase();
+      if (!keys.current.shortcuts && key !== 'escape') return;
       if (key === ' ' && !onButton) {
         e.preventDefault();
         keys.current.lever();
@@ -254,11 +263,11 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu }
           applicant={papers}
           visit={state.called}
           leaving={leaving}
-          speech={speechAt(state, papers, lastDecision?.decision ?? null, announced)}
+          speech={night && announced ? NIGHT.window : speechAt(state, papers, lastDecision?.decision ?? null, announced)}
           opened={state.opened}
           over={over}
           clock={clockTime(minutes)}
-          timed={plan.shiftSeconds !== null}
+          timed={limit !== null}
           secondsLeft={secondsLeft}
           served={state.decided.length}
           total={queue.length}
@@ -291,6 +300,7 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu }
           tab={tab}
           onTab={setTab}
           morning={morningPapers(state)}
+          night={night}
           onOffer={(choice) => {
             paper();
             dispatch({ type: 'offer', choice });
@@ -304,10 +314,12 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu }
 /** Whatever lies on the blotter with the morning paper. */
 function morningPapers(s: GameState): MorningPapers {
   const units = unitsStamped(s.history).length;
+  const count = COUNT_WORDS[units] ?? String(units);
+  // The thanks for a letter handed in is that morning's; the robots can wait for the next.
   const note =
-    units >= REPLACED_AT ? SECOND_NOTES.threeUnits
+    s.day === OFFER.day && s.offer === 'handed-in' ? SECOND_NOTES.handedIn
+    : units >= REPLACED_AT ? SECOND_NOTES.moreUnits.replace('{count}', count.charAt(0).toUpperCase() + count.slice(1))
     : units === REPLACED_AT - 1 ? SECOND_NOTES.twoUnits
-    : s.day === OFFER.day && s.offer === 'handed-in' ? SECOND_NOTES.handedIn
     : null;
   return { letter: s.day === OFFER.day && s.offer === null, envelope: s.credits.find((c) => c.kind === 'fee') ?? null, note };
 }

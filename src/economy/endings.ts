@@ -38,9 +38,16 @@ export function endingTonight(f: WeekFacts): EndingId | null {
   return f.clerkRegistered ? 'promoted' : 'reclassified';
 }
 
-/** Likeness's job letter, clipped to a Humanity Day letter: the offer signed, and one or two units stamped in. */
-export const headhunted = (ending: EndingId, signed: boolean, unitsStamped: number) =>
-  signed && unitsStamped >= 1 && unitsStamped < REPLACED_AT && (ending === 'promoted' || ending === 'reclassified' || ending === 'superseded');
+/**
+ * Likeness's job letter, clipped to a Humanity Day letter: the offer signed, and one or two units stamped
+ * in while it was (`unitsPaid`, the ones Likeness paid for). Three stamped in all week is Replaced.
+ */
+export const headhunted = (ending: EndingId, signed: boolean, unitsPaid: number) =>
+  signed && unitsPaid >= 1 && unitsPaid < REPLACED_AT && (ending === 'promoted' || ending === 'reclassified' || ending === 'superseded');
+
+/** The units Likeness paid for: stamped in on or after the morning its letter was signed. */
+export const unitsPaid = <U extends { day: number }>(units: readonly U[], signed: boolean, signedOn: number) =>
+  signed ? units.filter((u) => u.day >= signedOn) : [];
 
 export type Grade = 'First' | 'Second' | 'Third';
 

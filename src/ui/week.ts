@@ -269,6 +269,9 @@ function dayLog(s: GameState, queue: GeneratedApplicant[]): DayLog {
 export const unitsStamped = (history: readonly DayLog[]) =>
   history.flatMap((d) => d.registered.filter((r) => r.unit && r.by === 'stamp').map((r) => ({ name: r.name, day: d.day })));
 
+/** The first person the clerk stamped in this week, if the week began on day 1 and anyone was. */
+const firstStamped = (history: readonly DayLog[]) => (history[0]?.day === 1 ? (history[0].registered.find((r) => r.by === 'stamp')?.name ?? '') : '');
+
 /** A Robin Hale registered this week before Humanity Day: the clone, whose day is day 6. The clerk's own renewal is day 7's. */
 const cloneOnFile = (registry: Registry) => registry.some((r) => r.name === CLERK.name && r.day >= 1 && r.day < LAST_DAY);
 
@@ -288,6 +291,7 @@ export function weekEnd(s: GameState): { end: WeekEnd; numbers: WeekInNumbers } 
       unitsStamped: unitsStamped(s.history),
       self: s.history.find((d) => d.self)?.self ?? null,
       voucherRemoved: s.history.find((d) => d.selfVoucher)?.selfVoucher ?? null,
+      voucherFirst: firstStamped(s.history) === (s.history.find((d) => d.selfVoucher)?.selfVoucher ?? null),
       fakesRegistered: s.history.reduce((n, d) => n + d.fooled, 0),
       humansChallenged: s.history.reduce((n, d) => n + d.wronged, 0),
       offer: s.offer,

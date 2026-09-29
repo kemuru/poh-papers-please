@@ -1,8 +1,9 @@
 // The letters at the end of the week, filled from what this week did (notes/game-design.md, Endings).
 // Pure: the same week always writes the same letters. The words are src/content's.
-import { FIRST_APPLICANT } from '../content/cast';
+import { COUNT_WORDS } from '../content/desk';
 import { ENDINGS, FIRED_COSTS, HEADHUNTED, LETTER_NOTES, VOUCHER_REMOVED } from '../content/verdicts';
-import { headhunted, type EndingId, type Grade } from '../economy/endings';
+import { OFFER } from '../economy/economy';
+import { headhunted, unitsPaid, type EndingId, type Grade } from '../economy/endings';
 
 /** What the evening at the end of the week knows. */
 export type WeekEnd = {
@@ -17,6 +18,8 @@ export type WeekEnd = {
   self: 'accepted' | 'upheld' | 'dismissed' | null;
   /** Whoever vouched for the clerk, removed from the registry with them when their own challenge was upheld. */
   voucherRemoved: string | null;
+  /** That voucher was the first person the clerk stamped in this week. */
+  voucherFirst: boolean;
   /** Applicants the clerk stamped in who broke a rule, and challenged who broke none. */
   fakesRegistered: number;
   humansChallenged: number;
@@ -45,14 +48,14 @@ export function writeLetter(w: WeekEnd): Letter {
   const values = {
     day: w.day,
     savings: w.savings,
-    count: ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven'][w.unitsStamped.length] ?? w.unitsStamped.length,
+    count: COUNT_WORDS[w.unitsStamped.length] ?? w.unitsStamped.length,
     units: unitNames(w),
     fakes: count(w.fakesRegistered, 'applicant', 'applicants'),
     humans: count(w.humansChallenged, 'applicant', 'applicants'),
     grade: w.grade,
   };
   const lines = text.lines.flatMap((line): string[] => {
-    if (line === '{voucherRemoved}') return w.voucherRemoved ? [voucherLine(w.voucherRemoved)] : [];
+    if (line === '{voucherRemoved}') return w.voucherRemoved ? [voucherLine(w.voucherRemoved, w.voucherFirst)] : [];
     if (line === '{costs}') {
       const which = w.fakesRegistered > 0 ? (w.humansChallenged > 0 ? 'both' : 'fakes') : w.humansChallenged > 0 ? 'humans' : null;
       return which ? [fill(FIRED_COSTS[which], values)] : [];
@@ -65,9 +68,8 @@ export function writeLetter(w: WeekEnd): Letter {
   return { title: text.title, stamp: text.stamp, lines, grade, note: noteFor(w) };
 }
 
-/** The clerk's voucher, gone with them; if it was Hortense Cobbold, who she was. */
-const voucherLine = (voucher: string) =>
-  [fill(VOUCHER_REMOVED.line, { voucher }), voucher === FIRST_APPLICANT.name ? VOUCHER_REMOVED.first : ''].filter(Boolean).join(' ');
+/** The clerk's voucher, gone with them; and, if the clerk stamped her in first thing on day 1, who she was. */
+const voucherLine = (voucher: string, first: boolean) => [fill(VOUCHER_REMOVED.line, { voucher }), first ? VOUCHER_REMOVED.first : ''].filter(Boolean).join(' ');
 
 /** What the letter adds about Likeness's offer, unless Likeness's own letter is clipped to it. */
 function noteFor(w: WeekEnd): string | null {
@@ -78,7 +80,9 @@ function noteFor(w: WeekEnd): string | null {
 
 /** Likeness's letter, clipped to the clerk's: to the clerk, or to the Ministry about its new equipment. */
 export function writeClip(w: WeekEnd): Clip | null {
-  if (!headhunted(w.ending, w.offer === 'signed', w.unitsStamped.length)) return null;
+  const paid = unitsPaid(w.unitsStamped, w.offer === 'signed', OFFER.day);
+  if (!headhunted(w.ending, w.offer === 'signed', paid.length)) return null;
   const lines = w.ending === 'reclassified' ? HEADHUNTED.equipment : HEADHUNTED.lines;
-  return { head: HEADHUNTED.head, title: HEADHUNTED.title, lines: lines.map((line) => fill(line, { units: unitNames(w) })), sign: HEADHUNTED.sign };
+  const units = listOf(paid.map((u) => `${u.name} (day ${u.day})`));
+  return { head: HEADHUNTED.head, title: HEADHUNTED.title, lines: lines.map((line) => fill(line, { units })), sign: HEADHUNTED.sign };
 }

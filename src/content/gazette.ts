@@ -126,6 +126,13 @@ export const SPECIAL = {
     superseded: 'Robin Hale, who starts at Window 3 on Monday.',
     replaced: 'Window 3, camera 2, 17:04.',
   },
+  /** On the clerk's photograph, Reclassified: the inventory tag. */
+  assetTag: '3-0417',
+  /** Replaced: the hall camera's still, and what it shows, for a screen reader. */
+  camera: {
+    stamp: 'CAM 2 · 17:04',
+    label: 'The hall camera over Window 3: a unit with the clerk’s face in the clerk’s chair. It blinks, and a light shows between its brows.',
+  },
 } as const;
 
 /** Clipped to the Fired letter: the Gazette's small ads. */

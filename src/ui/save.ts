@@ -184,6 +184,15 @@ export function clearSave(store: Store | null) {
   }
 }
 
+/** Whether this browser has a week saved, kept or not. */
+export function hasSave(store: Store | null): boolean {
+  try {
+    return (store?.getItem(SAVE_KEY) ?? null) !== null;
+  } catch {
+    return false;
+  }
+}
+
 /** A week begun afresh. */
 export function newRun(seed: number, startDay = 1, week: Week = generateWeek(seed)): Run {
   return { seed, startDay, week, steps: [], state: startWeek(seed, startDay), clock: 0, resumed: false, setAside: false };
@@ -256,6 +265,21 @@ function morningOf(steps: readonly Step[], state: GameState): number {
 /** The same week, back at this morning's paper: every step up to last night's, and none since. */
 export function dayAgain(run: Run, steps: readonly Step[], state: GameState): Run {
   const kept = steps.slice(0, morningOf(steps, state));
+  const morning = replay(run.seed, run.startDay, kept, run.week);
+  return morning ? { ...run, steps: kept, state: morning, clock: 0, resumed: false, setAside: false } : newRun(run.seed, run.startDay, run.week);
+}
+
+/** Where the morning of `day` begins in the steps: just after the evening before it. */
+function morningAt(steps: readonly Step[], startDay: number, day: number): number {
+  let nights = day - startDay;
+  if (nights <= 0) return 0;
+  for (let i = 0; i < steps.length; i++) if (steps[i] === 'next-day' && --nights === 0) return i + 1;
+  return steps.length;
+}
+
+/** The same week, back at the morning of an earlier day: every step before it, and none since. */
+export function backTo(run: Run, steps: readonly Step[], day: number): Run {
+  const kept = steps.slice(0, morningAt(steps, run.startDay, day));
   const morning = replay(run.seed, run.startDay, kept, run.week);
   return morning ? { ...run, steps: kept, state: morning, clock: 0, resumed: false, setAside: false } : newRun(run.seed, run.startDay, run.week);
 }

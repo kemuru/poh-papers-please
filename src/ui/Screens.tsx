@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState, type AnimationEvent } from 'react';
+import { BOARD } from '../content/board';
+import { useSettings } from './settings';
 import { CREDITS } from '../content/bills';
 import { STATEMENT_FOOTERS } from '../content/hall';
 import { MENU } from '../content/menu';
-import { GAZETTE_TITLE, VACANCY } from '../content/gazette';
+import { GAZETTE_TITLE, SPECIAL, VACANCY } from '../content/gazette';
 import { CLERK_PORTRAIT, CLONE_PORTRAIT } from '../content/portraits';
 import { EMPTY_COURT } from '../content/verdicts';
 import type { EndingId } from '../economy/endings';
@@ -28,9 +30,13 @@ import { thunk, tick } from './sound';
 function useKeyToContinue(onContinue: () => void) {
   const go = useRef(onContinue);
   go.current = onContinue;
+  // With single-key shortcuts off, only the focused button moves on.
+  const { settings } = useSettings();
+  const shortcuts = useRef(settings.shortcuts);
+  shortcuts.current = settings.shortcuts;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.key !== ' ' && e.key !== 'Enter') || e.repeat || (e.target as HTMLElement).closest?.('button, a, dialog')) return;
+      if (!shortcuts.current || (e.key !== ' ' && e.key !== 'Enter') || e.repeat || (e.target as HTMLElement).closest?.('button, a, dialog')) return;
       e.preventDefault();
       go.current();
     };
@@ -388,8 +394,28 @@ const PAY_LABELS: Record<Exclude<PayLine['kind'], 'fines'>, string> = {
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 const signed = (amount: number, kind?: string) => (kind ? `${amount} PNK` : amount > 0 ? `+${amount}` : String(amount));
 
+type EndingProps = {
+  state: GameState;
+  /** "Copy my week": the week's card, to paste where the clerk likes. */
+  card: string;
+  /** The mornings of this week the clerk can go back to, to try another way. */
+  earlier: readonly number[];
+  onNewWeek: () => void;
+  onBack: (day: number) => void;
+  onBoard: () => void;
+};
+
 /** How the week ended, laid out on the desk: Human Resources' letter, anything clipped to it, and the Gazette's last edition. */
-export function Ending({ state, onNewWeek, onDayAgain }: { state: GameState; onNewWeek: () => void; onDayAgain: () => void }) {
+export function Ending({ state, card, earlier, onNewWeek, onBack, onBoard }: EndingProps) {
+  const [copied, setCopied] = useState<string | null>(null);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(card);
+      setCopied(BOARD.today.copied);
+    } catch {
+      setCopied(BOARD.today.uncopied);
+    }
+  };
   const week = weekEnd(state);
   if (!week) return null;
   const { ending } = week.end;
@@ -429,14 +455,30 @@ export function Ending({ state, onNewWeek, onDayAgain }: { state: GameState; onN
         <div className="ending-side">
           {special ? <SpecialEdition special={special} ending={ending as Exclude<EndingId, 'fired'>} /> : <p className="classified">{VACANCY}</p>}
           <div className="notice-actions ending-actions">
-            <button className="screen-button" onClick={onNewWeek}>
-              {MENU.newWeek}
-            </button>
-            {ending === 'fired' && (
-              <button className="menu-link" onClick={onDayAgain}>
-                {MENU.dayAgain.replace('{day}', String(state.day))}
+            <div className="ending-buttons">
+              <button className="screen-button" onClick={onNewWeek}>
+                {MENU.newWeek}
               </button>
-            )}
+              <button className="board-button" onClick={() => void copy()}>
+                {BOARD.today.copy}
+              </button>
+              <button className="board-button" onClick={onBoard}>
+                {MENU.board}
+              </button>
+              {copied && (
+                <span className="board-copied" role="status">
+                  {copied}
+                </span>
+              )}
+            </div>
+            <div className="menu-mornings ending-mornings">
+              <span>{MENU.backTo}</span>
+              {earlier.map((d) => (
+                <button key={d} className="menu-link" onClick={() => onBack(d)}>
+                  {MENU.backDay.replace('{day}', String(d))}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -462,19 +504,19 @@ function SpecialEdition({ special, ending }: { special: Special; ending: Exclude
       <div className="special-body">
         <figure className={`special-photo photo-${ending}`}>
           {ending === 'replaced' ? (
-            <span className="cctv" role="img" aria-label="The hall camera over Window 3: a unit in the clerk's chair. It blinks, and a light shows between its brows.">
+            <span className="cctv" role="img" aria-label={SPECIAL.camera.label}>
               <span className="cctv-frame cctv-open">
                 <PixelPortrait portrait={IN_YOUR_LIKENESS} scale={3} background="#26302a" />
               </span>
               <span className="cctv-frame cctv-shut">
                 <PixelPortrait portrait={IN_YOUR_LIKENESS} eyes="closed" scale={3} background="#26302a" />
               </span>
-              <span className="cctv-stamp">CAM 2 · 17:04</span>
+              <span className="cctv-stamp">{SPECIAL.camera.stamp}</span>
             </span>
           ) : (
             <span className="press-photo">
               <PixelPortrait portrait={ending === 'superseded' ? CLONE_PORTRAIT : CLERK_PORTRAIT} scale={3} background="#cfd3cf" title={special.caption} />
-              {ending === 'reclassified' && <span className="asset-tag">3-0417</span>}
+              {ending === 'reclassified' && <span className="asset-tag">{SPECIAL.assetTag}</span>}
             </span>
           )}
           <figcaption>{special.caption}</figcaption>

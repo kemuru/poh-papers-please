@@ -7,11 +7,6 @@ export const MENU = {
   key: 'Esc',
   head: 'Ministry of Humanity · Window 3',
   paused: { title: 'Paused', line: 'The queue will wait. It is used to it.' },
-  resumed: { title: 'Welcome back', line: 'Your desk is as you left it.' },
-  setAside: {
-    title: 'Welcome back',
-    line: 'The Ministry has revised its forms since your last visit. Your week could not be kept, and a new one has begun.',
-  },
   /** Where the week stands, under the title. */
   where: {
     morning: 'Day {day} · Morning',
@@ -23,7 +18,6 @@ export const MENU = {
     ending: 'Day {day} · The letter',
   },
   back: 'Back to the window',
-  begin: 'Begin the week',
   dayAgain: 'Start day {day} again',
   newWeek: 'Start a new week',
   saved: 'Your week is saved in this browser after every stamp.',
@@ -41,4 +35,24 @@ export const MENU = {
   keep: 'Keep playing',
   /** On the out-of-order screen, where a reload alone would break the same way again. */
   broken: 'Start a new week',
+  /** Leaves the desk for the notice board. The week stays where it is. */
+  board: 'Notice board',
+  /** Any earlier morning of the week, from the menu or the letter at the end. */
+  backTo: 'Go back to the morning of',
+  backDay: 'day {day}',
+  confirmBack: {
+    title: 'Go back to the morning of day {day}?',
+    line: 'You will be back at that morning’s paper with that morning’s savings. Everything stamped since will be shredded: {days} at the window.',
+    yes: 'Go back to day {day}',
+  },
+  settings: {
+    shortcuts: 'Single-key shortcuts',
+    motion: 'Motion',
+    on: 'On',
+    off: 'Off',
+    full: 'Full',
+    reduced: 'Reduced',
+    /** When the browser itself asks for reduced motion, which it always gets. */
+    forced: 'Reduced, as your browser asks',
+  },
 } as const;

@@ -182,12 +182,15 @@ function pickExtras(rng: Rng, influencerFirst: boolean): Extra[] {
 /** Everyone registered before the week: the clerk, the unit Window 7 registered, the Binnses who own units, and some townsfolk. */
 function startingRegistry(w: Week): Registry {
   const before = (r: Omit<Registrant, 'day' | 'vouching'>): Registrant => ({ ...r, day: 0, vouching: null });
-  // Born around 1950, and they look it: an old face, drawn without another roll of the dice.
+  // Born around 1950, and they look it: an old face, and one nobody else has once it is old.
   w.owners = UNIT_OWNERS.map(() => {
-    const face = newFace(w);
-    const old: Portrait = { ...face, face: { ...face.face, age: 'old' } };
-    w.faces.add(faceKey(old));
-    return old;
+    for (;;) {
+      const face = newFace(w);
+      const old: Portrait = { ...face, face: { ...face.face, age: 'old' } };
+      if (w.faces.has(faceKey(old))) continue;
+      w.faces.add(faceKey(old));
+      return old;
+    }
   });
   const owners = UNIT_OWNERS.map((v, i) => before({ name: v.name, address: v.address, birthYear: v.birthYear, face: w.owners[i] }));
   const townsfolk = Array.from({ length: TOWNSFOLK }, () => {
@@ -250,7 +253,8 @@ function compose(w: Week, day: number, plan: DayPlan, registry: Registry, cast: 
     queue.splice(rng.int(1, 2), 0, unit!);
     queue.splice(3, 0, mother!);
   } else if (day === LAST_DAY) {
-    // The unit in the first half, Vera straight after Wendell, and the clerk last of all.
+    // The unit early (among the first four: Humanity Day has no clock to send it home), Vera straight
+    // after Wendell, and the clerk last of all.
     const [wendell, vera] = binnses;
     const rest = shuffle(rng, fixed.concat(fillIns).filter((a) => a !== unit && a !== vera && a !== clerk));
     queue = arrange(rng, n - 2, null, [unit!], rest);
@@ -366,8 +370,11 @@ function chooseVoucher(w: Week, a: GeneratedApplicant, registry: Registry, day: 
     return ethel.name;
   }
   // Ethel, Pat's mother and the unit owners vouch only where the week has them do it, and on Humanity Day
-  // Hortense Cobbold keeps her vouch for the clerk.
-  const reserved = new Set<string>([CLERK.name, UNIT_ON_FILE_RECORD.name, REGULARS.grandmaEthel.name, PAT_MOTHER.name, ...UNIT_OWNERS.map((v) => v.name)]);
+  // Hortense Cobbold keeps her vouch for the clerk. Pat vouches for nobody: registered at the fifth
+  // attempt, Pat is not to be taken off the registry with somebody else's fake.
+  const reserved = new Set<string>([
+    CLERK.name, UNIT_ON_FILE_RECORD.name, REGULARS.grandmaEthel.name, PAT.name, PAT_MOTHER.name, ...UNIT_OWNERS.map((v) => v.name),
+  ]);
   if (day === LAST_DAY) reserved.add(FIRST_APPLICANT.name);
   const free = registry.filter((r) => r.vouching === null && r.face.species === 'human' && !reserved.has(r.name) && r.name !== a.name);
   if (free.length === 0) throw new Error(`Day ${day}: nobody free to vouch for ${a.name}`);

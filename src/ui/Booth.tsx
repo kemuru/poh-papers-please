@@ -100,7 +100,7 @@ function Speech({ text, voice }: { text: string; voice: number[] | null }) {
   const voiceKey = voice?.join(',') ?? '';
   useEffect(() => {
     const pitches = voiceKey ? voiceKey.split(',').map(Number) : null;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.classList.contains('motion-reduced')) {
       setShown(text.length);
       return;
     }

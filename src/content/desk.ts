@@ -45,9 +45,12 @@ export const ENVELOPE = {
   lines: ['Enclosed: {amount} PNK, for {names}.', 'With thanks. Discretion appreciated.'],
 };
 
-/** The supervisor's second note, stuck to the morning paper. */
+/** The supervisor's second note, stuck to the morning paper. "{count}" is how many home robots, in words. */
 export const SECOND_NOTES = {
   handedIn: 'Thank you for the letter. Legal has it.',
   twoUnits: 'Two home robots this week. One more and Likeness will want your chair.',
-  threeUnits: 'Three home robots this week. Likeness has asked for the measurements of your chair.',
+  moreUnits: '{count} home robots this week. Likeness has asked for the measurements of your chair.',
 };
+
+/** Numbers as the Ministry writes them in a sentence. */
+export const COUNT_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];

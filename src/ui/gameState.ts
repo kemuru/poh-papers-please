@@ -1,8 +1,11 @@
 import type { GeneratedApplicant } from '../gen/applicant';
 import type { GameState } from './week';
 
-/** Everything the UI knows, plus the day's queue with the truth attached. */
-export type GameSnapshot = GameState & { queue: GeneratedApplicant[] };
+/** Everything the UI knows, plus the day's queue with the truth attached; on the night shift, the night's counts too. */
+export type GameSnapshot = GameState & {
+  queue: GeneratedApplicant[];
+  night?: { shift: number; right: number; citations: number; closed: boolean };
+};
 
 declare global {
   interface Window {

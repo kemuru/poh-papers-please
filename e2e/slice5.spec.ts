@@ -197,8 +197,10 @@ test('Reclassified: the clerk challenges their own renewal with what Inspect fou
   const notice = page.getByRole('article', { name: 'Notice' });
   await expect(notice).toContainText('Notice of reclassification');
   await expect(notice).toContainText('You have been reclassified as registry equipment');
-  // Upheld, the challenge takes the clerk's voucher with it, as it would anyone's.
-  await expect(notice).toContainText('Hortense Cobbold, who vouched for you, has been removed from the registry with you, as the rulebook says. She was the first person you registered this week.');
+  // Upheld, the challenge takes the clerk's voucher with it, as it would anyone's. This week began on day 7,
+  // so the letter does not claim she was the first the clerk registered (src/endings.test.ts has that week).
+  await expect(notice).toContainText('Hortense Cobbold, who vouched for you, has been removed from the registry with you, as the rulebook says.');
+  await expect(notice).not.toContainText('first person you registered');
   await expect(page.getByTestId('grade')).toHaveText('Grade: Equipment, First Class.');
   const special = page.getByTestId('special');
   await expect(page.getByTestId('special-headline')).toHaveText('INCOME OPENS AT FIVE. ONE UBI IS WORTH 0.0003 PNK.');
@@ -319,6 +321,8 @@ test('Headhunted: the letter signed and a unit stamped in, Likeness pays by enve
   // The busiest letter there is, clipped letter and all, fits a small laptop's window without scrolling.
   for (const [width, height] of [[1280, 700], [1024, 768]] as const) {
     await page.setViewportSize({ width, height });
+    // The stage rescales on the next render after the window changes: measure once it has.
+    await expect.poll(async () => { const b = (await page.getByTestId('special').boundingBox())!; return b.x + b.width; }).toBeLessThanOrEqual(width + 0.5);
     expect(await page.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.scrollHeight])).toEqual([width, height]);
     for (const target of [page.getByRole('article', { name: 'Notice' }), clip, page.getByTestId('special'), page.getByRole('button', { name: 'Start a new week' })]) {
       const box = (await target.boundingBox())!;

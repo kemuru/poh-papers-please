@@ -1,0 +1,403 @@
+/* The notice board in the hall, where the Ministry opens (slice 6): cork in a wooden frame, on the
+   hall's own green wall, with the week's notices pinned to it. */
+
+.board-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 0;
+  padding: 22px 24px;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(90deg, rgb(0 0 0 / 5%) 0 1px, transparent 1px 80px),
+    linear-gradient(180deg, #8f9a83 0 80%, #5d6858 80% 90%, #3a4136 90% 91%, #a7a18a 91%);
+}
+
+.board {
+  width: min(1140px, 100%);
+  padding: 18px 24px 22px;
+  border: 14px solid #6d5a43;
+  border-radius: 4px;
+  background:
+    radial-gradient(circle at 20% 30%, rgb(0 0 0 / 9%) 0 1px, transparent 1.6px) 0 0 / 7px 9px,
+    radial-gradient(circle at 70% 60%, rgb(255 255 255 / 9%) 0 1px, transparent 1.6px) 0 0 / 11px 8px,
+    #b38b5d;
+  box-shadow:
+    inset 0 0 0 2px #4a3c2d,
+    inset 0 8px 24px rgb(0 0 0 / 30%),
+    0 18px 40px rgb(0 0 0 / 45%);
+}
+
+/* The poster at the top: the Ministry's, printed, with a red band like the hall's. */
+.board-poster {
+  position: relative;
+  margin: 0 auto;
+  width: min(620px, 100%);
+  padding: 12px 20px 12px;
+  background: linear-gradient(180deg, #b0433a 0 8px, #efe8d2 8px);
+  box-shadow: 0 8px 16px rgb(0 0 0 / 35%);
+  text-align: center;
+  rotate: -0.4deg;
+}
+
+.board-kicker {
+  margin: 4px 0 2px;
+  font-family: var(--official);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.board-poster h1 {
+  margin: 0;
+  font-family: var(--official);
+  font-size: 38px;
+  line-height: 1.1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.board-subtitle {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 22px;
+  font-style: italic;
+}
+
+.board-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+  gap: 22px;
+  margin-top: 18px;
+}
+
+.board-notices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-content: start;
+}
+
+.board-notice {
+  position: relative;
+  padding: 16px 16px 12px;
+  background: var(--paper-light);
+  box-shadow: 0 6px 12px rgb(0 0 0 / 35%);
+  rotate: -0.8deg;
+}
+
+.board-notice:nth-child(even) {
+  rotate: 0.9deg;
+}
+
+.board-notice h2 {
+  margin: 0 0 6px;
+  font-family: var(--official);
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.board-notice p {
+  margin: 0 0 4px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* The week under way is the notice everyone looks for first. */
+.notice-week {
+  grid-column: 1 / -1;
+  background: #fff8df;
+}
+
+.notice-week p {
+  font-family: var(--official);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.notice-night.locked {
+  opacity: 0.75;
+}
+
+.board-pin {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  width: 13px;
+  height: 13px;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f07a6a, #9a2f2a);
+  box-shadow: 0 2px 3px rgb(0 0 0 / 40%);
+}
+
+.board-notice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.board-notice-actions .screen-button {
+  margin-top: 4px;
+}
+
+.board-button {
+  padding: 7px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  background: var(--paper-light);
+  color: var(--ink);
+  font-family: var(--official);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.board-button:hover {
+  background: #fff;
+}
+
+.board-button:focus-visible,
+.settings-switch:focus-visible {
+  outline: 3px solid var(--marker);
+  outline-offset: 2px;
+}
+
+.board-copied {
+  color: var(--accept);
+  font-family: var(--official);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.board-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 10px 12px;
+  background: #fff4d6;
+  box-shadow: 0 4px 10px rgb(0 0 0 / 30%);
+  font-size: 13px;
+}
+
+.board-side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.board-letters h2,
+.board-record h2 {
+  margin: 0 0 8px;
+  color: #2a1c08;
+  font-family: var(--official);
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.board-letters h2 span {
+  margin-left: 6px;
+  color: #4a3212;
+}
+
+.board-letters ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.board-slip {
+  position: relative;
+  min-height: 78px;
+  padding: 8px 9px;
+  background: #e8e2cf;
+  box-shadow: 0 4px 8px rgb(0 0 0 / 30%);
+  font-size: 12px;
+  line-height: 1.3;
+  rotate: 1deg;
+}
+
+.board-slip:nth-child(3n + 1) {
+  rotate: -1.2deg;
+}
+
+.board-slip strong {
+  display: block;
+  font-family: var(--official);
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.board-slip:not(.found) strong {
+  color: var(--ink-soft);
+  font-size: 20px;
+}
+
+.board-slip-hint {
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+.board-slip-stamp {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 1px 6px;
+  border: 3px double currentColor;
+  border-radius: 3px;
+  color: var(--challenge);
+  font-family: var(--official);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  rotate: -8deg;
+}
+
+.slip-promoted .board-slip-stamp {
+  color: var(--accept);
+}
+
+.slip-reclassified .board-slip-stamp {
+  color: var(--pen);
+}
+
+.slip-headhunted .board-slip-stamp {
+  color: #5b3fa6;
+}
+
+.board-record {
+  padding: 12px 14px;
+  background: var(--paper);
+  box-shadow: 0 6px 12px rgb(0 0 0 / 35%);
+  rotate: -0.5deg;
+}
+
+.board-record dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 16px;
+  margin: 0;
+}
+
+.board-record dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px dotted var(--rule-line);
+  font-size: 13px;
+}
+
+.board-record dt {
+  color: var(--ink-soft);
+}
+
+.board-record dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+/* The settings: two switches, on the board and in the menu. */
+.settings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.settings-switch {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 6px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  background: var(--paper-light);
+  color: var(--ink);
+  font-family: var(--official);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.settings-switch b {
+  color: var(--accept);
+}
+
+.settings-switch[aria-checked='false'] b {
+  color: var(--challenge);
+}
+
+/* Motion is a preference, not a warning: its value is in ink either way. */
+.settings-motion b,
+.settings-motion[aria-checked='false'] b {
+  color: var(--ink);
+}
+
+.settings-switch:disabled {
+  cursor: default;
+  opacity: 0.8;
+}
+
+.board-confirm {
+  width: min(540px, 100%);
+}
+
+/* In the menu: the earlier mornings, and the settings under the ways to start again. */
+.menu-mornings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin-top: 22px;
+  color: var(--ink-soft);
+  font-family: var(--official);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.menu-card .settings {
+  margin-top: 18px;
+}
+
+/* At the letter: the ways on, and the mornings, on the dark desk. */
+.ending-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+}
+
+.ending-buttons .screen-button {
+  margin-top: 0;
+}
+
+.ending-mornings {
+  margin-top: 12px;
+  color: #cfc7b0;
+}
+
+.ending-mornings .menu-link {
+  color: #e8e0c8;
+}
+
+/* The night's closing letter, with the ways on under it. */
+.night-end {
+  gap: 16px;
+}
+
+.night-end .notice {
+  padding-bottom: 80px;
+}

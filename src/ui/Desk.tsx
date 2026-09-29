@@ -11,8 +11,12 @@ import { InspectContext } from './Inspect';
 import { RegistryLookup, type Lookup } from './Registry';
 import type { Decided } from './week';
 import { Envelope, OfferLetter, SecondNote, type MorningPapers } from './Morning';
-import { CitationSlip, FilingSlip } from './Slips';
+import { NIGHT } from '../content/night';
+import { CitationSlip, FilingSlip, NightChallengeSlip } from './Slips';
 import { StageScale } from './Stage';
+
+/** The night shift, as the desk shows it: which shift, its clock, and the night's two counts, the stamp on the desk included. */
+export type NightView = { shift: number; seconds: number; right: number; citations: number };
 
 /** What inspect mode is saying, in the strip along the bottom of the blotter. */
 export type InspectView = {
@@ -57,6 +61,8 @@ type Props = {
   /** What else is on the blotter with the morning paper. */
   morning: MorningPapers;
   onOffer: (choice: 'signed' | 'handed-in') => void;
+  /** On the night shift: no paper in the morning, and no court at five. */
+  night?: NightView;
 };
 
 /** The clerk's desk. Papers can be pushed around with the mouse; the stamps are on the right. */
@@ -75,10 +81,19 @@ export function Desk(p: Props) {
             p.papers && p.decided?.citation ? 'desk-papers printing citing' : p.papers && p.decided?.decision === 'challenge' ? 'desk-papers printing' : 'desk-papers'
           }
         >
-          {!p.opened && (p.gazette ? <GazettePage gazette={p.gazette} /> : <WelcomeLetter />)}
-          {!p.opened && p.morning.note && <SecondNote text={p.morning.note} />}
-          {!p.opened && p.morning.envelope && <Envelope credit={p.morning.envelope} />}
-          {!p.opened && p.morning.letter && <OfferLetter onSign={() => p.onOffer('signed')} onHandIn={() => p.onOffer('handed-in')} />}
+          {!p.opened && (p.night ? <NightCard night={p.night} /> : p.gazette ? <GazettePage gazette={p.gazette} /> : <WelcomeLetter />)}
+          {!p.opened && !p.night && p.morning.note && <SecondNote text={p.morning.note} />}
+          {/* On the paper, and like any paper on the desk, they can be moved off it. */}
+          {!p.opened && !p.night && p.morning.envelope && (
+            <Paper label="Envelope" className="morning-extra at-envelope">
+              <Envelope credit={p.morning.envelope} />
+            </Paper>
+          )}
+          {!p.opened && !p.night && p.morning.letter && (
+            <Paper label="Likeness Robotics' letter" className="morning-extra at-letter">
+              <OfferLetter onSign={() => p.onOffer('signed')} onHandIn={() => p.onOffer('handed-in')} />
+            </Paper>
+          )}
           {p.papers && (
             <>
               <Paper key={`form-${p.visit}`} label="Profile card" className={p.returning ? 'paper-form returning' : 'paper-form'}>
@@ -97,8 +112,18 @@ export function Desk(p: Props) {
           {p.opened && !p.papers && <p className="desk-empty">Papers come across the counter.</p>}
           {/* The printer at the top edge of the desk: citations and case slips land where the papers were. */}
           <div className="printer" aria-live="polite">
-            {p.papers && p.decided?.citation && <CitationSlip decided={p.decided} caseNo={p.caseNo} video={p.papers.video} />}
-            {p.papers && p.decided?.decision === 'challenge' && <FilingSlip name={p.papers.name} caseNo={p.caseNo} evidence={p.decided.evidence ?? null} />}
+            {p.papers && p.decided && p.night ? (
+              p.decided.decision === 'challenge' ? (
+                <NightChallengeSlip decided={p.decided} caseNo={p.caseNo} name={p.papers.name} night={p.night.citations} video={p.papers.video} />
+              ) : (
+                p.decided.citation && <CitationSlip decided={p.decided} caseNo={p.caseNo} video={p.papers.video} night={p.night.citations} />
+              )
+            ) : (
+              <>
+                {p.papers && p.decided?.citation && <CitationSlip decided={p.decided} caseNo={p.caseNo} video={p.papers.video} />}
+                {p.papers && p.decided?.decision === 'challenge' && <FilingSlip name={p.papers.name} caseNo={p.caseNo} evidence={p.decided.evidence ?? null} />}
+              </>
+            )}
           </div>
           {p.inspect.message && (
             <p className={`inspector inspector-${p.inspect.tone}`} role="status" data-testid="inspector">
@@ -169,15 +194,18 @@ export function Desk(p: Props) {
             <span className="inspect-glass" aria-hidden="true" />
             Inspect <kbd>I</kbd>
           </button>
-          <div className="tray" aria-label={`Court tray: ${p.filed} case${p.filed === 1 ? '' : 's'}`}>
-            <span className="tray-label">For the court</span>
-            <span className="tray-slips">
-              {Array.from({ length: Math.min(p.filed, 6) }, (_, i) => (
-                <span key={i} className="tray-slip" style={{ rotate: `${((i * 37) % 9) - 4}deg` }} />
-              ))}
-            </span>
-            <span className="tray-count">{p.filed}</span>
-          </div>
+          {/* No court sits on the night shift: its verdicts come at once, and the tray stays in the drawer. */}
+          {!p.night && (
+            <div className="tray" aria-label={`Court tray: ${p.filed} case${p.filed === 1 ? '' : 's'}`}>
+              <span className="tray-label">For the court</span>
+              <span className="tray-slips">
+                {Array.from({ length: Math.min(p.filed, 6) }, (_, i) => (
+                  <span key={i} className="tray-slip" style={{ rotate: `${((i * 37) % 9) - 4}deg` }} />
+                ))}
+              </span>
+              <span className="tray-count">{p.filed}</span>
+            </div>
+          )}
           <aside className="sticky" aria-label="Note from your supervisor">
             {SUPERVISOR_NOTES[p.day - 1]}
             <span className="sticky-sign">S.</span>
@@ -188,6 +216,21 @@ export function Desk(p: Props) {
   );
 }
 
+
+/** The night shift's card on the blotter, where the morning paper would be. */
+function NightCard({ night }: { night: NightView }) {
+  const fill = (line: string) => line.replace('{n}', String(night.shift)).replace('{right}', String(night.right)).replace('{citations}', String(night.citations));
+  return (
+    <article className="welcome night-card" aria-label={NIGHT.title} data-testid="night-card">
+      <h2>{NIGHT.title}</h2>
+      <p className="night-shift">{fill(NIGHT.card.shift)}</p>
+      {NIGHT.card.lines.map((line) => (
+        <p key={line}>{line}</p>
+      ))}
+      <p className="night-tally">{fill(NIGHT.card.tally)}</p>
+    </article>
+  );
+}
 
 /** Sheets the clerk has picked up stack from here: above the printer (z-index 60 in desk.css) and its slips (50). */
 let topPaper = 100;

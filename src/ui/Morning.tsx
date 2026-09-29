@@ -18,7 +18,7 @@ const keepFocus = (e: { preventDefault: () => void }) => e.preventDefault();
 /** Likeness Robotics' letter, on top of the paper: SIGN IT, or HAND IT IN. Left on the desk, it goes in the drawer unsigned. */
 export function OfferLetter({ onSign, onHandIn }: { onSign: () => void; onHandIn: () => void }) {
   return (
-    <article className="morning-extra offer-letter" aria-label="Letter from Likeness Robotics" data-testid="offer-letter">
+    <article className="offer-letter" aria-label="Letter from Likeness Robotics" data-testid="offer-letter">
       <p className="offer-head">{OFFER_LETTER.head}</p>
       {OFFER_LETTER.lines.map((line) => (
         <p key={line}>{line}</p>
@@ -40,7 +40,7 @@ export function OfferLetter({ onSign, onHandIn }: { onSign: () => void; onHandIn
 export function Envelope({ credit }: { credit: Credit }) {
   const fill = (line: string) => line.replace('{amount}', String(credit.count * credit.each)).replace('{names}', listOf(credit.for ?? []));
   return (
-    <aside className="morning-extra envelope" aria-label="Envelope from Likeness Robotics" data-testid="envelope">
+    <aside className="envelope" aria-label="Envelope from Likeness Robotics" data-testid="envelope">
       <p className="offer-head">{ENVELOPE.head}</p>
       {ENVELOPE.lines.map((line) => (
         <p key={line}>{fill(line)}</p>

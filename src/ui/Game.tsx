@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { CLERK } from '../content/cast';
 import { MENU } from '../content/menu';
-import { DAYS } from '../gen/day';
-import { reduce, shiftOver, type Action, type GameState } from './week';
+import { OFFER } from '../economy/economy';
+import { headhunted, unitsPaid } from '../economy/endings';
+import { cardLetter, weekCard } from '../gen/today';
+import { reduce, shiftOver, weekEnd, type Action, type GameState } from './week';
 import { exposeGameState } from './gameState';
-import { Menu, type MenuView } from './Menu';
-import { browserStorage, canSave, dayAgain, dayBegun, newRun, saveOf, stepOf, writeSave, type Run, type Step } from './save';
+import { Menu, whereNow, type MenuView } from './Menu';
+import type { Finished } from './record';
+import { backTo, browserStorage, canSave, dayAgain, dayBegun, fingerprint, newRun, saveOf, stepOf, writeSave, type Run, type Step } from './save';
+import { useSettings } from './settings';
 import { Court, Ending, Statement } from './Screens';
 import { Shift } from './Shift';
 import { isMusicMuted, setMusicMuted, setMusicScene, stopMusic, type Scene } from './music';
@@ -23,15 +27,23 @@ function record(played: Played, action: Action): Played {
   return state === played.state ? played : { state, steps: [...played.steps, stepOf(action)] };
 }
 
-/** At the window with the clock able to run: a break or a reload stops the day here. */
-const midShift = (s: GameState) => s.phase === 'shift' && s.opened && !shiftOver(s);
+type Props = {
+  run: Run;
+  /** Today's week: the date, as the card names it, and its seed. */
+  today: { date: string; label: string; seed: number };
+  onRestart: (run: Run) => void;
+  /** The week has reached its letter, here and now: the record counts it. */
+  onFinished: (week: Finished) => void;
+  onBoard: () => void;
+};
 
 /** A week at Registry Window 3, from the first morning to the letter at the end. */
-export function Game({ run, onRestart }: { run: Run; onRestart: (run: Run) => void }) {
+export function Game({ run, today, onRestart, onFinished, onBoard }: Props) {
   const { seed, week } = run;
   const [{ state, steps }, dispatch] = useReducer(record, run, (r): Played => ({ state: r.state, steps: r.steps }));
   const queue = week[state.day - 1];
-  const [menu, setMenu] = useState<MenuView | null>(run.setAside ? 'setAside' : run.resumed && midShift(run.state) ? 'resumed' : null);
+  // Coming back to a week is the notice board's to show: the desk opens with no card in front of it.
+  const [menu, setMenu] = useState<MenuView | null>(null);
 
   useEffect(() => {
     exposeGameState({ ...state, queue });
@@ -61,6 +73,8 @@ export function Game({ run, onRestart }: { run: Run; onRestart: (run: Run) => vo
     return () => {
       document.removeEventListener('visibilitychange', onHide);
       window.removeEventListener('pagehide', flush);
+      // Off to the notice board or another week: the clock as it stood goes with the save.
+      flush();
     };
   }, []);
 
@@ -87,6 +101,32 @@ export function Game({ run, onRestart }: { run: Run; onRestart: (run: Run) => vo
   const openMenu = () => setMenu('paused');
   const newWeek = () => onRestart(newRun(seed + 1));
   const sameDay = () => onRestart(dayAgain(run, steps, state));
+  // Any earlier morning of this week, from the menu or the letter's desk: it asks first.
+  const [backDay, setBackDay] = useState<number | null>(null);
+  const earlier = Array.from({ length: state.day - run.startDay }, (_, i) => run.startDay + i);
+  const askBack = (day: number) => {
+    setBackDay(day);
+    setMenu('back');
+  };
+
+  // The week's letter, reached here and now (not a reload of it): the record counts it once.
+  const title = seed === today.seed ? `Today’s week, ${today.label}` : `Week ${seed}`;
+  const ended = weekEnd(state);
+  const card = ended ? weekCard({ title, days: state.history.map((d) => ({ day: d.day, marks: d.marks })), ...cardLetter(ended.end.ending, ended.end.grade), savings: state.savings }) : '';
+  const counted = useRef(run.state.phase === 'ending');
+  useEffect(() => {
+    if (!ended || counted.current) return;
+    counted.current = true;
+    const { ending, grade, offer, unitsStamped } = ended.end;
+    onFinished({
+      id: `${seed}:${run.startDay}:${steps.length}:${fingerprint(state)}`,
+      ending,
+      headhunted: headhunted(ending, offer === 'signed', unitsPaid(unitsStamped, offer === 'signed', OFFER.day).length),
+      savings: state.savings,
+      grade,
+      ...(seed === today.seed ? { today: { date: today.date, letter: cardLetter(ending, grade).letter, card } } : {}),
+    });
+  });
 
   return (
     <div className={`game phase-${state.phase}`}>
@@ -129,7 +169,10 @@ export function Game({ run, onRestart }: { run: Run; onRestart: (run: Run) => vo
           onNext={() => dispatch({ type: 'next-day', queue })}
         />
       )}
-      {state.phase === 'ending' && <Ending state={state} onNewWeek={newWeek} onDayAgain={sameDay} />}
+      {state.phase === 'ending' && (
+        // Nothing is left to lose at the letter: a morning is one click, with no question.
+        <Ending state={state} card={card} earlier={[...earlier, state.day]} onNewWeek={newWeek} onBack={(day) => onRestart(backTo(run, steps, day))} onBoard={onBoard} />
+      )}
       {menu && (
         <Menu
           view={menu}
@@ -138,28 +181,20 @@ export function Game({ run, onRestart }: { run: Run; onRestart: (run: Run) => vo
           days={state.day - run.startDay + 1}
           savings={state.savings}
           dayBegun={dayBegun(steps, state)}
+          earlier={earlier}
+          backDay={backDay}
           saving={saving}
           onView={setMenu}
+          onBack={askBack}
           onClose={() => setMenu(null)}
           onDayAgain={sameDay}
+          onBackTo={(day) => onRestart(backTo(run, steps, day))}
           onNewWeek={newWeek}
+          onBoard={onBoard}
         />
       )}
     </div>
   );
-}
-
-/** Where the week stands, for the top of the menu. */
-function whereNow(s: GameState, clockSeconds: number): string {
-  const limit = DAYS[s.day - 1].shiftSeconds;
-  const line = (() => {
-    if (s.phase !== 'shift') return MENU.where[s.phase];
-    if (!s.opened) return MENU.where.morning;
-    if (shiftOver(s)) return MENU.where.closing;
-    return limit === null ? MENU.where.open : MENU.where.left;
-  })();
-  const left = Math.max(0, Math.ceil((limit ?? 0) - clockSeconds));
-  return line.replace('{day}', String(s.day)).replace('{left}', `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`);
 }
 
 /** Which music the moment calls for. */
@@ -173,7 +208,10 @@ function musicScene(s: GameState): Scene {
 const keepFocus = (e: { preventDefault: () => void }) => e.preventDefault();
 
 /** The switches in the corner: the desk's noises (M), the waiting-room music, and the menu (Esc). */
-function AudioSwitches({ onMenu }: { onMenu: () => void }) {
+export function AudioSwitches({ onMenu }: { onMenu: () => void }) {
+  const { settings } = useSettings();
+  const shortcuts = useRef(settings.shortcuts);
+  shortcuts.current = settings.shortcuts;
   const [muted, setSound] = useState(isMuted);
   const [musicMuted, setMusic] = useState(isMusicMuted);
   const toggleSound = () => {
@@ -187,7 +225,7 @@ function AudioSwitches({ onMenu }: { onMenu: () => void }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       // An M typed into the registry's name box is a letter, not the sound switch.
-      if ((e.target as HTMLElement).closest?.('input, textarea')) return;
+      if ((e.target as HTMLElement).closest?.('input, textarea') || !shortcuts.current) return;
       if (e.key.toLowerCase() === 'm' && !e.repeat && !e.metaKey && !e.ctrlKey) toggleSound();
     };
     window.addEventListener('keydown', onKey);

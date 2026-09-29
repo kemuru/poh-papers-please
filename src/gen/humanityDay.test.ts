@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CLERK, FIRST_APPLICANT, RENEWAL, UNIT_OWNERS } from '../content/cast';
+import { CLERK, FIRST_APPLICANT, PAT, RENEWAL, UNIT_OWNERS } from '../content/cast';
 import { CLONE_PORTRAIT, UNIT_FACES } from '../content/portraits';
 import { litFrames } from '../rules/face';
 import { judge, rulebookForDay } from '../rules/judge';
@@ -93,6 +93,25 @@ describe('Humanity Day', () => {
         // The clerk let their unit in, so the court never removed them: they are still on file.
         expect(rules(a, [...seen[i], record]), `seed ${seed}: ${owner.name}`).toContain('duplicate');
         if (k === 1) expect(a.voucher).toBe(UNIT_OWNERS[0].name);
+      }
+    }
+  });
+
+  it('keeps Pat on the registry to the end: registered at last, Pat vouches for nobody, so no upheld challenge takes Pat off', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const plan = planWeek(seed);
+      expect(findName(plan.mornings[6], PAT.name), `seed ${seed}`).not.toBeNull();
+      expect(plan.queues.flat().filter((a) => a.voucher === PAT.name), `seed ${seed}`).toEqual([]);
+    }
+  });
+
+  it('never gives a Binns an old face somebody else already has (seed 6832 gave Vera Ethel’s)', () => {
+    for (const seed of [6832, ...SEEDS.slice(0, 20)]) {
+      const plan = planWeek(seed);
+      const day7 = plan.queues[LAST_DAY - 1];
+      for (const owner of UNIT_OWNERS) {
+        const i = day7.findIndex((a) => a.name === owner.name);
+        expect(rules(day7[i], plan.seen[LAST_DAY - 1][i]), `seed ${seed}: ${owner.name}`).toEqual([]);
       }
     }
   });

@@ -242,7 +242,7 @@ export const UNIT_OWNERS = [
     back: {
       remark: "We've sold the robots. Both of them. My wife's behind me. She's never been nervous before.",
       video: `${PHRASE} Just me, this time.`,
-      exits: { accept: "Thank you. Vera! It's you next.", challenge: "Right. I'll tell Vera to sit down." },
+      exits: { accept: "Thank you. Vera! It's you next.", challenge: "Right. We'll see what the court says." },
     },
   },
   {
@@ -253,7 +253,7 @@ export const UNIT_OWNERS = [
     back: {
       remark: 'The robots have gone to a good home. Well. A home. Wendell is vouching for me.',
       video: `${PHRASE} And that's the last of the Binnses.`,
-      exits: { accept: "Lovely. Now there's just the two of us. As it was.", challenge: 'Oh, Wendell.' },
+      exits: { accept: "Lovely. Now there's just the two of us. As it was.", challenge: "Well. We've been through worse. We had robots." },
     },
   },
 ] as const;

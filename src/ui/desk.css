@@ -1259,18 +1259,26 @@ mark {
   text-align: right;
 }
 
-/* What else lies on the morning paper: Likeness's letter, its envelope, the supervisor's second note. */
-.morning-extra {
+/* What else lies on the morning paper: Likeness's letter and its envelope, papers that can be moved like any other. */
+.paper.morning-extra {
   position: absolute;
   z-index: 5;
-  box-shadow: 0 12px 26px rgb(0 0 0 / 50%);
   animation: land 0.5s 0.45s both;
+}
+
+.at-letter {
+  right: 18px;
+  bottom: 12px;
+}
+
+.at-envelope {
+  right: 32px;
+  bottom: 28px;
 }
 
 /* Another company's paper, in another company's colours, over the foot of the paper and clear of the day's notice. */
 .offer-letter {
-  right: 18px;
-  bottom: 12px;
+  box-shadow: 0 12px 26px rgb(0 0 0 / 50%);
   width: 340px;
   padding: 9px 14px 10px;
   background: #f4f1fb;
@@ -1340,8 +1348,7 @@ mark {
 
 /* A manila envelope, flap and all. */
 .envelope {
-  right: 32px;
-  bottom: 28px;
+  box-shadow: 0 12px 26px rgb(0 0 0 / 50%);
   width: 250px;
   padding: 26px 16px 10px;
   background:
@@ -1373,6 +1380,17 @@ mark {
     transition-duration: 0.001s !important;
     transition-delay: 0s !important;
   }
+}
+
+/* Reduced motion from the settings (src/ui/settings.ts), for a browser that does not ask for it itself. */
+.motion-reduced *,
+.motion-reduced *::before,
+.motion-reduced *::after {
+  animation-duration: 0.001s !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001s !important;
+  transition-delay: 0s !important;
 }
 
 .audio-switches {
@@ -2041,4 +2059,28 @@ mark {
   font-family: var(--hand);
   font-size: 16px;
   text-align: right;
+}
+
+/* The night shift's card, where the morning paper would be: the Ministry never closes. */
+.night-card {
+  background:
+    radial-gradient(ellipse at 20% 0%, rgb(255 255 255 / 20%), transparent 60%),
+    #dcd5c0;
+}
+
+.night-shift {
+  font-family: var(--official);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.night-tally {
+  font-weight: 700;
+}
+
+/* The night's topbar: two counts where the savings would be. */
+.night .topbar-savings strong {
+  margin: 0 2px;
 }
