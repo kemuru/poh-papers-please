@@ -54,7 +54,7 @@ export const CITATION_MEMOS: Record<RuleId, readonly string[]> = {
 export const UNIT_MEMOS: readonly string[] = [
   'Memo 0-L: The applicant was a home robot. It shut its eyes and lit up. Humans do only one of those.',
   'Memo 0-M: The applicant shut its eyes twice in five seconds, and switched on both times. Its household has been informed.',
-  'Memo 0-N: Two things were lit in frame 3: the phone, which was held up, and the forehead, which was not.',
+  'Memo 0-N: The address in frame 3 was in order. The light above it was not.',
   'Memo 4-L: A company is not a registered human, whatever its brochure says.',
   'Memo 5-L: The factory made this face twice. The registry takes each face once.',
   'Memo 0-P: Likeness Robotics has asked what the income is per unit. The Ministry has not replied.',

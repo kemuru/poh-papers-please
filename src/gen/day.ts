@@ -4,7 +4,7 @@
 // it, and `planted` describes each applicant under it. Nothing here depends on what the clerk
 // decides, so a day's queue is the same however the days before it went; the desk judges it
 // against the registry the clerk actually built.
-import { FIRST_NAMES, LAST_NAMES, REMARKS, STREETS, TOWNS } from '../content/applicants';
+import { FIRST_NAMES, LAST_NAMES, ON_PAPER, REMARKS, STREETS, TOWNS } from '../content/applicants';
 import {
   AGENT, CLERK, CLONE, CUTOUT, DEEPFAKE, FIRST_APPLICANT, INFLUENCER, LIKENESS, PAT, PAT_MOTHER, REGULARS, SYBIL_FARM, TWINS,
   TWINS_FORM, UNIT_ON_FILE_RECORD, UNIT_OWNERS, UNITS, type CastId, type RegularId,
@@ -101,6 +101,7 @@ const EXTRAS: readonly (readonly [Extra, number])[] = [
 ];
 
 type Week = {
+  seed: number;
   rng: Rng;
   /** Names, addresses and remarks already used this week, so nobody repeats. */
   used: Set<string>;
@@ -112,7 +113,7 @@ type Week = {
 
 export function planWeek(seed: number): WeekPlan {
   const rng = createRng(seed);
-  const w: Week = { rng, used: new Set(CAST_NAMES), faces: new Set(), refused: [] };
+  const w: Week = { seed, rng, used: new Set(CAST_NAMES), faces: new Set(), refused: [] };
   for (const p of [...Object.values(CAST_PORTRAITS), FIRST_APPLICANT_PORTRAIT, CATALOGUE_GENTLEMAN, CLONE_PORTRAIT]) w.faces.add(faceKey(p));
 
   // Who comes when. Ethel is registered on the first morning; the other regulars come once, from
@@ -143,7 +144,7 @@ export function planWeek(seed: number): WeekPlan {
     const seen: Registry[] = [];
     const challenged: GeneratedApplicant[] = [];
     queue.forEach((a, n) => {
-      if (day >= 3) papersForSign(w, a, queue, n);
+      if (day >= 3) papersForSign(w, a, queue, day, n);
       if (day >= 4 && a.voucher === undefined) a.voucher = chooseVoucher(w, a, registry, day);
       seen.push(registry);
       registry = atWindow(registry, a);
@@ -267,8 +268,16 @@ function arrange(rng: Rng, n: number, first: GeneratedApplicant | null, early: G
 
 // ---------------------------------------------------------------- papers
 
-/** Wallet on the form and sign in the video, from day 3. */
-function papersForSign(w: Week, a: GeneratedApplicant, queue: GeneratedApplicant[], n: number) {
+/** Share of the queue who hold their address up on a phone rather than on paper. */
+const ON_A_PHONE = 0.5;
+
+/**
+ * Wallet on the form and sign in the video, from day 3. The registry's app suggests a phone for the
+ * sign, so about half the queue hold one up and the rest have written the address out, the honest and
+ * the fakes alike, units included. A few hold what they said they would: Pat's laminated sign on day 3
+ * and anyone who says they copied the address out are on paper, the `phone` look-alike on a phone.
+ */
+function papersForSign(w: Week, a: GeneratedApplicant, queue: GeneratedApplicant[], day: number, n: number) {
   const { rng } = w;
   a.wallet ??= wallet(rng);
   if (a.video.sign !== undefined) return;
@@ -285,8 +294,24 @@ function papersForSign(w: Week, a: GeneratedApplicant, queue: GeneratedApplicant
     sign = { kind: 'address', text: other.wallet };
   } else if (kind === 'one-wrong') sign = { kind: 'address', text: miswrite(rng, a.wallet, 1) };
   else if (kind === 'phone') sign = { kind: 'address', text: a.wallet, phone: true };
+  const onPaper = (a.cast === 'pat' && day === 3) || ON_PAPER.includes(a.remark);
+  if (sign?.kind === 'address' && !onPaper && onPhone(w.seed, day, n)) sign = { ...sign, phone: true };
   a.video = { ...a.video, sign };
 }
+
+/**
+ * Whether the day's n-th applicant has their address on a phone: a draw of its own, from the week's
+ * seed, the day and the place in the queue, never from the week's stream, so nothing else in the week moves.
+ */
+const onPhone = (seed: number, day: number, n: number) =>
+  createRng([seed, day, n].reduce((h, part) => fmix(((h ^ part) + 0x9e3779b9) >>> 0), 0x70686f6e /* "phon" */)).next() < ON_A_PHONE;
+
+// Murmur3's finaliser: every bit of the input moves every bit of the output.
+const fmix = (h: number) => {
+  h = Math.imul(h ^ (h >>> 16), 0x85ebca6b);
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
+  return (h ^ (h >>> 16)) >>> 0;
+};
 
 /** From day 4: a voucher who is registered and free today, unless the applicant's fault is the voucher. */
 function chooseVoucher(w: Week, a: GeneratedApplicant, registry: Registry, day: number): string {
@@ -400,8 +425,6 @@ function unitOn(day: number): GeneratedApplicant {
     planted: tell ? [{ rule: 'human', mistake: 'machine' }] : [],
   };
   if (day >= 3) a.wallet = u.wallet;
-  // Day 3: the address on its phone, in full and the right way up.
-  if (day === 3) a.video = { ...a.video, sign: { kind: 'address', text: u.wallet, phone: true } };
   if (day === 4) {
     a.voucher = LIKENESS;
     a.planted = [{ rule: 'vouch', mistake: 'company' }];

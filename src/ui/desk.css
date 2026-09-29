@@ -1451,10 +1451,12 @@ mark {
   line-height: 1.3;
 }
 
-/* The same address on a phone: a lit screen in a dark case. */
+/* The same address on a phone: a lit screen in a dark case. Case and screen margin together are a
+   pixel inside the paper's 8px a side, so a phone is no wider than a sign and fits the panel wherever
+   a sign does, even once the stage's scale has rounded the case. */
 .sign-text.phone {
-  padding: 8px 9px;
-  border: 5px solid #23262b;
+  padding: 8px 3px;
+  border: 4px solid #23262b;
   border-radius: 7px;
   background: #cfe3ea;
   box-shadow: none;

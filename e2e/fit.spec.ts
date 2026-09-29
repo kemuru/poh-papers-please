@@ -83,3 +83,31 @@ for (const [width, height] of [
     ]);
   });
 }
+
+// From day 3 about half the queue hold their address up on a phone, a case drawn around the screen:
+// it must be no wider than a paper sign and fit the panel wherever a sign does. Seed 1, day 6: the
+// first applicant holds paper, the third a phone.
+test('a phone held up in the video is no wider than a paper sign and stays inside its panel at 1024×768', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.goto('/?seed=1&day=6');
+  await page.getByRole('button', { name: /Open the window/ }).click();
+  const panel = page.getByTestId('sign');
+  // The printout lands turned a few degrees, which widens every box on it until it settles.
+  const landed = () => page.waitForFunction(() => document.querySelector('.paper-video')?.getAnimations().every((a) => a.playState === 'finished'));
+  await page.getByRole('button', { name: 'Call next applicant' }).click();
+  await expect(panel.getByText('Sign, enlarged')).toBeVisible();
+  await landed();
+  const paper = (await panel.locator('.sign-text').boundingBox())!;
+  for (let i = 0; i < 2; i++) {
+    await page.getByRole('button', { name: 'Challenge' }).click();
+    await page.getByRole('button', { name: 'Call next applicant' }).click();
+  }
+  await expect(panel.getByText('Phone screen, enlarged')).toBeVisible();
+  await landed();
+  const [phone, still] = [(await panel.locator('.sign-text.phone').boundingBox())!, (await panel.boundingBox())!];
+  expect(phone.width).toBeLessThanOrEqual(paper.width);
+  expect(phone.x).toBeGreaterThanOrEqual(still.x);
+  expect(phone.x + phone.width).toBeLessThanOrEqual(still.x + still.width);
+  expect(phone.y + phone.height).toBeLessThanOrEqual(still.y + still.height);
+  await fitsIn(page, 1024, 768, [panel]);
+});
