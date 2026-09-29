@@ -113,7 +113,13 @@ export function Game({ run, onRestart }: { run: Run; onRestart: (run: Run) => vo
         />
       )}
       {state.phase === 'court' && (
-        <Court day={state.day} queue={queue} decided={state.decided} rulings={state.rulings} onDone={() => dispatch({ type: 'statement' })} />
+        <Court
+          day={state.day}
+          queue={queue}
+          rulings={state.rulings}
+          onAppeal={(index) => dispatch({ type: 'appeal', index })}
+          onDone={() => dispatch({ type: 'statement' })}
+        />
       )}
       {state.phase === 'statement' && state.end && (
         <Statement

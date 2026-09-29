@@ -1,0 +1,339 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`same seed, same court, appeals included (snapshot) > gives identical rulings, rounds and day totals for the same seed 1`] = `
+{
+  "seed1": [
+    {
+      "day": 1,
+      "pay": 60,
+      "rulings": [
+        {
+          "evidence": "phrase",
+          "index": 1,
+          "rounds": [
+            "3 jurors, fee 0: 3 uphold",
+          ],
+        },
+        {
+          "evidence": "hunch",
+          "index": 2,
+          "rounds": [
+            "3 jurors, fee 0: 2 uphold",
+          ],
+        },
+      ],
+      "savings": 262,
+    },
+    {
+      "day": 2,
+      "pay": 80,
+      "rulings": [
+        {
+          "evidence": "human",
+          "index": 2,
+          "rounds": [
+            "3 jurors, fee 0: 3 uphold",
+          ],
+        },
+        {
+          "evidence": "hunch",
+          "index": 3,
+          "rounds": [
+            "3 jurors, fee 0: 2 uphold",
+          ],
+        },
+      ],
+      "savings": 287,
+    },
+    {
+      "day": 3,
+      "pay": 100,
+      "rulings": [
+        {
+          "evidence": "sign",
+          "index": 0,
+          "rounds": [
+            "3 jurors, fee 0: 3 uphold",
+          ],
+        },
+        {
+          "evidence": "hunch",
+          "index": 1,
+          "rounds": [
+            "3 jurors, fee 0: 1 uphold",
+            "7 jurors, fee 10: 6 uphold",
+          ],
+        },
+      ],
+      "savings": 321,
+    },
+    {
+      "day": 4,
+      "pay": 90,
+      "rulings": [
+        {
+          "evidence": "vouch",
+          "index": 0,
+          "rounds": [
+            "3 jurors, fee 0: 3 uphold",
+          ],
+        },
+        {
+          "evidence": "hunch",
+          "index": 2,
+          "rounds": [
+            "3 jurors, fee 0: 2 uphold",
+          ],
+        },
+      ],
+      "savings": 344,
+    },
+    {
+      "day": 5,
+      "pay": 115,
+      "rulings": [
+        {
+          "evidence": "duplicate",
+          "index": 0,
+          "rounds": [
+            "3 jurors, fee 0: 3 uphold",
+          ],
+        },
+        {
+          "evidence": "hunch",
+          "index": 2,
+          "rounds": [
+            "3 jurors, fee 0: 1 uphold",
+            "7 jurors, fee 10: 5 uphold",
+          ],
+        },
+        {
+          "evidence": "duplicate",
+          "index": 4,
+          "rounds": [
+            "3 jurors, fee 0: 3 uphold",
+          ],
+        },
+      ],
+      "savings": 379,
+    },
+    {
+      "day": 6,
+      "pay": 125,
+      "rulings": [
+        {
+          "evidence": "hunch",
+          "index": 1,
+          "rounds": [
+            "3 jurors, fee 0: 1 uphold",
+            "7 jurors, fee 10: 6 uphold",
+          ],
+        },
+        {
+          "evidence": "sign",
+          "index": 5,
+          "rounds": [
+            "3 jurors, fee 0: 3 uphold",
+          ],
+        },
+        {
+          "evidence": "hunch",
+          "index": 9,
+          "rounds": [
+            "3 jurors, fee 0: 2 uphold",
+          ],
+        },
+      ],
+      "savings": 411,
+    },
+    {
+      "day": 7,
+      "pay": 70,
+      "rulings": [
+        {
+          "evidence": "phrase",
+          "index": 1,
+          "rounds": [
+            "3 jurors, fee 0: 3 uphold",
+          ],
+        },
+        {
+          "evidence": "hunch",
+          "index": 3,
+          "rounds": [
+            "3 jurors, fee 0: 2 uphold",
+          ],
+        },
+      ],
+      "savings": 427,
+    },
+  ],
+  "seed2": [
+    {
+      "day": 1,
+      "pay": 70,
+      "rulings": [
+        {
+          "evidence": "phrase",
+          "index": 1,
+          "rounds": [
+            "3 jurors, fee 0: 3 uphold",
+          ],
+        },
+        {
+          "evidence": "hunch",
+          "index": 2,
+          "rounds": [
+            "3 jurors, fee 0: 1 uphold",
+            "7 jurors, fee 10: 4 uphold",
+          ],
+        },
+      ],
+      "savings": 270,
+    },
+    {
+      "day": 2,
+      "pay": 80,
+      "rulings": [
+        {
+          "evidence": "human",
+          "index": 0,
+          "rounds": [
+            "3 jurors, fee 0: 3 uphold",
+          ],
+        },
+        {
+          "evidence": "hunch",
+          "index": 2,
+          "rounds": [
+            "3 jurors, fee 0: 2 uphold",
+          ],
+        },
+      ],
+      "savings": 295,
+    },
+    {
+      "day": 3,
+      "pay": 100,
+      "rulings": [
+        {
+          "evidence": "human",
+          "index": 2,
+          "rounds": [
+            "3 jurors, fee 0: 3 uphold",
+          ],
+        },
+        {
+          "evidence": "hunch",
+          "index": 3,
+          "rounds": [
+            "3 jurors, fee 0: 1 uphold",
+            "7 jurors, fee 10: 6 uphold",
+          ],
+        },
+      ],
+      "savings": 328,
+    },
+    {
+      "day": 4,
+      "pay": 90,
+      "rulings": [
+        {
+          "evidence": "vouch",
+          "index": 0,
+          "rounds": [
+            "3 jurors, fee 0: 3 uphold",
+          ],
+        },
+        {
+          "evidence": "hunch",
+          "index": 1,
+          "rounds": [
+            "3 jurors, fee 0: 2 uphold",
+          ],
+        },
+      ],
+      "savings": 352,
+    },
+    {
+      "day": 5,
+      "pay": 115,
+      "rulings": [
+        {
+          "evidence": "duplicate",
+          "index": 0,
+          "rounds": [
+            "3 jurors, fee 0: 3 uphold",
+          ],
+        },
+        {
+          "evidence": "hunch",
+          "index": 2,
+          "rounds": [
+            "3 jurors, fee 0: 0 uphold",
+            "7 jurors, fee 10: 6 uphold",
+          ],
+        },
+        {
+          "evidence": "duplicate",
+          "index": 3,
+          "rounds": [
+            "3 jurors, fee 0: 3 uphold",
+          ],
+        },
+      ],
+      "savings": 387,
+    },
+    {
+      "day": 6,
+      "pay": 125,
+      "rulings": [
+        {
+          "evidence": "hunch",
+          "index": 1,
+          "rounds": [
+            "3 jurors, fee 0: 0 uphold",
+            "7 jurors, fee 10: 5 uphold",
+          ],
+        },
+        {
+          "evidence": "human",
+          "index": 2,
+          "rounds": [
+            "3 jurors, fee 0: 3 uphold",
+          ],
+        },
+        {
+          "evidence": "hunch",
+          "index": 9,
+          "rounds": [
+            "3 jurors, fee 0: 2 uphold",
+          ],
+        },
+      ],
+      "savings": 418,
+    },
+    {
+      "day": 7,
+      "pay": 70,
+      "rulings": [
+        {
+          "evidence": "phrase",
+          "index": 3,
+          "rounds": [
+            "3 jurors, fee 0: 3 uphold",
+          ],
+        },
+        {
+          "evidence": "hunch",
+          "index": 4,
+          "rounds": [
+            "3 jurors, fee 0: 2 uphold",
+          ],
+        },
+      ],
+      "savings": 435,
+    },
+  ],
+}
+`;

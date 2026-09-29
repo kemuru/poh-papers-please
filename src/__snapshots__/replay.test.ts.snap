@@ -42,7 +42,7 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
       ],
       "court": [
         "1: dismissed",
-        "2: upheld",
+        "2: dismissed",
         "3: upheld",
       ],
       "day": 2,
@@ -57,8 +57,8 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
       ],
       "totals": {
         "bills": 55,
-        "pay": 55,
-        "savings": 237,
+        "pay": 25,
+        "savings": 207,
       },
     },
     {
@@ -73,8 +73,8 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
         "Sunil Grout",
       ],
       "court": [
-        "0: upheld",
-        "1: upheld",
+        "0: dismissed",
+        "1: dismissed",
         "3: dismissed",
       ],
       "day": 3,
@@ -90,8 +90,8 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
       ],
       "totals": {
         "bills": 66,
-        "pay": 65,
-        "savings": 236,
+        "pay": 5,
+        "savings": 146,
       },
     },
     {
@@ -106,7 +106,7 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
         "Brenda Blandford",
       ],
       "court": [
-        "0: upheld",
+        "0: dismissed",
         "2: upheld",
         "7: dismissed",
       ],
@@ -123,8 +123,8 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
       ],
       "totals": {
         "bills": 67,
-        "pay": 65,
-        "savings": 234,
+        "pay": 35,
+        "savings": 114,
       },
     },
     {
@@ -141,7 +141,7 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
       ],
       "court": [
         "1: dismissed",
-        "4: upheld, removed Yusuf Thistlewood",
+        "4: dismissed",
         "5: upheld",
       ],
       "day": 5,
@@ -158,8 +158,8 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
       ],
       "totals": {
         "bills": 80,
-        "pay": 65,
-        "savings": 219,
+        "pay": 35,
+        "savings": 69,
       },
     },
     {
@@ -176,7 +176,8 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
         "Chidi Grout !phrase:wrong-word",
       ],
       "court": [
-        "1: upheld, removed Vera Binns",
+        "1: dismissed",
+        "4: upheld, removed Maureen Oakes",
         "7: dismissed",
       ],
       "day": 6,
@@ -185,7 +186,7 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
         "challenge: right",
         "accept: right",
         "accept: right",
-        "accept: right",
+        "challenge: right",
         "accept: wrong, warning",
         "accept: right",
         "challenge: wrong",
@@ -194,36 +195,8 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
       ],
       "totals": {
         "bills": 93,
-        "pay": 40,
-        "savings": 166,
-      },
-    },
-    {
-      "applicants": [
-        "Dawn Hollis",
-        "Jasper Horsfall !phrase:quiet-word",
-        "Ingrid Horsfall",
-        "Hortense Duckworth !phrase:wrong-word",
-        "Kiri Kowalczyk",
-        "Marisol Muncaster",
-      ],
-      "court": [
-        "1: upheld, removed Socrates",
-        "3: upheld, removed Dolores Wimbush",
-      ],
-      "day": 7,
-      "decided": [
-        "accept: right",
-        "challenge: right",
-        "accept: right",
-        "challenge: right",
-        "accept: right",
-        "accept: right",
-      ],
-      "totals": {
-        "bills": 54,
-        "pay": 70,
-        "savings": 182,
+        "pay": 15,
+        "savings": -9,
       },
     },
   ],
@@ -264,7 +237,7 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
         "Marisol Cobbold",
       ],
       "court": [
-        "0: upheld",
+        "0: dismissed",
         "2: upheld",
       ],
       "day": 2,
@@ -279,8 +252,8 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
       ],
       "totals": {
         "bills": 55,
-        "pay": 80,
-        "savings": 210,
+        "pay": 50,
+        "savings": 180,
       },
     },
     {
@@ -296,8 +269,8 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
       ],
       "court": [
         "1: dismissed",
-        "2: upheld",
-        "3: upheld",
+        "2: dismissed",
+        "3: dismissed",
         "7: dismissed",
       ],
       "day": 3,
@@ -313,8 +286,8 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
       ],
       "totals": {
         "bills": 67,
-        "pay": 40,
-        "savings": 183,
+        "pay": -20,
+        "savings": 93,
       },
     },
     {
@@ -348,7 +321,7 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
       "totals": {
         "bills": 66,
         "pay": 0,
-        "savings": 117,
+        "savings": 27,
       },
     },
     {
@@ -365,7 +338,7 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
       ],
       "court": [
         "0: upheld, removed Wendell Binns",
-        "2: upheld, removed Marisol Cobbold",
+        "2: dismissed",
         "3: upheld, removed Dave Pickering",
         "5: dismissed",
         "6: dismissed",
@@ -385,47 +358,8 @@ exports[`same seed, same week (snapshot) > gives identical applicants, court res
       ],
       "totals": {
         "bills": 80,
-        "pay": 30,
-        "savings": 67,
-      },
-    },
-    {
-      "applicants": [
-        "Oswald Wimbush",
-        "Simon Aldous !human:machine",
-        "Alex Proxy !human:generated",
-        "Pat Oakes",
-        "Oswald Hatchett",
-        "Leopold Thistlewood",
-        "Dolores Tuttle",
-        "Yusuf Kowalczyk",
-        "Brenda Blandford",
-        "Colin Stannard !human:printed",
-      ],
-      "court": [
-        "0: dismissed",
-        "1: upheld, removed Vera Binns",
-        "4: dismissed",
-        "8: dismissed",
-        "9: upheld, removed Ivy Marsh",
-      ],
-      "day": 6,
-      "decided": [
-        "challenge: wrong",
-        "challenge: right",
-        "accept: wrong, warning",
-        "accept: wrong, fine",
-        "challenge: wrong",
-        "accept: right",
-        "accept: right",
-        "accept: right",
-        "challenge: wrong",
-        "challenge: right",
-      ],
-      "totals": {
-        "bills": 94,
-        "pay": -5,
-        "savings": -32,
+        "pay": 0,
+        "savings": -53,
       },
     },
   ],

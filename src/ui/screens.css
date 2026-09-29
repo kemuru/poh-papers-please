@@ -97,8 +97,14 @@
   box-shadow: 0 8px 18px rgb(0 0 0 / 40%);
 }
 
-/* The day's cases, two to a row, three when the clerk challenged half the queue. Never a scrollbar
-   in play: the list only scrolls if something has gone badly wrong with the day. */
+/* The day's cases, two to a row; three, on a wider bench, when the clerk challenged five or six; past
+   six, a board of mugshots. Never a scrollbar in play: the list only scrolls if something has gone
+   badly wrong with the day. */
+.court.three,
+.court.crowded {
+  width: min(1440px, 100%);
+}
+
 .docket {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -107,6 +113,10 @@
   align-self: stretch;
   min-height: 0;
   overflow: auto;
+}
+
+.docket.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 /* A crowded day: a board of mugshots, five across, each stamped across the photo. */
@@ -126,12 +136,32 @@
   box-shadow: 0 6px 14px rgb(0 0 0 / 45%);
   font-size: 13px;
   line-height: 1.4;
-  animation: print 0.6s steps(8) both;
+  /* A card stretched to its row's height keeps its text under the photo, not spread down the card. */
+  align-content: start;
+  /* jump-none: the last step is the whole card, even when the browser's sum of delay and duration
+     comes out a hair short of the end, as it does from the fourth card on. */
+  animation: print 0.6s steps(8, jump-none) both;
 }
 
+/* Clear of the stamp: the heading, and on a case with evidence the ruling just under it. */
 .hearing h3,
-.hearing-ruling {
+.hearing.proven .hearing-ruling {
   padding-right: 92px;
+}
+
+/* Three to a row: a narrower card, and the stamp takes a larger share of it. */
+.docket.three .hearing h3 {
+  padding-right: 112px;
+}
+
+/* The case a Space or Enter is about after an appeal. */
+.hearing:focus {
+  outline: none;
+}
+
+.hearing:focus-visible {
+  outline: 2px solid var(--challenge);
+  outline-offset: -3px;
 }
 
 .hearing h3 {
@@ -157,8 +187,8 @@
 
 .docket.crowded .hearing {
   grid-template-columns: minmax(0, 1fr);
-  gap: 6px;
-  padding: 10px;
+  gap: 4px;
+  padding: 8px;
   font-size: 12px;
   line-height: 1.35;
   text-align: center;
@@ -169,24 +199,31 @@
 }
 
 .docket.crowded .hearing h3,
-.docket.crowded .hearing-ruling {
+.docket.crowded .hearing .hearing-ruling {
   padding-right: 0;
 }
 
+/* On the board the stamp crosses the photo: blended into a dark face it cannot be read, so it comes
+   down whole, on paper of its own. */
 .docket.crowded .ruling-stamp {
-  top: 46px;
+  top: 36px;
   right: auto;
   left: 50%;
   translate: -50% 0;
-  background: rgb(235 230 214 / 55%);
+  background: var(--paper-light);
+  mix-blend-mode: normal;
+  animation-name: stamp-slam-board;
 }
 
-.docket.crowded .hearing-evidence,
-.docket.crowded .court-note {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+@keyframes stamp-slam-board {
+  from {
+    opacity: 0;
+    transform: rotate(8deg) scale(2.3);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(8deg) scale(1);
+  }
 }
 
 .hearing-face {
@@ -237,6 +274,263 @@
     opacity: 0.85;
     transform: rotate(8deg) scale(1);
   }
+}
+
+/* ------------------------------------------------------------ the jury */
+
+.hearing-heard {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.hearing-outcome {
+  animation: outcome-in 0.2s ease-out both;
+}
+
+/* Hidden until the stamp: an APPEAL not yet shown cannot be pressed. */
+@keyframes outcome-in {
+  from {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* A round: how many sat and how many upheld, then the faces in the order drawn. */
+.jury {
+  margin: 0 0 6px;
+  padding: 5px 6px;
+  border: 1px dashed #9c9480;
+  background: rgb(0 0 0 / 3%);
+}
+
+.hearing .jury-head {
+  margin: 0 0 4px;
+  font-family: var(--official);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* The count comes in once the last seat has sat, and is not there to be read before. A jury appealed
+   from has been counted: its tally stays. */
+.jury-tally {
+  animation: outcome-in 0.2s ease-out both;
+}
+
+.jury.past .jury-tally {
+  animation: none;
+}
+
+.jurors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.jury-3:not(.collapsed) .jurors {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.juror {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  line-height: 0;
+  animation: juror-in 0.18s ease-out both;
+}
+
+.juror svg {
+  flex: none;
+  border: 1px solid #8a8472;
+}
+
+@keyframes juror-in {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+}
+
+/* What a juror said, in a speech bubble pointing at the face. */
+.bubble {
+  position: relative;
+  padding: 3px 5px;
+  border: 1px solid #8a8472;
+  border-radius: 3px;
+  background: var(--paper-light);
+  font-size: 11px;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.bubble::before {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: -5px;
+  border: 4px solid transparent;
+  border-left: 0;
+  border-right-color: #8a8472;
+}
+
+.vote-mark {
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  min-width: 11px;
+  padding: 0 2px;
+  font-family: var(--official);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 12px;
+  text-align: center;
+  color: #fff;
+  background: #6b6b6b;
+}
+
+.juror.vote-uphold .vote-mark {
+  background: var(--accept);
+}
+
+.juror.vote-dismiss .vote-mark {
+  background: var(--challenge);
+}
+
+.appeal-button {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 4px 10px;
+  border: 2px solid var(--ink);
+  background: var(--paper-light);
+  font-family: var(--official);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.appeal-button:hover,
+.appeal-button:focus-visible {
+  background: #fff;
+  outline: 2px solid var(--challenge);
+  outline-offset: 1px;
+}
+
+.appeal-button:active {
+  translate: 2px 2px;
+  box-shadow: none;
+}
+
+/* Two rows of cases: the court keeps its heading short. */
+.court-screen.stacked {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.court.stacked .screen-button {
+  margin-top: 12px;
+}
+
+/* Out of reach until it has faded in: a click where it will be does not skip the court. */
+.court > .screen-button {
+  animation-name: court-button-in;
+}
+
+@keyframes court-button-in {
+  from {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.court.stacked .court-head {
+  margin-bottom: 8px;
+  padding: 6px 20px;
+}
+
+.court.stacked .court-head h2 {
+  margin: 0 0 2px;
+  font-size: 22px;
+}
+
+/* A crowded court: each jury a row of faces under the name; what they said, on hover. */
+.docket.crowded .jury {
+  margin: 0 0 3px;
+  padding: 2px;
+  border: 0;
+  background: none;
+}
+
+.docket.crowded .jury.first .jury-head {
+  display: none;
+}
+
+.docket.crowded .hearing-ruling,
+.docket.crowded .hearing-evidence {
+  font-size: 11.5px;
+}
+
+/* Ten notes cut to a few words each say nothing: a crowded court keeps to its rulings. */
+.docket.crowded .court-note {
+  display: none;
+}
+
+.docket.crowded .appeal-button {
+  padding: 2px 6px;
+  font-size: 10.5px;
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+.docket.crowded .jurors {
+  justify-content: center;
+}
+
+.docket.crowded .jury-head {
+  margin-bottom: 2px;
+  font-size: 9.5px;
+}
+
+/* What the clerk found and what the court names are never cut: a missed fault is learned from here. */
+.docket.crowded .hearing-heard {
+  font-size: 11.5px;
+}
+
+/* Two rows of cases: an appealed case shows the jury hearing it now, and only the tally of the ones before. */
+.docket.stacked .jury.past {
+  margin-bottom: 2px;
+  padding: 0 6px;
+  border: 0;
+  background: none;
+}
+
+.docket.stacked .jury.past .jurors {
+  display: none;
+}
+
+.docket.stacked .jury.past .jury-head,
+.docket.crowded.stacked .jury.first.past .jury-head {
+  display: block;
+  margin: 0;
+}
+
+/* Three to a row, fifteen faces still make one row. */
+.docket.three .jury-15 .jurors {
+  gap: 2px;
+}
+
+.docket.three .jury-15 .juror svg {
+  width: 20px;
+  height: 24px;
 }
 
 /* ------------------------------------------------------------ the statement */

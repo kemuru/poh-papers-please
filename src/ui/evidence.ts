@@ -1,9 +1,42 @@
 // A violation in words: what disagrees with what. Dry on purpose; the jokes are in the memos.
 import { RULEBOOK } from '../content/rulebook';
+import type { Item } from '../rules/inspect';
 import { shortAddress } from '../rules/sign';
 import type { Mark, RuleId, Violation } from '../rules/types';
+import type { Evidence } from './court';
 
 export const ruleName = (rule: RuleId) => `Rule ${RULEBOOK[rule].number}: ${RULEBOOK[rule].title}`;
+
+/** Something on the desk, as a case slip names it. */
+export function itemWords(item: Item): string {
+  switch (item.kind) {
+    case 'frame':
+      return `frame ${item.frame}`;
+    case 'rule':
+      return `Rule ${RULEBOOK[item.rule].number}`;
+    case 'name-record':
+      return `the registry's record of ${item.name}`;
+    case 'face-record':
+      return 'the face search';
+    case 'name':
+    case 'birth-year':
+    case 'wallet':
+      return 'the form';
+    default:
+      return `the ${item.kind}`;
+  }
+}
+
+/**
+ * What the clerk found, as the case slip and the court print it: "Rule 3, the sign against the form."
+ * A thing held up against the rule itself reads "Rule 1, the transcript against the rule."
+ */
+export function evidenceWords(e: Evidence): string {
+  const words = (item: Item) => (item.kind === 'rule' && item.rule === e.rule ? 'the rule' : itemWords(item));
+  // The rule's page is named last, whichever was pointed at first.
+  const [x, y] = e.items[0].kind === 'rule' ? [e.items[1], e.items[0]] : e.items;
+  return `Rule ${RULEBOOK[e.rule].number}, ${words(x)} against ${words(y)}.`;
+}
 
 /** Years before year 1 are printed the way the Ministry's records office prints them; anything else as written. */
 export const formatYear = (year: number | string) => (typeof year !== 'number' ? year : year < 1 ? `${-year} BC` : String(year));
@@ -12,8 +45,12 @@ export const formatYear = (year: number | string) => (typeof year !== 'number' ?
 export const registeredWhere = (r: { day: number; window?: string }) =>
   r.window ? `at ${r.window}` : r.day === 0 ? 'before this week' : `on day ${r.day} at Window 3`;
 
-/** The evidence in one line, without the rule's name. */
-export function evidenceLine(v: Violation): string {
+/**
+ * The evidence in one line, without the rule's name. The court sits after the day's registrations and
+ * removals, so it puts a voucher's standing and a face on file as they were at the window; the desk,
+ * as they are.
+ */
+export function evidenceLine(v: Violation, at: 'desk' | 'court' = 'desk'): string {
   switch (v.rule) {
     case 'human':
       if (v.problem === 'machine') return `in frame ${v.frame} the skin at the ${v.where} is open, and there is machinery behind it.`;
@@ -38,10 +75,10 @@ export function evidenceLine(v: Violation): string {
     case 'vouch':
       if (v.problem === 'none') return 'nobody vouched for the applicant.';
       if (v.problem === 'self') return 'the applicant vouched for themselves.';
-      if (v.problem === 'unregistered') return `${v.voucher} is not registered.`;
+      if (v.problem === 'unregistered') return at === 'court' ? `${v.voucher} was not registered when the applicant applied.` : `${v.voucher} is not registered.`;
       return `${v.voucher} was already vouching for ${v.vouchingFor}.`;
     case 'duplicate':
-      return `the face is registered already, as ${v.match.name}, ${registeredWhere(v.match)}.`;
+      return `the face ${at === 'court' ? 'was' : 'is'} registered already, as ${v.match.name}, ${registeredWhere(v.match)}.`;
     case 'living':
       return v.problem === 'born' ? `born ${formatYear(v.born)}.` : 'no frame shows a blink.';
   }

@@ -77,20 +77,23 @@ export const UPHELD_NOTES = [
   'The application is refused. The applicant thanked the court, which is not required.',
 ] as const;
 
-/** The court's closing line when a challenge is dismissed and the applicant broke nothing. */
+/**
+ * The court's closing line when a challenge is dismissed. It is printed the same whether the applicant
+ * broke nothing or the jury missed what they broke, so a line reports the court's finding and never
+ * says the clerk was wrong. Any applicant can draw it, including one with no voucher.
+ */
 export const DISMISSED_NOTES = [
   'The applicant has asked for your name.',
   'The applicant would like it noted that they were right.',
-  'The Ministry thanks you for your vigilance, which was not required on this occasion.',
+  'The Ministry thanks you for your vigilance. The court found no use for it on this occasion.',
   'The applicant has been registered and has filled in a comment card.',
-  'The applicant has been registered. The court apologised on your behalf.',
+  'The applicant has been registered. A standard letter of apology has been sent in your name.',
   'The court reminds clerks that the rulebook is the only judge. Suspicion is not in the rulebook.',
-  "The applicant's vouchers would like it noted that they were right as well.",
 ] as const;
 
 /**
  * What the court adds for someone it has met before, when a challenge is upheld or dismissed.
- * A unit's are by day.
+ * A unit's are by day. A dismissed line holds, as DISMISSED_NOTES do, for a fault the jury missed.
  */
 export const CAST_RULINGS: Record<CastId, { upheld?: readonly string[]; dismissed?: readonly string[] }> = {
   unit: {
@@ -123,7 +126,7 @@ export const CAST_RULINGS: Record<CastId, { upheld?: readonly string[]; dismisse
       'The applicant has asked to keep the rulebook. The applicant has been given a leaflet.',
       'The applicant thanked the jury. The jury was not sure where to look.',
     ],
-    dismissed: ['The applicant was right. The court would like to say it saw this coming. It did not.'],
+    dismissed: ['The court found nothing wrong. The applicant has asked for the ruling in a frame.'],
   },
   patMother: { dismissed: ["The applicant is Pat's mother. The court was told this several times."] },
   twins: { dismissed: ['The court was shown one face on two people and found two humans. It was a long afternoon.'] },
