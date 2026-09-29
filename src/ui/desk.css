@@ -1382,6 +1382,11 @@ mark {
   }
 }
 
+/* Single-key shortcuts off (src/ui/settings.ts): no key caps on the desk for keys that do nothing. */
+.shortcuts-off kbd {
+  display: none;
+}
+
 /* Reduced motion from the settings (src/ui/settings.ts), for a browser that does not ask for it itself. */
 .motion-reduced *,
 .motion-reduced *::before,

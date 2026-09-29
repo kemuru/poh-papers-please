@@ -75,7 +75,8 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu, 
   const papers = state.called > 0 ? queue[lastIndex] : null;
   const lastDecision = state.decided[lastIndex] ?? null;
   const leaving = papers !== null && (lastDecision !== null || state.timeUp);
-  const canCall = state.opened && !over && at === null && state.called < queue.length;
+  // Nothing is called on a break, nor once the night is over: the lever says so.
+  const canCall = state.opened && !over && at === null && state.called < queue.length && !paused;
 
   const elapsed = useShiftClock(limit, clock, state.opened && !over && !paused, () => dispatch({ type: 'time-up' }));
   const reportClock = useRef(onClock);
@@ -263,7 +264,7 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu, 
           applicant={papers}
           visit={state.called}
           leaving={leaving}
-          speech={night && announced ? NIGHT.window : speechAt(state, papers, lastDecision?.decision ?? null, announced)}
+          speech={night && announced ? (state.timeUp ? NIGHT.timeUp : NIGHT.window) : speechAt(state, papers, lastDecision?.decision ?? null, announced)}
           opened={state.opened}
           over={over}
           clock={clockTime(minutes)}

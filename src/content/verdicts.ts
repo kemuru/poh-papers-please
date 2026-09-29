@@ -171,6 +171,9 @@ export const CAST_RULINGS: Record<CastId, { upheld?: readonly string[]; dismisse
 
 export const EMPTY_COURT = 'No challenges were filed today. The court has gone home early.';
 
+/** Whose letters they are. */
+export const LETTER_HEAD = 'Ministry of Humanity · Human Resources';
+
 /**
  * The letters at the end of the week, one per ending (notes/game-design.md, Endings). Each adds up what
  * this week did: "{day}", "{savings}", "{units}", "{fakes}" and "{humans}" are filled from the run, and a

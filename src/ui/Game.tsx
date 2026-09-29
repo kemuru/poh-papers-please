@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { BOARD } from '../content/board';
 import { CLERK } from '../content/cast';
 import { MENU } from '../content/menu';
 import { OFFER } from '../economy/economy';
@@ -34,7 +35,8 @@ type Props = {
   onRestart: (run: Run) => void;
   /** The week has reached its letter, here and now: the record counts it. */
   onFinished: (week: Finished) => void;
-  onBoard: () => void;
+  /** Off to the notice board, with the week as it stands, clock and all. */
+  onBoard: (held: Run) => void;
 };
 
 /** A week at Registry Window 3, from the first morning to the letter at the end. */
@@ -99,6 +101,11 @@ export function Game({ run, today, onRestart, onFinished, onBoard }: Props) {
   useEffect(() => stopMusic, []);
 
   const openMenu = () => setMenu('paused');
+  // The week goes to the board as it stands this moment, and to the save too.
+  const toBoard = () => {
+    save.current();
+    onBoard({ ...run, steps, state, clock: clock.current.day === state.day ? clock.current.seconds : 0, resumed: false, setAside: false });
+  };
   const newWeek = () => onRestart(newRun(seed + 1));
   const sameDay = () => onRestart(dayAgain(run, steps, state));
   // Any earlier morning of this week, from the menu or the letter's desk: it asks first.
@@ -110,7 +117,7 @@ export function Game({ run, today, onRestart, onFinished, onBoard }: Props) {
   };
 
   // The week's letter, reached here and now (not a reload of it): the record counts it once.
-  const title = seed === today.seed ? `Today’s week, ${today.label}` : `Week ${seed}`;
+  const title = seed === today.seed ? BOARD.card.today.replace('{date}', today.label) : BOARD.card.week.replace('{seed}', String(seed));
   const ended = weekEnd(state);
   const card = ended ? weekCard({ title, days: state.history.map((d) => ({ day: d.day, marks: d.marks })), ...cardLetter(ended.end.ending, ended.end.grade), savings: state.savings }) : '';
   const counted = useRef(run.state.phase === 'ending');
@@ -171,7 +178,7 @@ export function Game({ run, today, onRestart, onFinished, onBoard }: Props) {
       )}
       {state.phase === 'ending' && (
         // Nothing is left to lose at the letter: a morning is one click, with no question.
-        <Ending state={state} card={card} earlier={[...earlier, state.day]} onNewWeek={newWeek} onBack={(day) => onRestart(backTo(run, steps, day))} onBoard={onBoard} />
+        <Ending state={state} card={card} earlier={[...earlier, state.day]} onNewWeek={newWeek} onBack={(day) => onRestart(backTo(run, steps, day))} onBoard={toBoard} />
       )}
       {menu && (
         <Menu
@@ -190,7 +197,7 @@ export function Game({ run, today, onRestart, onFinished, onBoard }: Props) {
           onDayAgain={sameDay}
           onBackTo={(day) => onRestart(backTo(run, steps, day))}
           onNewWeek={newWeek}
-          onBoard={onBoard}
+          onBoard={toBoard}
         />
       )}
     </div>
@@ -233,7 +240,7 @@ export function AudioSwitches({ onMenu }: { onMenu: () => void }) {
   }, []);
   return (
     <div className="audio-switches">
-      <button className="mute" aria-pressed={muted} aria-label="Sound" title="Sound on or off (M)" onClick={toggleSound} onMouseDown={keepFocus}>
+      <button className="mute" aria-pressed={muted} aria-label="Sound" title={settings.shortcuts ? 'Sound on or off (M)' : 'Sound on or off'} onClick={toggleSound} onMouseDown={keepFocus}>
         <span className="mute-label">Sound</span>
         {muted ? 'Off' : 'On'}
       </button>

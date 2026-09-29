@@ -1,6 +1,7 @@
 // Today's week (slice 6): the seed for a date, so everyone who plays on the same day gets the same
 // week, and the card a clerk can copy at the end of it. Pure: the date comes in from the UI, which
 // reads the clock; nothing here does.
+import { BOARD } from '../content/board';
 import type { EndingId, Grade } from '../economy/endings';
 
 /** A calendar date, as the player's own computer has it. */
@@ -29,19 +30,20 @@ const SQUARES = { right: '🟩', wrong: '🟥', home: '⬜' } as const;
 
 /**
  * "Copy my week": one row per day of stamps, the letter, the grade and the savings, and nobody's name.
- * `title` says whose week it was: "Today's week, 29 September 2026", or "Week 1234".
+ * `title` says whose week it was: "Today’s week, Tuesday 29 September 2026", or "Week 1234".
  */
 export function weekCard({ title, days, letter, grade, savings }: { title: string; days: readonly { day: number; marks: Marks }[]; letter: string; grade: string | null; savings: number }): string {
+  const { card } = BOARD;
   return [
-    `Registry Window 3 · ${title}`,
-    ...days.map(({ day, marks }) => `Day ${day} ${marks.map((m) => SQUARES[m]).join('')}`),
-    [letter, grade, `${savings} PNK`].filter(Boolean).join(' · '),
+    card.head.replace('{title}', title),
+    ...days.map(({ day, marks }) => card.day.replace('{day}', String(day)).replace('{marks}', marks.map((m) => SQUARES[m]).join(''))),
+    [letter, grade, card.savings.replace('{savings}', String(savings))].filter(Boolean).join(' · '),
   ].join('\n');
 }
 
-/** The letter and grade as the card names them. */
+/** The letter and grade as the card names them: a grade only on the two letters about the clerk's own papers. */
 export function cardLetter(ending: EndingId, grade: Grade): { letter: string; grade: string | null } {
-  const letter = { fired: 'Terminated', replaced: 'Replaced', superseded: 'Superseded', reclassified: 'Reclassified', promoted: 'Promoted' }[ending];
-  const kind = ending === 'reclassified' ? 'Equipment' : 'Clerk';
-  return { letter, grade: ending === 'promoted' || ending === 'reclassified' ? `${kind}, ${grade} Class` : null };
+  const { letters, grade: graded } = BOARD.card;
+  const line = ending === 'promoted' ? graded.clerk : ending === 'reclassified' ? graded.equipment : null;
+  return { letter: letters[ending], grade: line && line.replace('{grade}', grade) };
 }

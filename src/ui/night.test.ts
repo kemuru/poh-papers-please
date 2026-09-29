@@ -38,6 +38,20 @@ describe('the night shift', () => {
     expect([1, 2, 3, 8, 20].map(secondsFor)).toEqual([360, 330, 300, 150, 150]);
   });
 
+  it('lets a queue go only once it is done or time is up, and cites a human challenged as it cites a fake stamped in', () => {
+    let n = nightReduce(startNight(3), { type: 'open' });
+    expect(nightReduce(n, { type: 'close', queue: queueOf(n) })).toBe(n);
+    // Wrong until a human has been challenged: no court tonight, so it prints a citation at once.
+    const firstHuman = queueOf(n).findIndex((a) => judge(a, rulebookForDay(NIGHT_DAY), n.day.registry).valid);
+    expect(firstHuman).toBeLessThan(CITATIONS - 1);
+    for (let i = 0; i <= firstHuman; i++) n = stampNext(n, true);
+    expect(n.day.decided[firstHuman].decision).toBe('challenge');
+    expect(n.day.decided.map((d) => d.citation)).not.toContain(null);
+    expect(n.citations).toBe(firstHuman + 1);
+    n = nightReduce(n, { type: 'time-up' });
+    expect(nightReduce(n, { type: 'close', queue: queueOf(n) })).toMatchObject({ shift: 2, citations: firstHuman + 1 });
+  });
+
   it('is over at the third citation, and nothing more is stamped', () => {
     let n = nightReduce(startNight(2), { type: 'open' });
     for (let k = 0; k < CITATIONS; k++) n = stampNext(n, true);

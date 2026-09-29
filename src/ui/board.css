@@ -4,7 +4,8 @@
 .board-screen {
   display: flex;
   justify-content: center;
-  align-items: center;
+  /* Centred, unless the board is taller than the room: then from the top, so nothing is out of reach. */
+  align-items: safe center;
   height: 100%;
   min-height: 0;
   padding: 22px 24px;

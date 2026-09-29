@@ -97,6 +97,34 @@ test('today’s week: the same date is the same week, another date another, and 
   expect((await game(page)).seed).toBe(tomorrow);
 });
 
+test('where the browser keeps nothing, the board still holds the week the desk left, and the record lasts the page', async ({ page }) => {
+  await page.addInitScript(() => {
+    Storage.prototype.setItem = () => {
+      throw new DOMException('Refused', 'SecurityError');
+    };
+  });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Start a new week' }).click();
+  await page.getByRole('button', { name: /Open the window/ }).click();
+  await stamp(page);
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await menu(page).getByRole('button', { name: 'Notice board' }).click();
+  await expect(page.getByTestId('board-continue')).toContainText('Day 1 · At the window');
+  // Another week asks first, and Escape keeps this one.
+  await page.getByRole('button', { name: 'Start a new week' }).click();
+  await expect(page.getByRole('dialog', { name: 'Start another week?' })).toContainText('1 day at the window');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Continue' }).click();
+  expect(await game(page)).toMatchObject({ day: 1, called: 1 });
+  expect((await game(page)).decided).toHaveLength(1);
+  // A letter reached here is on the board until the page is closed.
+  await humanityDay(page, '?seed=1&day=7', 'challenge');
+  await page.getByRole('button', { name: 'Notice board' }).click();
+  await expect(page.getByTestId('record')).toContainText('Weeks finished1');
+  await expect(page.getByTestId('letters')).toContainText('1 of 6');
+  await expect(page.getByTestId('board-night').getByRole('button', { name: 'Take the night shift' })).toBeVisible();
+});
+
 test('copy my week: one row per day of stamps, the letter, the grade and the savings, and nobody’s name', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.clock.setFixedTime(new Date(2026, 8, 29, 10, 0));
@@ -245,9 +273,22 @@ test('single-key shortcuts can be turned off, and only the focused button answer
   await expect(menu(page).getByRole('switch', { name: /Single-key shortcuts/ })).toHaveAttribute('aria-checked', 'false');
 });
 
+test('with single-key shortcuts off, the desk shows no key caps and the sound switch names no key', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('switch', { name: 'Single-key shortcuts' }).click();
+  await page.getByRole('button', { name: 'Start a new week' }).click();
+  await page.getByRole('button', { name: /Open the window/ }).click();
+  await page.getByRole('button', { name: 'Call next applicant' }).click();
+  await expect(page.getByRole('button', { name: 'Accept' })).toBeEnabled();
+  const caps = await page.locator('kbd').all();
+  expect(caps.length).toBeGreaterThan(0);
+  for (const cap of caps) await expect(cap).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Sound' })).toHaveAttribute('title', 'Sound on or off');
+});
+
 test('reduced motion can be asked for in the settings, and is kept', async ({ page }) => {
   await page.goto('/');
-  const motion = page.getByRole('switch', { name: /Motion/ });
+  const motion = page.getByRole('switch', { name: 'Reduce motion' });
   await expect(motion).toHaveAttribute('aria-checked', 'false');
   await motion.click();
   await expect(page.locator('html')).toHaveClass(/motion-reduced/);

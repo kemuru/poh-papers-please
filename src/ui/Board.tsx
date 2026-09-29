@@ -42,6 +42,17 @@ export function Board({ saved, setAside, record, today, onContinue, onNewWeek, o
   const [copied, setCopied] = useState<string | null>(null);
   const first = useRef<HTMLButtonElement>(null);
   useEffect(() => first.current?.focus(), [asking]);
+  // Escape keeps the week, as the menu's own question does.
+  useEffect(() => {
+    if (!asking) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.repeat) return;
+      e.preventDefault();
+      setAsking(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [asking]);
   // The board is in the hall: the morning's chord, from the first click.
   useEffect(() => setMusicScene('morning', 1), []);
 
@@ -63,10 +74,12 @@ export function Board({ saved, setAside, record, today, onContinue, onNewWeek, o
   if (asking && saved) {
     return (
       <main className="board-screen">
-        <article className="notice board-confirm" aria-labelledby="board-confirm-title">
+        <article className="notice board-confirm" role="dialog" aria-modal="true" aria-labelledby="board-confirm-title" aria-describedby="board-confirm-line">
           <p className="notice-head">{BOARD.kicker}</p>
           <h2 id="board-confirm-title">{BOARD.confirm.title}</h2>
-          <p>{fill(BOARD.confirm.line, { days: `${saved.days} ${saved.days === 1 ? 'day' : 'days'}`, savings: saved.savings })}</p>
+          <p id="board-confirm-line">
+            {fill(BOARD.confirm.line, { days: saved.days === 1 ? BOARD.confirm.day : fill(BOARD.confirm.days, { n: saved.days }), savings: saved.savings })}
+          </p>
           <div className="menu-actions">
             <button ref={first} className="screen-button" onClick={() => setAsking(null)}>
               {BOARD.confirm.keep}
@@ -82,14 +95,14 @@ export function Board({ saved, setAside, record, today, onContinue, onNewWeek, o
 
   return (
     <main className="board-screen">
-      <div className="board" role="region" aria-label="Notice board">
+      <div className="board" role="region" aria-label={BOARD.regions.board}>
         <header className="board-poster">
           <p className="board-kicker">{BOARD.kicker}</p>
           <h1>{BOARD.title}</h1>
           <p className="board-subtitle">{BOARD.subtitle}</p>
         </header>
         <div className="board-columns">
-          <section className="board-notices" aria-label="Notices">
+          <section className="board-notices" aria-label={BOARD.regions.notices}>
             {setAside && <p className="board-note">{BOARD.setAside}</p>}
             {saved && (
               <Notice head={BOARD.week.head} lines={[saved.where]} className="notice-week" testId="board-continue">
@@ -117,11 +130,10 @@ export function Board({ saved, setAside, record, today, onContinue, onNewWeek, o
                   {BOARD.today.copy}
                 </button>
               )}
-              {copied && (
-                <span className="board-copied" role="status">
-                  {copied}
-                </span>
-              )}
+              {/* Always there, so a screen reader hears it fill. */}
+              <span className="board-copied" role="status">
+                {copied}
+              </span>
             </Notice>
             <Notice
               head={BOARD.night.head}
@@ -166,13 +178,13 @@ const TITLES: Record<LetterId, { title: string; stamp: string }> = {
   superseded: ENDINGS.superseded,
   replaced: ENDINGS.replaced,
   fired: ENDINGS.fired,
-  headhunted: { title: HEADHUNTED.title, stamp: 'Likeness' },
+  headhunted: { title: HEADHUNTED.title, stamp: BOARD.likenessStamp },
 };
 
 /** The letters found so far, each pinned with its stamp; the rest blank but for a hint. */
 function Letters({ found }: { found: readonly LetterId[] }) {
   return (
-    <section className="board-letters" aria-label="Letters found" data-testid="letters">
+    <section className="board-letters" aria-label={BOARD.letters.head} data-testid="letters">
       <h2>
         {BOARD.letters.head} <span>{fill(BOARD.letters.count, { found: found.length, all: LETTERS.length })}</span>
       </h2>
@@ -188,7 +200,10 @@ function Letters({ found }: { found: readonly LetterId[] }) {
                 </>
               ) : (
                 <>
-                  <strong aria-label="Not found yet">?</strong>
+                  <strong>
+                    <span aria-hidden="true">?</span>
+                    <span className="sr-only">{BOARD.letters.unfound}</span>
+                  </strong>
                   <span className="board-slip-hint">{LETTER_HINTS[id]}</span>
                 </>
               )}
@@ -201,12 +216,12 @@ function Letters({ found }: { found: readonly LetterId[] }) {
 }
 
 function Record({ record }: { record: ClerkRecord }) {
-  const or = (v: number | string | null, unit = '') => (v === null ? BOARD.record.none : `${v}${unit}`);
+  const { none } = BOARD.record;
   const rows = [
     [BOARD.record.weeks, String(record.weeks)],
-    [BOARD.record.savings, or(record.bestSavings, ' PNK')],
-    [BOARD.record.grade, or(record.bestGrade && `${record.bestGrade} Class`)],
-    [BOARD.record.night, or(record.endless)],
+    [BOARD.record.savings, record.bestSavings === null ? none : fill(BOARD.record.pnk, { savings: record.bestSavings })],
+    [BOARD.record.grade, record.bestGrade === null ? none : fill(BOARD.record.class, { grade: record.bestGrade })],
+    [BOARD.record.night, record.endless === null ? none : fill(BOARD.record.stamped, { count: record.endless })],
   ];
   return (
     <section className="board-record" aria-label={BOARD.record.head} data-testid="record">

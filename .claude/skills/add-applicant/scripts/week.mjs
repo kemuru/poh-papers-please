@@ -11,9 +11,11 @@ try {
   const valid = (a) => a.planted.length === 0;
   const pct = (n) => `${Math.round(n * 100)}%`;
 
-  console.log('Valid share by day, lowest to highest over 20 seeds (target 65-75%; day 1: 60%, 3 of 5):');
+  console.log('Valid share by day, lowest to highest over 20 seeds (target 65-75%; day 1: 60%, 3 of 5; day 7: the six before the clerk):');
   DAYS.forEach((_, d) => {
-    const shares = weeks.map((week) => week[d].filter(valid).length / week[d].length);
+    // The clerk's own renewal ends Humanity Day, and is not the public's queue (src/gen/day.test.ts).
+    const queue = (week) => week[d].filter((a) => a.cast !== 'clerk');
+    const shares = weeks.map((week) => queue(week).filter(valid).length / queue(week).length);
     console.log(`  day ${d + 1}: ${pct(Math.min(...shares))} to ${pct(Math.max(...shares))}`);
   });
 

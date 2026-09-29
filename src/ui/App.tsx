@@ -6,8 +6,8 @@ import { Board, type SavedWeek } from './Board';
 import { Game } from './Game';
 import { whereNow } from './Menu';
 import { Night } from './Night';
-import { readRecord, withEndless, withWeek, writeRecord, type Finished } from './record';
-import { browserStorage, clearSave, hasSave, loadRun, newRun, type Run } from './save';
+import { readRecord, withEndless, withWeek, writeRecord, type ClerkRecord, type Finished } from './record';
+import { browserStorage, canSave, clearSave, hasSave, loadRun, newRun, type Run } from './save';
 import { browserReducesMotion, readSettings, SettingsContext, writeSettings, type Settings } from './settings';
 import { PortraitGallery } from './PortraitGallery';
 import { Stage } from './Stage';
@@ -40,7 +40,9 @@ function WithSettings({ children }: { children: ReactNode }) {
   const reduced = settings.motion === 'reduced' || browserReducesMotion();
   useLayoutEffect(() => {
     document.documentElement.classList.toggle('motion-reduced', reduced);
-  }, [reduced]);
+    // With single-key shortcuts off, the key caps on the desk would be promises the keys do not keep.
+    document.documentElement.classList.toggle('shortcuts-off', !settings.shortcuts);
+  }, [reduced, settings.shortcuts]);
   return <SettingsContext.Provider value={{ settings, change }}>{children}</SettingsContext.Provider>;
 }
 
@@ -67,10 +69,14 @@ function todayIs() {
 function Office({ params }: { params: URLSearchParams }) {
   const store = useMemo(browserStorage, []);
   const [record, setRecord] = useState(() => readRecord(store));
+  // Where the browser keeps nothing, the record lives as long as the page, here.
+  const kept = useRef(record);
   const [today] = useState(todayIs);
   const [screen, setScreen] = useState<Screen>(() => (linked(params) ? { at: 'desk', take: 0, run: linkRun(params) } : { at: 'board' }));
   // Every week set out on the desk is a new desk, and so is every night shift.
   const takes = useRef(0);
+  // The week the desk last handed over, exactly as it stood: the board shows it even where the browser keeps nothing.
+  const held = useRef<Run | null>(null);
 
   // Once a link's week is behind us, the address opens at the board.
   const forgetLink = () => {
@@ -80,19 +86,22 @@ function Office({ params }: { params: URLSearchParams }) {
     forgetLink();
     setScreen({ at: 'desk', take: ++takes.current, run });
   };
-  const toBoard = () => {
+  const toBoard = (run?: Run) => {
     forgetLink();
+    if (run) held.current = run;
     setScreen({ at: 'board' });
   };
-  const keep = (next: typeof record) => {
+  const keep = (change: (r: ClerkRecord) => ClerkRecord) => {
+    const next = change(canSave(store) ? readRecord(store) : kept.current);
+    kept.current = next;
     setRecord(next);
     writeRecord(store, next);
   };
-  const finished = (w: Finished) => keep(withWeek(readRecord(store), w));
+  const finished = (w: Finished) => keep((r) => withWeek(r, w));
 
   if (screen.at === 'board') {
-    // Read afresh each time the board is shown: the desk has saved since.
-    return <BoardFor record={record} today={today} onDesk={toDesk} onNight={() => setScreen({ at: 'night', take: ++takes.current })} />;
+    // The week just left, as it stood; after a reload, the save, read afresh.
+    return <BoardFor held={held.current} record={record} today={today} onDesk={toDesk} onNight={() => setScreen({ at: 'night', take: ++takes.current })} />;
   }
   if (screen.at === 'night') {
     return (
@@ -101,8 +110,8 @@ function Office({ params }: { params: URLSearchParams }) {
         // Tonight's weeks, from a stream of their own: not today's week, whose day 6 would be spoilt.
         seed={1 + ((today.seed * 7 + 12_345) % 999_999_999)}
         best={record.endless}
-        onDone={(right) => keep(withEndless(readRecord(store), right))}
-        onBoard={toBoard}
+        onDone={(right) => keep((r) => withEndless(r, right))}
+        onBoard={() => toBoard()}
       />
     );
   }
@@ -118,9 +127,25 @@ function Office({ params }: { params: URLSearchParams }) {
   );
 }
 
-/** The board, with the week in this browser played back to where it was left. */
-function BoardFor({ record, today, onDesk, onNight }: { record: ReturnType<typeof readRecord>; today: ReturnType<typeof todayIs>; onDesk: (run: Run) => void; onNight: () => void }) {
+/**
+ * The board, with the week in this browser: the one the desk just handed over, exactly as it was, or else
+ * the save, played back to where it was left.
+ */
+function BoardFor({
+  held,
+  record,
+  today,
+  onDesk,
+  onNight,
+}: {
+  held: Run | null;
+  record: ClerkRecord;
+  today: ReturnType<typeof todayIs>;
+  onDesk: (run: Run) => void;
+  onNight: () => void;
+}) {
   const [saved] = useState(() => {
+    if (held) return held;
     const store = browserStorage();
     return hasSave(store) ? loadRun(store) : null;
   });

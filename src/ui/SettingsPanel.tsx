@@ -10,7 +10,7 @@ export function SettingsPanel() {
   const forced = browserReducesMotion();
   const reduced = forced || settings.motion === 'reduced';
   return (
-    <section className="settings" aria-label="Settings">
+    <section className="settings" aria-label={MENU.settings.head}>
       <button
         className="settings-switch"
         role="switch"
@@ -19,7 +19,8 @@ export function SettingsPanel() {
         onMouseDown={keepFocus}
       >
         <span>{MENU.settings.shortcuts}</span>
-        <b>{settings.shortcuts ? MENU.settings.on : MENU.settings.off}</b>
+        {/* The switch says on or off itself; the word is for the eye. */}
+        <b aria-hidden="true">{settings.shortcuts ? MENU.settings.on : MENU.settings.off}</b>
       </button>
       <button
         className="settings-switch settings-motion"
@@ -30,7 +31,7 @@ export function SettingsPanel() {
         onMouseDown={keepFocus}
       >
         <span>{MENU.settings.motion}</span>
-        <b>{forced ? MENU.settings.forced : reduced ? MENU.settings.reduced : MENU.settings.full}</b>
+        <b aria-hidden={!forced}>{forced ? MENU.settings.forced : reduced ? MENU.settings.on : MENU.settings.off}</b>
       </button>
     </section>
   );

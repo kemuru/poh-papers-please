@@ -46,13 +46,12 @@ export const MENU = {
     yes: 'Go back to day {day}',
   },
   settings: {
+    head: 'Settings',
     shortcuts: 'Single-key shortcuts',
-    motion: 'Motion',
+    motion: 'Reduce motion',
     on: 'On',
     off: 'Off',
-    full: 'Full',
-    reduced: 'Reduced',
     /** When the browser itself asks for reduced motion, which it always gets. */
-    forced: 'Reduced, as your browser asks',
+    forced: 'On, as your browser asks',
   },
 } as const;

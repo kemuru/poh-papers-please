@@ -6,7 +6,7 @@ import { STATEMENT_FOOTERS } from '../content/hall';
 import { MENU } from '../content/menu';
 import { GAZETTE_TITLE, SPECIAL, VACANCY } from '../content/gazette';
 import { CLERK_PORTRAIT, CLONE_PORTRAIT } from '../content/portraits';
-import { EMPTY_COURT } from '../content/verdicts';
+import { EMPTY_COURT, LETTER_HEAD } from '../content/verdicts';
 import type { EndingId } from '../economy/endings';
 import { writeSpecial, type Special } from '../gen/gazette';
 import { writeClip, writeLetter } from '../gen/letters';
@@ -427,7 +427,7 @@ export function Ending({ state, card, earlier, onNewWeek, onBack, onBoard }: End
       <div className="ending-desk" data-testid="ending" data-ending={ending}>
         <div className="ending-letters">
         <article className={`notice notice-${ending}`} aria-label="Notice">
-          <p className="notice-head">Ministry of Humanity · Human Resources</p>
+          <p className="notice-head">{LETTER_HEAD}</p>
           <h2>{letter.title}</h2>
           {letter.lines.map((line) => (
             <p key={line}>{line}</p>

@@ -52,9 +52,9 @@ export function NightChallengeSlip({ decided, caseNo, name, night, video }: { de
   return (
     <Slip kind="filing" title={NIGHT.refused} number={`Case no. ${caseNo}`}>
       <p>
-        <strong>The Registry v. {name}</strong>
+        <strong>{NIGHT.caseTitle.replace('{name}', name)}</strong>
       </p>
-      <Breach lead="Broke" violation={broke} video={video} />
+      <Breach lead={NIGHT.refusedLead} violation={broke} video={video} />
     </Slip>
   );
 }

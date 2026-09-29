@@ -20,11 +20,19 @@ export const NIGHT = {
   /** On the slip for a fake challenged: the verdict, at once. */
   refused: 'Refused',
   window: 'The queue is done. Another is on its way.',
+  /** The clock ran out on the queue: they go home, and the night goes on. */
+  timeUp: 'Time. Whoever is left goes home, and another queue is on its way.',
+  /** On the slip for a fake refused. "{name}" is theirs. */
+  caseTitle: 'The Registry v. {name}',
+  refusedLead: 'Broke',
   end: {
     title: 'Window 3 is closed for the night',
+    stamp: 'Closed',
     lines: ['The Ministry never closes. Window 3, however, has.', 'You stamped {right} right, over {shifts}.'],
+    shift: '1 shift',
+    shifts: '{n} shifts',
     best: 'Your best night: {best} stamped right.',
     again: 'Take the night shift again',
   },
-  topbar: { right: 'Stamped right', citations: 'Citations' },
+  topbar: { right: 'Stamped right', citations: 'Citations', count: '{n} of {all}' },
 };
