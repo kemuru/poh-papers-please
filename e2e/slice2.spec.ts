@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { inspectFault } from './inspectFault';
 
 // Slice 2 acceptance (notes/acceptance.md): one full day. A seeded queue, the shift clock,
 // the daily warning, challenges heard at the end of the shift, the statement, the next day.
@@ -15,6 +16,8 @@ async function stampNext(page: Page, wrong = false) {
   await expect.poll(async () => (await game(page)).called).toBe(before + 1);
   const { queue, called } = await game(page);
   const valid = queue[called - 1].planted.length === 0;
+  // A fake is challenged the way a careful clerk does, with what Inspect found (slice 4).
+  if (!valid && !wrong) await inspectFault(page, queue[called - 1]);
   await page.getByRole('button', { name: valid !== wrong ? 'Accept' : 'Challenge' }).click();
   await expect.poll(async () => (await game(page)).decided.length).toBe(called);
 }

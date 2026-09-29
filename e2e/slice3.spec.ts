@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { HEADLINES } from '../src/content/gazette';
+import { inspectFault } from './inspectFault';
 
 // Slice 3 acceptance (notes/acceptance.md) in the browser: the rulebook's pages, inspect mode,
 // challenges, the registry lookup, the registry that remembers and the morning Gazette.
@@ -37,6 +38,8 @@ async function stamp(page: Page, override?: 'accept' | 'challenge') {
   const labels = [a.video.transcript, a.name, a.address].reduce((text, own) => text.split(own).join(' '), papers);
   expect(labels, a.name).not.toMatch(RESULTS);
   const decision = override ?? (a.planted.length === 0 ? 'accept' : 'challenge');
+  // A fake is challenged the way a careful clerk does, with what Inspect found (slice 4).
+  if (decision === 'challenge' && a.planted.length > 0) await inspectFault(page, a);
   await page.getByRole('button', { name: decision === 'accept' ? 'Accept' : 'Challenge' }).click();
   await expect.poll(async () => (await game(page)).decided.length).toBe(i + 1);
   return { a, i };
@@ -251,6 +254,7 @@ test('a week at the desk: the Gazette reports yesterday, the registry remembers,
   await shot(page, 'registry-remembers.png');
   await page.getByRole('tab', { name: 'Rulebook' }).click();
   const first4 = (await game(page)).queue[0];
+  if (first4.planted.length > 0) await inspectFault(page, first4);
   await page.getByRole('button', { name: first4.planted.length === 0 ? 'Accept' : 'Challenge' }).click();
   for (let i = 1; i < 8; i++) await stamp(page);
   await finishDay(page);
@@ -281,6 +285,7 @@ test('a week at the desk: the Gazette reports yesterday, the registry remembers,
       await expect(result).toContainText('No registered human by that name.');
       await page.getByRole('tab', { name: 'Rulebook' }).click();
       const a = day6[0];
+      if (a.planted.length > 0) await inspectFault(page, a);
       await page.getByRole('button', { name: a.planted.length === 0 ? 'Accept' : 'Challenge' }).click();
       await expect.poll(async () => (await game(page)).decided.length).toBe(1);
     } else if (i === edmund) {

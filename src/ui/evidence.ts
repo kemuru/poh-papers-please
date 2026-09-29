@@ -27,8 +27,16 @@ export function itemWords(item: Item): string {
   }
 }
 
-/** What the clerk found, as the case slip and the court print it: "Rule 3, the sign against the form." */
-export const evidenceWords = (e: Evidence) => `Rule ${RULEBOOK[e.rule].number}, ${itemWords(e.items[0])} against ${itemWords(e.items[1])}.`;
+/**
+ * What the clerk found, as the case slip and the court print it: "Rule 3, the sign against the form."
+ * A thing held up against the rule itself reads "Rule 1, the transcript against the rule."
+ */
+export function evidenceWords(e: Evidence): string {
+  const words = (item: Item) => (item.kind === 'rule' && item.rule === e.rule ? 'the rule' : itemWords(item));
+  // The rule's page is named last, whichever was pointed at first.
+  const [x, y] = e.items[0].kind === 'rule' ? [e.items[1], e.items[0]] : e.items;
+  return `Rule ${RULEBOOK[e.rule].number}, ${words(x)} against ${words(y)}.`;
+}
 
 /** Years before year 1 are printed the way the Ministry's records office prints them; anything else as written. */
 export const formatYear = (year: number | string) => (typeof year !== 'number' ? year : year < 1 ? `${-year} BC` : String(year));
