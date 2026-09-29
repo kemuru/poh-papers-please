@@ -8,7 +8,7 @@ import type { GeneratedApplicant } from '../gen/applicant';
 import { generatePortrait } from '../gen/portrait';
 import { appealFee, JURY_SIZES, type Round } from './court';
 import { BUBBLES, COURT_SESSION, HUNCH_LINE, JUROR_NAMES } from '../content/court';
-import { evidenceLine, evidenceWords } from './evidence';
+import { asPointed, evidenceLine, evidenceWords } from './evidence';
 import { pick } from './Slips';
 import type { Ruling } from './week';
 import { PixelPortrait } from './PixelPortrait';
@@ -245,7 +245,7 @@ function Hearing({
           {r.upheld &&
             court.violations.map((v) => (
               <p key={v.rule} className="hearing-evidence">
-                Rule {RULEBOOK[v.rule].number}: {evidenceLine(v, 'court')}
+                Rule {RULEBOOK[v.rule].number}: {evidenceLine(asPointed(v, court.evidence, a.video), 'court')}
               </p>
             ))}
           {r.removed && <p className="hearing-evidence">Removed from the registry with them: {r.removed}, who vouched for them.</p>}

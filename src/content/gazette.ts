@@ -10,7 +10,7 @@ export const HEADLINES = {
   /** A Likeness unit was registered. */
   unit: [
     'WINDOW 3 REGISTERS A HOME ROBOT; OWNERS "THRILLED"',
-    'LIKENESS ROBOTICS "PROUD OF OUR LATEST HUMAN"',
+    'LIKENESS: OUR UNITS "GIVE OFF NO VISIBLE LIGHT"',
     'REGISTRY ADMITS A HUMAN WITH A WARRANTY',
     'HOME ROBOT REGISTERED AS HUMAN. MINISTRY "LOOKING INTO IT".',
     'LIKENESS SHARES RISE ON NEWS FROM WINDOW 3',
@@ -88,8 +88,8 @@ export const RULE_NOTICES: Record<number, string> = {
 /** The week's running stories, one item a morning: the countdown, the fork, Pat, the Likeness units. */
 export const THREAD: Record<number, string> = {
   2: 'Queues are expected to grow before Humanity Day. The queue has been told, and has grown. Likeness Robotics reminds owners that its home units are not eligible for the income, "at present".',
-  3: 'Window 2 has proposed leaving the Ministry, over a different interpretation of sybil. It is voting.',
-  4: 'Window 2 is voting. Under its rules the vote has an automatic extension of six months.',
+  3: 'Window 2 has proposed leaving the Ministry, over a different interpretation of sybil. It is voting. Likeness Robotics confirms that its home units blink, for the comfort of the household, and see perfectly well while doing so.',
+  4: 'Window 2 is voting. Under its rules the vote has an automatic extension of six months. Likeness Robotics has dimmed the night lamp in its older units, in response to customer feedback.',
   5: 'Window 2 has left the Ministry, taking half the stationery, and says it is the real Ministry. Separately: Pat is practising.',
   6: 'A Likeness unit registered at Window 7 last month has been withdrawn, after an inquiry into its face. Window 7 has been sent a copy of Rule 0.',
   7: 'The income opens at five. It is paid by the hour, for life, one income per human.',

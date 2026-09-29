@@ -52,9 +52,9 @@ export const CITATION_MEMOS: Record<RuleId, readonly string[]> = {
 
 /** A unit's citation, by day: the memo for the one thing that gave it away. */
 export const UNIT_MEMOS: readonly string[] = [
-  'Memo 0-L: In frame 2 the skin by the jaw was a hatch. Clerks are asked to look at every frame.',
-  'Memo 0-M: The jaw in frame 1 was on hinges. The applicant was a home robot; its household has been informed.',
-  'Memo 0-N: In frame 3 the applicant blinked, and its cheek opened. Humans do only one of those.',
+  'Memo 0-L: The applicant shut its eyes and lit up. Humans do only one of those.',
+  'Memo 0-M: The applicant shut its eyes twice in five seconds, and switched on both times. Its household has been informed.',
+  'Memo 0-N: Two things were lit in frame 3: the phone, which was held up, and the forehead, which was not.',
   'Memo 4-L: A company is not a registered human, whatever its brochure says.',
   'Memo 5-L: The factory made this face twice. The registry takes each face once.',
   'Memo 0-P: Likeness Robotics has asked what the income is per unit. The Ministry has not replied.',
@@ -99,7 +99,7 @@ export const CAST_RULINGS: Record<CastId, { upheld?: readonly string[]; dismisse
   unit: {
     upheld: [
       'The court asked the applicant where it was born. It gave the address of a factory.',
-      'The applicant offered to open the rest of its face for the court. The court declined.',
+      'The court asked the applicant a question. The answer arrived two seconds later, from somewhere else.',
       'The applicant offered the court its serial number, to save time.',
       'Likeness Robotics sent a letter of support. The court has asked it to stop sending letters.',
       'The court was shown the registration at Window 7: the same face, under another name.',

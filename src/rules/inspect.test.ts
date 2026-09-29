@@ -50,8 +50,8 @@ describe('inspect', () => {
     ['a mirror selfie', valid({ mirrored: true }), { kind: 'frame', frame: 1 }, { kind: 'photo' }, 'photo'],
     ['ears that change', valid({}, { glitch: { frame: 3, face: { ...face, face: { ...face.face, ears: 'big' } } } }), { kind: 'frame', frame: 1 }, { kind: 'frame', frame: 3 }, 'human'],
     ['the photo against the frame where the ears change', valid({}, { glitch: { frame: 2, face: { ...face, face: { ...face.face, ears: 'big' } } } }), { kind: 'photo' }, { kind: 'frame', frame: 2 }, 'human'],
-    ['machinery in a frame', valid({}, { panel: { frame: 2, where: 'jaw' } }), { kind: 'frame', frame: 2 }, { kind: 'rule', rule: 'human' }, 'human'],
-    ['the frame with machinery against another', valid({}, { panel: { frame: 3, where: 'cheek' } }), { kind: 'frame', frame: 1 }, { kind: 'frame', frame: 3 }, 'human'],
+    ['a light between the brows with the eyes shut', valid({}, { lamp: 'glow' }), { kind: 'frame', frame: 3 }, { kind: 'rule', rule: 'human' }, 'human'],
+    ['the lit frame against a dark one', valid({}, { lamp: 'small' }), { kind: 'frame', frame: 1 }, { kind: 'frame', frame: 3 }, 'human'],
     ['a generated video', valid({}, { generated: true }), { kind: 'rule', rule: 'human' }, { kind: 'frame', frame: 3 }, 'human'],
     ['a printed face held up', valid({}, { still: true, blinked: false }), { kind: 'frame', frame: 1 }, { kind: 'rule', rule: 'human' }, 'human'],
     ['two frames of a printed face, exactly alike', valid({}, { still: true, blinked: false }), { kind: 'frame', frame: 1 }, { kind: 'frame', frame: 3 }, 'human'],
@@ -68,6 +68,21 @@ describe('inspect', () => {
     expect(inspect(x, y, a, ALL, REGISTRY)).toEqual({ rule, inForce: true });
     // The same two things on an applicant with nothing wrong agree.
     expect(inspect(x, y, valid(), ALL, REGISTRY)).toBeNull();
+  });
+
+  it("finds a unit's lamp only in the frames it is lit in, and only under Rule 0", () => {
+    const unit = valid({}, { lamp: 'glow' });
+    const frame = (n: number): Item => ({ kind: 'frame', frame: n });
+    // Frames 1 and 2 are dark: the eyes are open.
+    expect(inspect(frame(1), frame(2), unit, ALL, REGISTRY)).toBeNull();
+    expect(inspect({ kind: 'photo' }, frame(2), unit, ALL, REGISTRY)).toBeNull();
+    // It did blink: Rule 6 has nothing against frame 3.
+    expect(inspect(frame(3), { kind: 'rule', rule: 'living' }, unit, ALL, REGISTRY)).toBeNull();
+    // Shut twice, lit twice: each lit frame shows it under Rule 0, and the dark one between does not.
+    const twice = valid({}, { lamp: 'glow', nervous: true });
+    expect(inspect(frame(1), frame(3), twice, ALL, REGISTRY)).toEqual({ rule: 'human', inForce: true });
+    for (const n of [1, 3]) expect(inspect(frame(n), { kind: 'rule', rule: 'human' }, twice, ALL, REGISTRY), `frame ${n}`).toEqual({ rule: 'human', inForce: true });
+    expect(inspect(frame(2), { kind: 'rule', rule: 'human' }, twice, ALL, REGISTRY)).toBeNull();
   });
 
   it('finds nothing when two things agree, whichever two', () => {

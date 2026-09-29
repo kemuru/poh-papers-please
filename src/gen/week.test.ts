@@ -43,7 +43,7 @@ describe('the week', () => {
     for (const week of weeks) {
       const units = week.queues.map((queue) => queue.filter((a) => a.cast === 'unit'));
       expect(units.map((u) => u.length)).toEqual([1, 1, 1, 1, 1, 1, 0]);
-      // An open panel under Rule 0, but on day 4 its maker's vouch, and on day 5 its factory face, on file at Window 7.
+      // The lamp under Rule 0, but on day 4 its maker's vouch, and on day 5 its factory face, on file at Window 7.
       expect(units.slice(0, 6).map(([u]) => u.planted.map((p) => `${p.rule}:${p.mistake}`))).toEqual([
         ['human:machine'], ['human:machine'], ['human:machine'], ['vouch:company'], ['duplicate:unit'], ['human:machine'],
       ]);

@@ -6,11 +6,12 @@ import { CAST_RULINGS, DISMISSED_NOTES } from '../content/verdicts';
 import { PAY } from '../economy/economy';
 import type { GeneratedApplicant } from '../gen/applicant';
 import { generateWeek } from '../gen/day';
+import { litFrames } from '../rules/face';
 import { inspect, type Item } from '../rules/inspect';
 import { judge, RULES, rulebookForDay } from '../rules/judge';
 import type { Registry, Rulebook, Violation } from '../rules/types';
 import { canAppeal, type Evidence } from './court';
-import { evidenceLine, evidenceWords, itemWords } from './evidence';
+import { asPointed, evidenceLine, evidenceWords, itemWords } from './evidence';
 import { Court } from './Screens';
 import { FilingSlip } from './Slips';
 import { reduce, startWeek, type GameState, type Ruling } from './week';
@@ -395,5 +396,51 @@ describe('the evidence in words', () => {
       expect(x, words).not.toBe(y);
       expect(words.replace(h.applicant.voucher ?? '\0', ''), words).not.toMatch(RESULTS);
     }
+  });
+});
+
+describe('the frame the clerk pointed at', () => {
+  it('is the frame the court names, when the fault shows there too: the day 2 unit, filed with frame 3 against Rule 0', () => {
+    // Seed 1, day 2: the unit's eyes are shut and its lamp lit in frames 1 and 3; judge() names frame 1.
+    const queue = generateWeek(1)[1];
+    const unitAt = queue.findIndex((a) => a.cast === 'unit');
+    const unit = queue[unitAt];
+    expect(litFrames(unit.video)).toEqual([1, 3]);
+    const rulebook = rulebookForDay(2);
+    const evidence: Evidence = { rule: 'human', items: [{ kind: 'frame', frame: 3 }, { kind: 'rule', rule: 'human' }] };
+    let s: GameState = reduce(startWeek(1, 2), { type: 'open' });
+    queue.forEach((a, i) => {
+      s = reduce(s, { type: 'call' });
+      if (i === unitAt) {
+        expect(inspect(evidence.items[0], evidence.items[1], a, rulebook, s.registry)).toEqual({ rule: 'human', inForce: true });
+        expect(judge(a, rulebook, s.registry).violations).toEqual([{ rule: 'human', problem: 'machine', frame: 1 }]);
+        s = reduce(s, { type: 'decide', applicant: a, decision: 'challenge', evidence });
+      } else s = reduce(s, { type: 'decide', applicant: a, decision: 'accept' });
+    });
+    s = reduce(s, { type: 'close', queue });
+    const html = renderToStaticMarkup(<Court day={2} queue={queue} rulings={s.rulings} onAppeal={() => {}} onDone={() => {}} />);
+    const card = html.split('<article ').find((article) => article.includes(`The Registry v. ${unit.name}`))!;
+    expect(text(inner(card, 'p', 'data-testid="evidence-line"')[0])).toBe('Evidence: Rule 0, frame 3 against the rule.');
+    expect(ruleLines(card)).toEqual(['Rule 0: in frame 3 the eyes are shut, and there is a light between the brows.']);
+  });
+
+  it('names a lit frame only if one was pointed at, a photo that is someone else in the frame pointed at, and nothing else', () => {
+    const video = generateWeek(1)[1].find((a) => a.cast === 'unit')!.video;
+    const lamp: Violation = { rule: 'human', problem: 'machine', frame: 1 };
+    const frame = (n: number): Item => ({ kind: 'frame', frame: n });
+    const human = (x: Item, y: Item): Evidence => ({ rule: 'human', items: [x, y] });
+    expect(asPointed(lamp, human(frame(3), { kind: 'rule', rule: 'human' }), video)).toEqual({ ...lamp, frame: 3 });
+    expect(asPointed(lamp, human(frame(2), frame(3)), video)).toEqual({ ...lamp, frame: 3 });
+    expect(asPointed(lamp, human(frame(3), frame(1)), video)).toEqual({ ...lamp, frame: 3 });
+    expect(asPointed(lamp, human({ kind: 'photo' }, frame(2)), video)).toEqual(lamp);
+    expect(asPointed(lamp, null, video)).toEqual(lamp);
+    expect(asPointed(lamp, { rule: 'photo', items: [{ kind: 'photo' }, frame(3)] }, video)).toEqual(lamp);
+    // A face that changes is in one frame only, whatever was pointed at.
+    const changes: Violation = { rule: 'human', problem: 'changes', frame: 2 };
+    expect(asPointed(changes, human(frame(1), frame(2)), video)).toEqual(changes);
+    const photo: Violation = { rule: 'photo', frame: 1, mirrored: false };
+    expect(asPointed(photo, { rule: 'photo', items: [{ kind: 'photo' }, frame(3)] }, video)).toEqual({ ...photo, frame: 3 });
+    const mirror: Violation = { rule: 'photo', frame: 1, mirrored: true };
+    expect(asPointed(mirror, { rule: 'photo', items: [frame(3), { kind: 'photo' }] }, video)).toEqual(mirror);
   });
 });

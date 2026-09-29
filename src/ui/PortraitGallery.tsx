@@ -1,6 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { CAST_PORTRAITS, UNIT_FACES, UNIT_PANELS } from '../content/portraits';
-import { ACCESSORIES, generatePortrait, PANEL_SPOTS } from '../gen/portrait';
+import { CAST_PORTRAITS, UNIT_FACES, UNIT_LAMPS } from '../content/portraits';
+import { ACCESSORIES, generatePortrait, LAMP_SIZES } from '../gen/portrait';
+import { litFrames } from '../rules/face';
+import { PHRASE } from '../rules/phrase';
 import { PixelPortrait } from './PixelPortrait';
 
 // Development page (open /?portraits): browse seeds, poses, accessories and the cast.
@@ -51,9 +53,9 @@ export function PortraitGallery() {
               <PixelPortrait portrait={{ ...portrait, accessories: [item] }} scale={2} background={PHOTO_BG} />
             </Tile>
           ))}
-          {PANEL_SPOTS.map((spot) => (
-            <Tile key={spot} label={`open panel: ${spot}`}>
-              <PixelPortrait portrait={{ ...portrait, panel: spot }} scale={2} background={VIDEO_BG} />
+          {LAMP_SIZES.map((size) => (
+            <Tile key={size} label={`lamp: ${size}`}>
+              <PixelPortrait portrait={{ ...portrait, lamp: size }} eyes="closed" scale={2} background={VIDEO_BG} />
             </Tile>
           ))}
         </Row>
@@ -68,14 +70,15 @@ export function PortraitGallery() {
             </Tile>
           ))}
         </Row>
-        <h3>The Likeness units, days 1 to 6, and the panel each opens in the game</h3>
+        <h3>The Likeness units, days 1 to 6, and the lamp each shows in the game</h3>
         <Row>
           {UNIT_FACES.map((face, i) => {
-            const panel = UNIT_PANELS[i];
+            const tell = UNIT_LAMPS[i];
+            const lit = litFrames({ face, transcript: PHRASE, blinked: true, ...(tell ?? {}) });
             return (
-              <Tile key={i} label={panel ? `day ${i + 1}: ${panel.where}, frame ${panel.frame}` : `day ${i + 1}: no panel`}>
+              <Tile key={i} label={tell ? `day ${i + 1}: ${tell.lamp}, lit in frame${lit.length > 1 ? 's' : ''} ${lit.join(' and ')}` : `day ${i + 1}: no lamp`}>
                 <PixelPortrait portrait={face} scale={3} background={PHOTO_BG} />
-                {panel && <PixelPortrait portrait={{ ...face, panel: panel.where }} scale={3} background={VIDEO_BG} />}
+                {tell && <PixelPortrait portrait={{ ...face, lamp: tell.lamp }} eyes="closed" scale={3} background={VIDEO_BG} />}
               </Tile>
             );
           })}

@@ -121,8 +121,8 @@ describe('the jury', () => {
 
   it('sees each fault the design names as it says, and the tuned ones rarely, on every generated applicant', () => {
     const table: [kind: string, tier: Tier][] = [
-      // "Silence or a square of dots nearly always, a wrong word or a mirror often, a panel open in
-      // one frame or an ear that changes rarely."
+      // "Silence or a square of dots nearly always, a wrong word or a mirror often, a lamp lit only
+      // while the eyes are shut or an ear that changes rarely."
       ['phrase:silence', 'plain'],
       ['sign:qr', 'plain'],
       ['sign:no-sign', 'plain'],
@@ -147,7 +147,7 @@ describe('the jury', () => {
     }
   });
 
-  it('sees a panel and a changing ear rarely, and a sign rarely up to three wrong characters, often from four', () => {
+  it('sees a lamp and a changing ear rarely, and a sign rarely up to three wrong characters, often from four', () => {
     const wallet = `0x${'ab'.repeat(20)}`;
     const sign = (wrong: number[]): Violation => ({
       rule: 'sign',
@@ -156,7 +156,7 @@ describe('the jury', () => {
       wrong,
     });
     const table: [Violation, Tier][] = [
-      [{ rule: 'human', problem: 'machine', frame: 2, where: 'cheek' }, 'rare'],
+      [{ rule: 'human', problem: 'machine', frame: 3 }, 'rare'],
       [{ rule: 'human', problem: 'changes', frame: 3 }, 'rare'],
       [sign([7, 30]), 'rare'],
       [sign([7, 19, 30]), 'rare'],

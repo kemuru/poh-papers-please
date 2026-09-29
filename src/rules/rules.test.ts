@@ -3,6 +3,7 @@ import { REGULARS, TWINS, TWINS_FORM } from '../content/cast';
 import { CAST_PORTRAITS, TWIN_TWO } from '../content/portraits';
 import { generateWeek, planWeek } from '../gen/day';
 import { generatePortrait, type Portrait } from '../gen/portrait';
+import { checkHuman } from './human';
 import { judge, RULE_DAYS, RULES, rulebookForDay } from './judge';
 import { PHRASE } from './phrase';
 import type { Applicant, Registrant, Registry, RuleId } from './types';
@@ -52,15 +53,23 @@ ruleTest(
     // Anything worn or carried does not count: Dave's costume robot head under his arm, or a twin filmed beside them.
     valid({ photo: { ...face, accessories: ['robot-helmet'] } }, { face: { ...face, accessories: ['robot-helmet'] } }),
     valid({}, { with: generatePortrait(7) }),
+    // Nigel's two blinks: the day 2 unit's pose, and no light.
+    valid({}, { nervous: true }),
   ],
   {
-    'skin open onto machinery in frame 2': valid({}, { panel: { frame: 2, where: 'cheek' } }),
+    'a light between the brows, eyes shut in frame 3': valid({}, { lamp: 'glow' }),
     'ears that change in frame 3': valid({}, { glitch: { frame: 3, face: { ...face, face: { ...face.face, ears: face.face.ears === 'big' ? 'small' : 'big' } } } }),
     'a generated video': valid({}, { generated: true }),
     // Blinked is set so that only Rule 0 is at stake here; the Cutout, who does not blink, breaks Rule 6 as well.
     'a printed face held up': valid({}, { still: true }),
   },
 );
+
+describe('Rule 0, the lamp', () => {
+  it('finds nothing on a unit whose eyes never shut: its lamp never comes on', () => {
+    expect(checkHuman(valid({}, { lamp: 'glow', blinked: false }))).toBeNull();
+  });
+});
 
 ruleTest('phrase', [valid({}, { transcript: `Ahem. ${PHRASE.replace('I am a', "I'm a")} Thank you.` })], {
   hooman: valid({}, { transcript: PHRASE.replace('human', 'hooman') }),

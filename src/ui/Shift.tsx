@@ -13,7 +13,7 @@ import type { Applicant, RuleId } from '../rules/types';
 import { Booth } from './Booth';
 import type { Evidence } from './court';
 import { Desk, type InspectView } from './Desk';
-import { evidenceLine, ruleName } from './evidence';
+import { asPointed, evidenceLine, ruleName } from './evidence';
 import { atWindow, shiftOver, type Action, type GameState } from './week';
 import { Hall } from './Hall';
 import type { Lookup } from './Registry';
@@ -331,10 +331,9 @@ function inspectView(
   if (last?.finding) {
     const { rule, inForce } = last.finding;
     if (!inForce) return view(INSPECT_LINES.notInForce, 'none');
-    const found = judge(queue[at ?? 0], rulebookForDay(state.day), state.registry).violations.find((v) => v.rule === rule);
-    // A photo that is someone else is not the face in any frame: name the one the clerk pointed at.
-    const frame = last.items.find((item) => item.kind === 'frame');
-    const broke = found?.rule === 'photo' && !found.mirrored && frame?.kind === 'frame' ? { ...found, frame: frame.frame } : found;
+    const a = queue[at ?? 0];
+    const found = judge(a, rulebookForDay(state.day), state.registry).violations.find((v) => v.rule === rule);
+    const broke = found && asPointed(found, { rule, items: last.items }, a.video);
     const detail = broke ? ` ${evidenceLine(broke).replace(/^./, (c) => c.toUpperCase())}` : '';
     return view(`${INSPECT_LINES.found} · ${ruleName(rule)}.${detail}${tutorial ? ` ${INSPECT_LINES.guidedFound}` : ''}`, 'found');
   }

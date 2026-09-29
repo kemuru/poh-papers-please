@@ -1,6 +1,7 @@
-// What makes a face the same face. Hair, clothes and whatever is worn are not the face: a new
-// haircut or a pair of glasses since the photo was taken changes nothing.
-import type { Face, Portrait } from '../gen/portrait';
+// What makes a face the same face, and how the video's three frames show it. Hair, clothes and
+// whatever is worn are not the face: a new haircut or a pair of glasses since the photo was taken
+// changes nothing.
+import type { Face, Portrait, Pose } from '../gen/portrait';
 import type { Video } from './types';
 
 const FEATURES: readonly (keyof Face)[] = ['skin', 'shape', 'eyes', 'eyeColor', 'brows', 'nose', 'mouth', 'ears', 'age', 'mark'];
@@ -10,3 +11,17 @@ export const sameFace = (a: Portrait, b: Portrait) => a.species === b.species &&
 /** The face in each of the video's three frames. */
 export const frameFaces = (video: Video): Portrait[] =>
   [1, 2, 3].map((frame) => (video.glitch?.frame === frame ? video.glitch.face : video.face));
+
+/** How each of the three frames is posed: a still, then speaking, then blinking, each only if it happened. A printed face does neither. */
+export const framePoses = (v: Video): Pose[] => {
+  const spoke = v.transcript.trim() !== '';
+  return [
+    { eyes: v.nervous ? 'closed' : 'open', mouth: 'closed' },
+    { eyes: 'open', mouth: spoke && !v.still ? 'open' : 'closed' },
+    { eyes: v.blinked && !v.still ? 'closed' : 'open', mouth: 'closed' },
+  ];
+};
+
+/** The frames a unit's lamp shows in: every frame with the eyes shut. */
+export const litFrames = (v: Video): number[] =>
+  v.lamp ? framePoses(v).flatMap((p, i) => (p.eyes === 'closed' ? [i + 1] : [])) : [];

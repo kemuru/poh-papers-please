@@ -62,8 +62,9 @@ const ruleNo = (rule: keyof typeof RULEBOOK) => RULEBOOK[rule].number;
 test('a hunch dismissed by 3 jurors is appealed in place to 7, who uphold it; the accounts pay the appeal', async ({ page }) => {
   await open(page, '?seed=1&day=2');
   const { queue } = await game(page);
-  // Seed 1, day 2: the Likeness unit (third in the queue, its jaw open in frame 1) is the fake a
-  // hunch loses to the first jury and wins on appeal; Pat's mirrored photo is the day's other fake.
+  // Seed 1, day 2: the Likeness unit (third in the queue, its eyes shut and its lamp lit in frames 1
+  // and 3) is the fake a hunch loses to the first jury and wins on appeal; Pat's mirrored photo is
+  // the day's other fake.
   const unitAt = 2;
   expect(queue[unitAt].planted, 'seed 1 day 2 changed: pick another').toEqual([{ rule: 'human', mistake: 'machine' }]);
   expect(queue.flatMap((a, i) => (a.planted.length > 0 ? [i] : [])), 'seed 1 day 2 changed: pick another').toEqual([2, 3]);

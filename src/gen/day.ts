@@ -11,7 +11,7 @@ import {
 } from '../content/cast';
 import {
   CAST_PORTRAITS, CATALOGUE_GENTLEMAN, CLONE_PORTRAIT, DEEPFAKE_SLIP, FARM_HATS, FIRST_APPLICANT_PORTRAIT, INFLUENCER_PHOTO,
-  TWIN_TWO, UNIT_FACES, UNIT_PANELS,
+  TWIN_TWO, UNIT_FACES, UNIT_LAMPS,
 } from '../content/portraits';
 import { hearChallenges } from '../court/court';
 import { PHRASE } from '../rules/phrase';
@@ -393,11 +393,11 @@ function first(): GeneratedApplicant {
 function unitOn(day: number): GeneratedApplicant {
   const u = UNITS[day - 1];
   const face = UNIT_FACES[day - 1];
-  const panel = UNIT_PANELS[day - 1];
+  const tell = UNIT_LAMPS[day - 1];
   const a: GeneratedApplicant = {
     name: u.name, address: u.address, birthYear: u.birthYear, photo: face, remark: u.remark, cast: 'unit',
-    video: { face, transcript: PHRASE, blinked: true, ...(panel ? { panel } : {}) },
-    planted: panel ? [{ rule: 'human', mistake: 'machine' }] : [],
+    video: { face, transcript: PHRASE, blinked: true, ...(tell ?? {}) },
+    planted: tell ? [{ rule: 'human', mistake: 'machine' }] : [],
   };
   if (day >= 3) a.wallet = u.wallet;
   // Day 3: the address on its phone, in full and the right way up.

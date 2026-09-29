@@ -1,7 +1,6 @@
 import { Fragment, type ReactNode } from 'react';
 import { RULEBOOK } from '../content/rulebook';
-import type { Pose } from '../gen/portrait';
-import { frameFaces } from '../rules/face';
+import { frameFaces, framePoses } from '../rules/face';
 import { RULE_DAYS, type Decision } from '../rules/judge';
 import { shortAddress } from '../rules/sign';
 import type { Applicant, Mark, RuleId, Rulebook, Video } from '../rules/types';
@@ -11,6 +10,7 @@ import { PixelPortrait } from './PixelPortrait';
 
 const PHOTO_BG = '#cfd8dc';
 const VIDEO_BG = '#8f9b9e';
+const FRAME_TIMES = ['00:01', '00:03', '00:05'];
 
 // A click leaves the focus where it was, so Space still pulls the lever.
 const keepFocus = (e: { preventDefault: () => void }) => e.preventDefault();
@@ -100,12 +100,8 @@ export function VideoStrip({ video, onSearchFace }: { video: Video; /** From day
   const spoke = video.transcript.trim() !== '';
   const faces = frameFaces(video);
   const board = !video.sign ? undefined : video.sign.kind === 'qr' ? ('qr' as const) : video.sign.phone ? ('phone' as const) : ('writing' as const);
-  // A still, then the applicant speaking, then blinking: each only if it happened. A printed face does neither.
-  const frames: { time: string; pose: Pose }[] = [
-    { time: '00:01', pose: { eyes: video.nervous ? 'closed' : 'open', mouth: 'closed' } },
-    { time: '00:03', pose: { eyes: 'open', mouth: spoke && !video.still ? 'open' : 'closed' } },
-    { time: '00:05', pose: { eyes: video.blinked && !video.still ? 'closed' : 'open', mouth: 'closed' } },
-  ];
+  // Posed as Rule 0 reads them; a unit's lamp is drawn in the frames with the eyes shut. The twin never has one.
+  const frames = framePoses(video).map((pose, i) => ({ time: FRAME_TIMES[i], pose }));
   return (
     <div className="doc video">
       <div className="doc-head">
@@ -123,7 +119,7 @@ export function VideoStrip({ video, onSearchFace }: { video: Video; /** From day
                       ...faces[i],
                       board,
                       ...(video.generated ? { mark: true as const } : {}),
-                      ...(video.panel?.frame === i + 1 ? { panel: video.panel.where } : {}),
+                      ...(video.lamp ? { lamp: video.lamp } : {}),
                     }}
                     {...pose}
                     scale={2}

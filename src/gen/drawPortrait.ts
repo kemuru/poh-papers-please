@@ -2,10 +2,10 @@
 // always give the same pixels, and nothing here is random. The head is drawn first
 // and returns anchors (eye, brow and mouth rows...); everything worn is placed from
 // those anchors, so any accessory fits any head. An android is drawn as a human:
-// nothing in its face gives it away, except, in one video frame, an open panel.
+// nothing in its face gives it away, except, in a video frame with its eyes shut, its night lamp.
 import type { Accessory, HairStyle, HeadShape, Pose, Portrait } from './portrait';
 import {
-  BROWS, CLOTH, EYES, EYE_WHITE, HAIR, INK, IRIS, MOUTHS, MOUTH_INSIDE, MOUTH_OPEN,
+  BROWS, CLOTH, EYES, EYE_WHITE, HAIR, INK, IRIS, LAMPS, MOUTHS, MOUTH_INSIDE, MOUTH_OPEN,
   NOSES, PROPS, SKIN, SLEEP_MASK_EYE, SWEAT_DROP, TEETH, type Ramp,
 } from './portraitParts';
 
@@ -19,7 +19,7 @@ export function drawPortrait(portrait: Portrait, pose: Partial<Pose> = {}): Pixe
   const c: Canvas = new Array(W * H).fill(null);
   const p: Pose = { eyes: 'open', mouth: 'closed', ...pose };
   const a = drawHuman(c, portrait, p);
-  drawAccessories(c, portrait, a);
+  drawAccessories(c, portrait, a, p);
   return { width: W, height: H, pixels: c };
 }
 
@@ -137,13 +137,13 @@ const line = (c: Canvas, x0: number, y0: number, x1: number, y1: number, color: 
 };
 // ---------------------------------------------------------------- humans
 
-const HEADS: Record<HeadShape, { half: number; height: number; chin: number; jaw: 'round' | 'square' | 'taper' }> = {
-  oval: { half: 10, height: 25, chin: 3, jaw: 'round' },
-  round: { half: 11, height: 24, chin: 5, jaw: 'round' },
-  square: { half: 11, height: 25, chin: 6, jaw: 'square' },
-  long: { half: 9, height: 27, chin: 3, jaw: 'round' },
-  heart: { half: 11, height: 25, chin: 2, jaw: 'taper' },
-  wide: { half: 12, height: 24, chin: 6, jaw: 'square' },
+const HEADS: Record<HeadShape, { half: number; height: number; chin: number; lower: 'round' | 'square' | 'taper' }> = {
+  oval: { half: 10, height: 25, chin: 3, lower: 'round' },
+  round: { half: 11, height: 24, chin: 5, lower: 'round' },
+  square: { half: 11, height: 25, chin: 6, lower: 'square' },
+  long: { half: 9, height: 27, chin: 3, lower: 'round' },
+  heart: { half: 11, height: 25, chin: 2, lower: 'taper' },
+  wide: { half: 12, height: 24, chin: 6, lower: 'square' },
 };
 const EARS = { small: [1.6, 2.4], normal: [2, 3], big: [2.6, 3.6] } as const;
 
@@ -151,14 +151,14 @@ function humanAnchors(p: Portrait): Anchors {
   const s = HEADS[p.face.shape];
   const chin = 33;
   const top = chin - s.height + 1;
-  // Half-width per row: a dome for the cranium, straight cheeks, then the jaw.
+  // Half-width per row: a dome for the cranium, straight sides, then the lower face narrowing to the chin.
   const halfWidth = (y: number) => {
     const t = (y - top + 0.5) / s.height;
     if (t < 0 || t > 1) return 0;
     if (t < 0.42) return s.half * Math.sqrt(1 - ((0.42 - t) / 0.42) ** 2);
     if (t < 0.62) return s.half;
     const u = (t - 0.62) / 0.38;
-    const k = s.jaw === 'square' ? 1 - u ** 3 : s.jaw === 'taper' ? 1 - u : Math.sqrt(1 - u * u);
+    const k = s.lower === 'square' ? 1 - u ** 3 : s.lower === 'taper' ? 1 - u : Math.sqrt(1 - u * u);
     return s.chin + (s.half - s.chin) * k;
   };
   const eyeY = top + Math.round(s.height * 0.46);
@@ -317,8 +317,8 @@ function drawFacialHair(c: Canvas, p: Portrait, a: Anchors) {
       return;
     case 'stubble': {
       const halves = Array.from({ length: H }, (_, y) => rowHalf(a.head, y));
-      const jaw = mask((x, y) => y >= a.mouthY - 2 || (y >= a.eyeY + 4 && fromMid(x) > halves[y] - 3));
-      paint(c, within(minus(within(a.head, jaw), mouthHole), stubbleDots), mix(SKIN[p.face.skin].base, hair.lo, 0.45));
+      const stubbled = mask((x, y) => y >= a.mouthY - 2 || (y >= a.eyeY + 4 && fromMid(x) > halves[y] - 3));
+      paint(c, within(minus(within(a.head, stubbled), mouthHole), stubbleDots), mix(SKIN[p.face.skin].base, hair.lo, 0.45));
       return;
     }
     case 'mustache':
@@ -329,8 +329,8 @@ function drawFacialHair(c: Canvas, p: Portrait, a: Anchors) {
       return;
     case 'beard': {
       const side = rowHalf(a.head, a.eyeY + 3) - 3;
-      const cheeks = mask((x, y) => y >= a.mouthY - 2 || (y >= a.eyeY + 3 && fromMid(x) > side));
-      const beard = minus(union(within(grow(a.head, 1), cheeks), ellipse(CX, a.chin, rowHalf(a.head, a.chin - 3) + 1, 3)), mouthHole);
+      const sides = mask((x, y) => y >= a.mouthY - 2 || (y >= a.eyeY + 3 && fromMid(x) > side));
+      const beard = minus(union(within(grow(a.head, 1), sides), ellipse(CX, a.chin, rowHalf(a.head, a.chin - 3) + 1, 3)), mouthHole);
       paint(c, ring(union(beard, mouthHole)), INK);
       paint(c, beard, hair.base);
       paint(c, edge(beard, 1, 1), hair.lo);
@@ -412,7 +412,7 @@ function topRow(c: Canvas) {
   return top;
 }
 
-function drawAccessories(c: Canvas, p: Portrait, a: Anchors) {
+function drawAccessories(c: Canvas, p: Portrait, a: Anchors, pose: Pose) {
   const wears = (item: Accessory) => p.accessories.includes(item);
   const side = rowHalf(a.head, a.eyeY + 1);
   const both = (x: number, y: number, color: string) => {
@@ -518,20 +518,21 @@ function drawAccessories(c: Canvas, p: Portrait, a: Anchors) {
     stamp(c, SWEAT_DROP, Math.round(CX - half) - 2, a.browY - 3, colors);
     stamp(c, SWEAT_DROP, Math.round(CX + half) - 1, a.browY - 1, colors);
   }
-  if (p.panel) {
-    // A unit's tell, in one frame: the skin stands open onto a circuit board, on the cheek under the eye
-    // or low on the other side by the jaw. That is bare skin on every face whatever the hair, clear of
-    // the eyes, the nose and the mouth, so it cannot pass for anything worn. Machine colours no face or
-    // hair uses, a dark edge for light skin and the lifted flap's pale edge along the top for dark skin:
-    // it reads on every face, in any colour vision.
-    const [x, y] = p.panel === 'cheek' ? [CX + 4, a.eyeY + 5] : [CX - 8, a.eyeY + 6];
-    const onFace = (m: Mask) => within(m, a.head);
-    paint(c, onFace(ring(box(x, y, x + 3, y + 2))), PROPS.machine.edge);
-    paint(c, onFace(box(x - 1, y - 1, x + 4, y - 1)), PROPS.machine.flap);
-    paint(c, onFace(box(x, y, x + 3, y + 2)), PROPS.machine.board);
-    paint(c, onFace(box(x + 1, y + 1, x + 2, y + 1)), PROPS.machine.chip);
-    for (const px of [x, x + 2]) paint(c, onFace(box(px, y, px, y)), PROPS.machine.pin);
-    paint(c, onFace(box(x + 3, y + 2, x + 3, y + 2)), PROPS.machine.light);
+  if (p.lamp && pose.eyes === 'closed') {
+    // A unit's tell: its eyes are cameras, and with the lids shut they are in the dark, so its night
+    // lamp comes on between the brows. A camera sees that light as violet-white, falling on the brows
+    // and the fringe. On the face's midline, above the eyes: clear of the eyes, the nose and the mouth
+    // on every head and under every hair. A white core in a dark ring reads in any colour vision.
+    const { art, spill } = LAMPS[p.lamp];
+    art.forEach((row, dy) => {
+      for (let dx = 0; dx < row.length; dx++) {
+        const i = (a.browY - 4 + dy) * W + CX - 4 + dx;
+        const px = c[i];
+        if (row[dx] === 'c') c[i] = PROPS.lamp.core;
+        else if (row[dx] === 'r') c[i] = PROPS.lamp.ring;
+        else if (row[dx] === 's' && px) c[i] = mix(px, PROPS.lamp.spill, spill);
+      }
+    });
   }
   if (p.mark) {
     // A four-pointed sparkle in the top corner, outlined so it shows on any hair or background.

@@ -11,7 +11,7 @@ export type PhraseMistake = 'wrong-word' | 'missing-words' | 'silence' | 'quiet-
 
 /** Every kind of fault the generator plants, by the rule it breaks. */
 export type Mistakes = {
-  /** A unit, whose skin stands open onto machinery in one frame; the Deepfake, whose ears change between frames; the Cutout, a picture held up; the Agent, a generated video. */
+  /** A unit, whose night lamp shows between its brows in every frame with its eyes shut; the Deepfake, whose ears change between frames; the Cutout, a picture held up; the Agent, a generated video. */
   human: 'machine' | 'deepfake' | 'printed' | 'generated';
   phrase: PhraseMistake;
   /** Someone else's face; a mirror selfie; a beauty filter. */
