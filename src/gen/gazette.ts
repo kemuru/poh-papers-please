@@ -53,15 +53,21 @@ export function writeGazette(day: number, yesterday: Yesterday | null, shown: re
   };
 }
 
-/** The most newsworthy thing that happened: a unit registered, then anything else that is not a person, then a fake, then a human in court, and so on. */
+/**
+ * The most newsworthy thing that happened: a unit registered, then anything else that is not a person,
+ * then a fake, then a fake the court registered, then a human in court, and so on. A challenge the
+ * jury dismissed registers whoever it was about; by morning the court has risen, so the paper can say
+ * so, and says it of the court: the clerk who challenged was right.
+ */
 function story(y: Yesterday | null): { pool: keyof typeof HEADLINES; name: string; rule: RuleId | null; count: number } {
   if (!y) return { pool: 'none', name: '', rule: null, count: 0 };
-  const registeredFakes = y.cases
-    .filter((c) => c.decision === 'accept' && c.broke.length > 0)
-    .sort((a, b) => Number(b.broke.includes('human')) - Number(a.broke.includes('human')));
+  const notAPersonFirst = (a: CaseReport, b: CaseReport) => Number(b.broke.includes('human')) - Number(a.broke.includes('human'));
+  const registeredFakes = y.cases.filter((c) => c.decision === 'accept' && c.broke.length > 0).sort(notAPersonFirst);
   const unit = registeredFakes.find((c) => c.unit);
   if (unit) return { pool: 'unit', name: unit.name, rule: unit.broke[0], count: 0 };
   if (registeredFakes.length > 0) return { pool: 'fake', name: registeredFakes[0].name, rule: registeredFakes[0].broke[0], count: 0 };
+  const missed = y.cases.filter((c) => c.decision === 'challenge' && !c.upheld && c.broke.length > 0).sort(notAPersonFirst)[0];
+  if (missed) return { pool: 'court', name: missed.name, rule: missed.broke[0], count: 0 };
   const dismissed = y.cases.filter((c) => c.decision === 'challenge' && !c.upheld);
   const human = dismissed.find((c) => c.broke.length === 0);
   if (human) return { pool: 'human', name: human.name, rule: null, count: 0 };

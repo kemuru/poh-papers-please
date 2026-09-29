@@ -34,6 +34,13 @@ export const HEADLINES = {
     'HUMAN CHALLENGED AT WINDOW 3. HUMAN, IT TURNS OUT.',
     '{NAME} "STILL HUMAN" AFTER HEARING',
   ],
+  /** The clerk challenged someone who broke a rule, and the jury found nothing: the court registered them. */
+  court: [
+    'HUMANITY COURT REGISTERS {NAME}; RULE {RULE} NOT RAISED',
+    'JURY CLEARS {NAME}. JURORS "VOTED WITH THE OTHERS"',
+    '{NAME} REGISTERED BY THE COURT. THE FILE WAS "VERY LONG"',
+    'WINDOW 3 CHALLENGED {NAME}. THE JURY DID NOT FIND RULE {RULE}.',
+  ],
   /** The clock ran out with people still waiting. */
   timeUp: [
     'QUEUE SENT HOME AT FIVE. QUEUE RETURNS.',
