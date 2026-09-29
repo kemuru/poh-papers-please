@@ -129,9 +129,7 @@ export function Game({ run, onRestart }: { run: Run; onRestart: (run: Run) => vo
           onNext={() => dispatch({ type: 'next-day', queue })}
         />
       )}
-      {state.phase === 'ending' && state.end && (
-        <Ending kind={state.end.fired ? 'fired' : 'promoted'} day={state.day} savings={state.savings} onNewWeek={newWeek} onDayAgain={sameDay} />
-      )}
+      {state.phase === 'ending' && <Ending state={state} onNewWeek={newWeek} onDayAgain={sameDay} />}
       {menu && (
         <Menu
           view={menu}
@@ -167,7 +165,7 @@ function whereNow(s: GameState, clockSeconds: number): string {
 /** Which music the moment calls for. */
 function musicScene(s: GameState): Scene {
   if (s.phase === 'shift') return !s.opened ? 'morning' : shiftOver(s) ? 'closing' : 'open';
-  if (s.phase === 'ending') return s.end?.fired ? 'fired' : 'promoted';
+  if (s.phase === 'ending') return s.ending ?? 'promoted';
   return s.phase;
 }
 

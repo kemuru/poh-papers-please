@@ -187,6 +187,42 @@ kbd {
   animation: step-off 0.7s 0.95s steps(7) both;
 }
 
+/*
+ * Humanity Day's last papers are the clerk's own. Nobody walks up: the hall goes dim behind the glass,
+ * and the glass holds the clerk's reflection, faint and the wrong way round.
+ */
+.booth-glass.reflecting .booth-room {
+  filter: brightness(0.42) saturate(0.55);
+  transition: filter 1.2s;
+}
+
+.visitor.reflection {
+  opacity: 0.3;
+  scale: -1 1;
+  mix-blend-mode: screen;
+  animation: reflect-in 1.6s both;
+}
+
+.visitor.reflection svg {
+  filter: grayscale(0.5) blur(0.4px);
+}
+
+.visitor.reflection.leaving {
+  animation: reflect-out 0.8s 0.95s both;
+}
+
+@keyframes reflect-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes reflect-out {
+  to {
+    opacity: 0;
+  }
+}
+
 @keyframes step-up {
   from {
     transform: translate(120%, 6px);
@@ -1221,6 +1257,110 @@ mark {
   display: block;
   margin-top: 4px;
   text-align: right;
+}
+
+/* What else lies on the morning paper: Likeness's letter, its envelope, the supervisor's second note. */
+.morning-extra {
+  position: absolute;
+  z-index: 5;
+  box-shadow: 0 12px 26px rgb(0 0 0 / 50%);
+  animation: land 0.5s 0.45s both;
+}
+
+/* Another company's paper, in another company's colours, over the foot of the paper and clear of the day's notice. */
+.offer-letter {
+  right: 18px;
+  bottom: 12px;
+  width: 340px;
+  padding: 9px 14px 10px;
+  background: #f4f1fb;
+  border-top: 5px solid #5b3fa6;
+  font-size: 12.5px;
+  line-height: 1.33;
+  rotate: 1.4deg;
+}
+
+.offer-letter p {
+  margin: 0 0 4px;
+}
+
+.envelope p {
+  margin: 0 0 6px;
+}
+
+.offer-head {
+  color: #5b3fa6;
+  font-family: var(--official);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.offer-sign {
+  font-family: var(--hand);
+  font-size: 15px;
+  text-align: right;
+}
+
+.offer-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.offer-button {
+  flex: 1;
+  padding: 5px 8px;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  background: var(--paper-light);
+  color: var(--ink);
+  font-family: var(--official);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.offer-sign-it {
+  border-color: #5b3fa6;
+  color: #5b3fa6;
+}
+
+.offer-button:hover {
+  background: #fff;
+}
+
+.offer-button:focus-visible {
+  outline: 3px solid var(--marker);
+  outline-offset: 2px;
+}
+
+/* A manila envelope, flap and all. */
+.envelope {
+  right: 32px;
+  bottom: 28px;
+  width: 250px;
+  padding: 26px 16px 10px;
+  background:
+    linear-gradient(160deg, rgb(0 0 0 / 7%) 0 50%, transparent 50%) top left / 50% 22px no-repeat,
+    linear-gradient(200deg, rgb(0 0 0 / 7%) 0 50%, transparent 50%) top right / 50% 22px no-repeat,
+    #d7bd84;
+  font-size: 13px;
+  line-height: 1.4;
+  rotate: -2deg;
+}
+
+.second-note {
+  position: absolute;
+  z-index: 6;
+  left: 22px;
+  bottom: 22px;
+  width: 160px;
+  rotate: -4deg;
+  animation: land 0.45s 0.6s both;
 }
 
 @media (prefers-reduced-motion: reduce) {

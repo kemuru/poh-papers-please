@@ -17,8 +17,20 @@ const SET_ASIDE_KEY = 'poh-save-set-aside';
 /**
  * One thing the clerk did. The applicant it was done to is the queue's to say, not the save's. A
  * challenge filed with evidence keeps the evidence; an appeal keeps the place in the queue of its case.
+ * On day 3's morning, Likeness's letter is signed or handed in.
  */
-export type Step = 'open' | 'call' | Decision | 'time-up' | 'close' | 'statement' | 'next-day' | { challenge: Evidence } | { appeal: number };
+export type Step =
+  | 'open'
+  | 'call'
+  | Decision
+  | 'time-up'
+  | 'close'
+  | 'statement'
+  | 'next-day'
+  | 'sign'
+  | 'hand-in'
+  | { challenge: Evidence }
+  | { appeal: number };
 
 export type Save = {
   v: 1;
@@ -73,11 +85,12 @@ export function canSave(store: Store | null): boolean {
 
 export function stepOf(action: Action): Step {
   if (action.type === 'appeal') return { appeal: action.index };
+  if (action.type === 'offer') return action.choice === 'signed' ? 'sign' : 'hand-in';
   if (action.type !== 'decide') return action.type;
   return action.decision === 'challenge' && action.evidence ? { challenge: action.evidence } : action.decision;
 }
 
-const STEPS = new Set<string>(['open', 'call', 'accept', 'challenge', 'time-up', 'close', 'statement', 'next-day']);
+const STEPS = new Set<string>(['open', 'call', 'accept', 'challenge', 'time-up', 'close', 'statement', 'next-day', 'sign', 'hand-in']);
 const RULES = new Set<string>(['human', 'phrase', 'photo', 'sign', 'vouch', 'duplicate', 'living'] satisfies RuleId[]);
 const PLAIN_ITEMS = new Set<string>(['photo', 'transcript', 'sign', 'name', 'birth-year', 'wallet', 'voucher', 'face-record'] satisfies Item['kind'][]);
 const whole = (n: unknown): n is number => Number.isSafeInteger(n) && (n as number) >= 0;
@@ -116,6 +129,7 @@ function actionOf(step: Step, s: GameState, week: Week): Action | null {
     return { type: 'decide', applicant: queue[at], decision: step };
   }
   if (step === 'close' || step === 'next-day') return { type: step, queue };
+  if (step === 'sign' || step === 'hand-in') return { type: 'offer', choice: step === 'sign' ? 'signed' : 'handed-in' };
   return { type: step as 'open' | 'call' | 'time-up' | 'statement' };
 }
 

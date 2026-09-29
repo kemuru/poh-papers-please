@@ -1,11 +1,16 @@
 import { useEffect, useRef, useState, type CSSProperties, type Dispatch } from 'react';
 import { EXITS } from '../content/applicants';
-import { AGENT, CLONE, CUTOUT, DEEPFAKE, FIRST_APPLICANT, INFLUENCER, PAT, PAT_MOTHER, REGULARS, SYBIL_FARM, TWINS, UNIT_EXITS, type CastId } from '../content/cast';
-import { INSPECT_LINES, NEW_TOOL_TIPS } from '../content/desk';
+import {
+  AGENT, CLONE, CUTOUT, DEEPFAKE, FIRST_APPLICANT, INFLUENCER, PAT, PAT_MOTHER, REGULARS, RENEWAL, SYBIL_FARM, TWINS, UNIT_EXITS, UNIT_OWNERS,
+  type CastId,
+} from '../content/cast';
+import { INSPECT_LINES, NEW_TOOL_TIPS, OFFER_LETTER, SECOND_NOTES } from '../content/desk';
+import { OFFER } from '../economy/economy';
+import { REPLACED_AT } from '../economy/endings';
 import { WINDOW_LINES } from '../content/hall';
 import { RULEBOOK } from '../content/rulebook';
 import type { GeneratedApplicant } from '../gen/applicant';
-import { DAYS } from '../gen/day';
+import { DAYS, LAST_DAY } from '../gen/day';
 import { inspect, sameItem, type Finding, type Item } from '../rules/inspect';
 import { judge, RULE_DAYS, rulebookForDay, type Decision } from '../rules/judge';
 import { sameName } from '../rules/registry';
@@ -14,7 +19,8 @@ import { Booth } from './Booth';
 import type { Evidence } from './court';
 import { Desk, type InspectView } from './Desk';
 import { asPointed, evidenceLine, ruleName } from './evidence';
-import { atWindow, shiftOver, type Action, type GameState } from './week';
+import { atWindow, shiftOver, unitsStamped, type Action, type GameState } from './week';
+import type { MorningPapers } from './Morning';
 import { Hall } from './Hall';
 import type { Lookup } from './Registry';
 import { pick } from './Slips';
@@ -284,24 +290,40 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu }
           onLookup={showLookup}
           tab={tab}
           onTab={setTab}
+          morning={morningPapers(state)}
+          onOffer={(choice) => {
+            paper();
+            dispatch({ type: 'offer', choice });
+          }}
         />
       </main>
     </div>
   );
 }
 
+/** Whatever lies on the blotter with the morning paper. */
+function morningPapers(s: GameState): MorningPapers {
+  const units = unitsStamped(s.history).length;
+  const note =
+    units >= REPLACED_AT ? SECOND_NOTES.threeUnits
+    : units === REPLACED_AT - 1 ? SECOND_NOTES.twoUnits
+    : s.day === OFFER.day && s.offer === 'handed-in' ? SECOND_NOTES.handedIn
+    : null;
+  return { letter: s.day === OFFER.day && s.offer === null, envelope: s.credits.find((c) => c.kind === 'fee') ?? null, note };
+}
+
 /** What is being said at the window. */
 function speechAt(state: GameState, papers: GeneratedApplicant | null, decision: Decision | null, announced: boolean): string {
   if (!state.opened) return WINDOW_LINES.closed;
-  if (announced) return state.timeUp ? WINDOW_LINES.sentHome : WINDOW_LINES.finished;
+  if (announced) return state.timeUp ? WINDOW_LINES.sentHome : state.day === LAST_DAY ? WINDOW_LINES.humanityDay : WINDOW_LINES.finished;
   if (papers && decision) return exitLine(papers, decision);
   if (papers && state.timeUp) return WINDOW_LINES.timeUp;
   if (papers) return papers.remark;
   return WINDOW_LINES.empty;
 }
 
-/** What the cast say as they collect their papers. */
-const CAST_EXITS: Record<Exclude<CastId, keyof typeof REGULARS | 'twins'>, { accept: string; challenge: string }> = {
+/** What the cast say as they collect their papers; on Humanity Day, what the clerk's own stamp sounds like. */
+const CAST_EXITS: Record<Exclude<CastId, keyof typeof REGULARS | 'twins' | 'binns'>, { accept: string; challenge: string }> = {
   unit: UNIT_EXITS,
   pat: PAT.exits,
   patMother: PAT_MOTHER.exits,
@@ -311,11 +333,13 @@ const CAST_EXITS: Record<Exclude<CastId, keyof typeof REGULARS | 'twins'>, { acc
   cutout: CUTOUT.exits,
   clone: CLONE.exits,
   influencer: INFLUENCER.exits,
+  clerk: RENEWAL.exits,
 };
 
 /** What they say as they collect their papers. It never gives away whether the clerk was right. */
 function exitLine(a: GeneratedApplicant, decision: Decision): string {
   if (a.cast === 'twins') return TWINS[a.name === TWINS[0].name ? 0 : 1].exits[decision];
+  if (a.cast === 'binns') return UNIT_OWNERS[a.name === UNIT_OWNERS[0].name ? 0 : 1].back.exits[decision];
   if (a.cast && a.cast in REGULARS) return REGULARS[a.cast as keyof typeof REGULARS].exits[decision];
   if (a.cast) return CAST_EXITS[a.cast as keyof typeof CAST_EXITS][decision];
   if (a.name === FIRST_APPLICANT.name) return FIRST_APPLICANT.exits[decision];
@@ -355,6 +379,11 @@ function inspectView(
   const arriving = (['vouch', 'duplicate'] as const).find((rule) => RULE_DAYS[rule] === state.day);
   const tip = arriving && NEW_TOOL_TIPS[arriving];
   if (at === 0 && tip && !toolsUsed.includes(tip.tool)) return view(tip.text, 'tip');
+  // Likeness's letter, however the morning left it, until the first applicant is called.
+  if (state.day === OFFER.day && state.called === 0) {
+    if (state.offer === 'signed' && !state.opened) return view(OFFER_LETTER.signed, 'tip');
+    if (state.offer === null && state.opened) return view(OFFER_LETTER.drawer, 'tip');
+  }
   return view(null);
 }
 

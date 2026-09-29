@@ -10,6 +10,7 @@ import { GazettePage, WelcomeLetter } from './Gazette';
 import { InspectContext } from './Inspect';
 import { RegistryLookup, type Lookup } from './Registry';
 import type { Decided } from './week';
+import { Envelope, OfferLetter, SecondNote, type MorningPapers } from './Morning';
 import { CitationSlip, FilingSlip } from './Slips';
 import { StageScale } from './Stage';
 
@@ -53,6 +54,9 @@ type Props = {
   onLookup: (lookup: Lookup) => void;
   tab: 'rulebook' | 'registry';
   onTab: (tab: 'rulebook' | 'registry') => void;
+  /** What else is on the blotter with the morning paper. */
+  morning: MorningPapers;
+  onOffer: (choice: 'signed' | 'handed-in') => void;
 };
 
 /** The clerk's desk. Papers can be pushed around with the mouse; the stamps are on the right. */
@@ -72,6 +76,9 @@ export function Desk(p: Props) {
           }
         >
           {!p.opened && (p.gazette ? <GazettePage gazette={p.gazette} /> : <WelcomeLetter />)}
+          {!p.opened && p.morning.note && <SecondNote text={p.morning.note} />}
+          {!p.opened && p.morning.envelope && <Envelope credit={p.morning.envelope} />}
+          {!p.opened && p.morning.letter && <OfferLetter onSign={() => p.onOffer('signed')} onHandIn={() => p.onOffer('handed-in')} />}
           {p.papers && (
             <>
               <Paper key={`form-${p.visit}`} label="Profile card" className={p.returning ? 'paper-form returning' : 'paper-form'}>

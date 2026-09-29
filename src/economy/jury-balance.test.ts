@@ -101,9 +101,13 @@ describe('balance with the jury (20 seeded weeks per clerk)', () => {
     const ahead = SEEDS.filter((_, i) => results.hunch[i].savings > results.twoMistakes[i].savings).length;
     expect(behind).toBeGreaterThanOrEqual(18);
     expect(ahead).toBeGreaterThanOrEqual(18);
-    // It went to appeal at least once. A first jury nearly always finds a plain fault, so this clerk
-    // seldom has one to appeal; BALANCE_REPORT=1 prints how often, and what it won or lost.
-    expect(results.hunch.reduce((n, w) => n + w.appeals, 0)).toBeGreaterThan(0);
+  });
+
+  it('a clerk who never inspects does go to appeal, now and then: over 100 weeks, at least once', () => {
+    // A first jury nearly always finds a plain fault, so this clerk seldom has one to appeal: none in the
+    // 20 weeks above since Humanity Day came to one slip of the tongue (slice 5). BALANCE_REPORT=1 prints how often.
+    const weeks = Array.from({ length: 100 }, (_, i) => playWeek(i + 1, hunch));
+    expect(weeks.reduce((n, w) => n + w.appeals, 0)).toBeGreaterThan(0);
   });
 
   it('a careful clerk is never dismissed on a real fault, so never appeals', () => {

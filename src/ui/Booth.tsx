@@ -32,13 +32,15 @@ type Props = {
 /** Registry Window 3 from the clerk's side: the glass, whoever is behind it, and the controls. */
 export function Booth(p: Props) {
   const shutterDown = !p.opened || p.over;
+  // Humanity Day's last papers are the clerk's own: nobody walks up, and the glass holds a reflection.
+  const own = p.applicant?.cast === 'clerk';
   return (
     <section className="booth" aria-label="Window">
-      <div className="booth-glass">
+      <div className={own && !p.leaving ? 'booth-glass reflecting' : 'booth-glass'}>
         <div className="booth-room" />
         {p.applicant && (
-          <div key={p.visit} className={p.leaving ? 'visitor leaving' : 'visitor'}>
-            <PixelPortrait portrait={p.applicant.photo} scale={5} title={`${p.applicant.name}, at the window`} />
+          <div key={p.visit} className={['visitor', own ? 'reflection' : '', p.leaving ? 'leaving' : ''].filter(Boolean).join(' ')}>
+            <PixelPortrait portrait={p.applicant.photo} scale={5} title={own ? 'Your reflection in the glass' : `${p.applicant.name}, at the window`} />
           </div>
         )}
         <div className="glare" />
@@ -51,7 +53,7 @@ export function Booth(p: Props) {
         <div className="counter-slot" />
       </div>
 
-      <Speech key={`${p.visit}-${p.speech}`} text={p.speech} voice={p.applicant && !p.over ? voiceOf(p.applicant) : null} />
+      <Speech key={`${p.visit}-${p.speech}`} text={p.speech} voice={p.applicant && !p.over && !own ? voiceOf(p.applicant) : null} />
 
       <div className="hud">
         <div className="hud-cell">

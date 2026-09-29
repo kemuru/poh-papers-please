@@ -128,7 +128,6 @@ describe('the jury', () => {
       ['sign:no-sign', 'plain'],
       ['phrase:wrong-word', 'often'],
       ['photo:mirrored', 'often'],
-      ['human:machine', 'rare'],
       ['human:deepfake', 'rare'],
       // Tuned: two wrong characters, a voucher not registered or already vouching, a face on file.
       ['sign:two-wrong', 'rare'],
@@ -145,9 +144,24 @@ describe('the jury', () => {
       expect(seen.length, kind).toBeGreaterThan(10);
       expect(new Set(seen.map(visibility)), kind).toEqual(new Set([tier]));
     }
+    // A lamp as plainly as it shows (slice 5): the day 1 unit's bloom often, the glow of days 2 and 3
+    // sometimes, day 6's small lamp and day 7's slit rarely.
+    const lamps = new Map<string, Set<Tier>>();
+    for (const h of fakes) {
+      const v = h.violations.find((x) => x.rule === 'human' && x.problem === 'machine');
+      if (v?.rule !== 'human') continue;
+      lamps.set(`day ${h.day}`, (lamps.get(`day ${h.day}`) ?? new Set()).add(visibility(v)));
+    }
+    expect(Object.fromEntries([...lamps].map(([day, tiers]) => [day, [...tiers]]))).toEqual({
+      'day 1': ['often'],
+      'day 2': ['sometimes'],
+      'day 3': ['sometimes'],
+      'day 6': ['rare'],
+      'day 7': ['rare'],
+    });
   });
 
-  it('sees a lamp and a changing ear rarely, and a sign rarely up to three wrong characters, often from four', () => {
+  it('sees a small lamp or a slit and a changing ear rarely, and a sign rarely up to three wrong characters, often from four', () => {
     const wallet = `0x${'ab'.repeat(20)}`;
     const sign = (wrong: number[]): Violation => ({
       rule: 'sign',
@@ -156,7 +170,10 @@ describe('the jury', () => {
       wrong,
     });
     const table: [Violation, Tier][] = [
-      [{ rule: 'human', problem: 'machine', frame: 3 }, 'rare'],
+      [{ rule: 'human', problem: 'machine', frame: 3, lamp: 'small' }, 'rare'],
+      [{ rule: 'human', problem: 'machine', frame: 3, lamp: 'slit' }, 'rare'],
+      [{ rule: 'human', problem: 'machine', frame: 3, lamp: 'glow' }, 'sometimes'],
+      [{ rule: 'human', problem: 'machine', frame: 3, lamp: 'bloom' }, 'often'],
       [{ rule: 'human', problem: 'changes', frame: 3 }, 'rare'],
       [sign([7, 30]), 'rare'],
       [sign([7, 19, 30]), 'rare'],

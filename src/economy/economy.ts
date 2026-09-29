@@ -25,6 +25,19 @@ export const APPEALS = { fees: [10, 20], bonus: 10 } as const;
 
 export const STARTING_SAVINGS = 240;
 
+/**
+ * Likeness Robotics' partner programme (slice 5), on the desk on the morning of `day`. Signed, it pays
+ * `fee` for each unit the clerk stamps in, in an envelope the next morning; handed in, the Ministry pays
+ * a `commendation` that evening instead.
+ */
+export const OFFER = { day: 3, fee: 40, commendation: 30 } as const;
+
+/**
+ * Money that is not the shift's pay, on the statement of the day it arrives: Likeness's envelope, for
+ * the units named, or the Ministry's commendation.
+ */
+export type Credit = { kind: 'fee' | 'commendation'; count: number; each: number; for?: readonly string[] };
+
 /** Per day. Perfect play clears the bills by about 20 PNK a day; see balance.test.ts. */
 const RENT_BY_DAY = [30, 40, 50, 50, 60, 70, 40];
 const GAS_BY_DAY: readonly (readonly [number, number])[] = [[3, 7], [4, 8], [5, 9], [5, 9], [6, 10], [6, 10], [4, 8]];
@@ -139,19 +152,22 @@ export function billsFor(seed: number, day: number): Bill[] {
 export type DayEnd = {
   before: number;
   pay: ShiftPay;
+  /** Money in that is not pay: Likeness's envelope, a commendation. */
+  credits: readonly Credit[];
   bills: Bill[];
   after: number;
   /** Savings below zero at the end of any day from day 2. Nobody can lose on day 1. */
   fired: boolean;
-  /** Made it through the last day. */
+  /** Made it through the last day. Which letter that brings is src/economy/endings.ts's to say. */
   promoted: boolean;
 };
 
-/** Closes the books on a day: savings brought forward, plus the shift's pay, minus the bills. */
-export function endDay(savings: number, day: number, cases: readonly Case[], seed: number): DayEnd {
+/** Closes the books on a day: savings brought forward, plus the shift's pay and any credits, minus the bills. */
+export function endDay(savings: number, day: number, cases: readonly Case[], seed: number, credits: readonly Credit[] = []): DayEnd {
   const pay = payShift(cases);
   const bills = billsFor(seed, day);
-  const after = savings + pay.total - bills.reduce((sum, b) => sum + b.amount, 0);
+  const credited = credits.reduce((sum, c) => sum + c.count * c.each, 0);
+  const after = savings + pay.total + credited - bills.reduce((sum, b) => sum + b.amount, 0);
   const fired = day >= 2 && after < 0;
-  return { before: savings, pay, bills, after, fired, promoted: day === LAST_DAY && !fired };
+  return { before: savings, pay, credits, bills, after, fired, promoted: day === LAST_DAY && !fired };
 }

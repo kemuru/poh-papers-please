@@ -1,12 +1,15 @@
 // The week as the UI tracks it: which day, which screen, and what the clerk has done so far.
 // It only records player actions; judgments come from src/rules, hearings from src/court, money
 // from src/economy and the words from src/content through src/gen.
-import { CAST_RULINGS, CITATION_MEMOS, DISMISSED_NOTES, UNIT_MEMOS, UPHELD_NOTES } from '../content/verdicts';
+import { CLERK, PAT } from '../content/cast';
+import { CAST_RULINGS, CITATION_MEMOS, CLERK_MEMO, DISMISSED_NOTES, UNIT_MEMOS, UPHELD_NOTES } from '../content/verdicts';
 import { stamp } from '../court/court';
-import { citationFor, endDay, STARTING_SAVINGS, type Citation, type DayEnd } from '../economy/economy';
+import { citationFor, endDay, OFFER, STARTING_SAVINGS, type Citation, type Credit, type DayEnd } from '../economy/economy';
+import { endingTonight, gradeOf, type EndingId } from '../economy/endings';
 import type { GeneratedApplicant } from '../gen/applicant';
-import { DAYS, morning, morningRegistry } from '../gen/day';
-import { writeGazette, type Gazette, type Yesterday } from '../gen/gazette';
+import { DAYS, LAST_DAY, morning, morningRegistry, PAT_DAYS } from '../gen/day';
+import { writeGazette, type Gazette, type WeekInNumbers, type Yesterday } from '../gen/gazette';
+import type { WeekEnd } from '../gen/letters';
 import { freshLine } from '../gen/lines';
 import type { Decision, Outcome } from '../rules/judge';
 import type { Registry } from '../rules/types';
@@ -31,6 +34,25 @@ export type Ruling = {
   note: string | null;
   /** The case as heard so far, appeals included. */
   court: CourtCase;
+};
+
+/** A day of the week as its evening closed it: what the week's report, its letter and the copy of the week are made from. */
+export type DayLog = {
+  day: number;
+  /** Each applicant in queue order: stamped right or wrong, by the rulebook at the window, or sent home. */
+  marks: ('right' | 'wrong' | 'home')[];
+  /** Registered today, by the clerk's stamp or by the court: who, whether they broke a rule, whether a Likeness unit. */
+  registered: { name: string; broke: boolean; unit: boolean; by: 'stamp' | 'court' }[];
+  challenged: number;
+  upheld: number;
+  /** Stamped in though they broke a rule; challenged though they broke none. */
+  fooled: number;
+  wronged: number;
+  /** On Humanity Day: what became of the clerk's own renewal, and whoever vouched for it, if they went with it. */
+  self?: 'accepted' | 'upheld' | 'dismissed';
+  selfVoucher?: string;
+  /** Savings carried forward. */
+  savings: number;
 };
 
 /** What the court sat with at five o'clock, so an appeal can settle the day again from the same place. */
@@ -66,9 +88,19 @@ export type GameState = {
   shown: string[];
   /** Today's court, once it has sat. */
   bench: Bench | null;
+  /** Likeness's letter, from the morning of day 3: signed, handed in, or neither. */
+  offer: 'signed' | 'handed-in' | null;
+  /** Money due on today's statement that is not pay: Likeness's envelope, the Ministry's commendation. */
+  credits: Credit[];
+  /** The days so far, as their evenings closed them. */
+  history: DayLog[];
+  /** The letter the week ended with, once it has. */
+  ending: EndingId | null;
 };
 
 export type Action =
+  /** Day 3's morning: Likeness's letter, signed or handed to the supervisor. */
+  | { type: 'offer'; choice: 'signed' | 'handed-in' }
   | { type: 'open' }
   | { type: 'call' }
   | { type: 'decide'; applicant: GeneratedApplicant; decision: Decision; evidence?: Evidence | null }
@@ -97,6 +129,10 @@ export function startWeek(seed: number, day = 1): GameState {
     gazette,
     shown: gazette ? [gazette.headlineLine] : [],
     bench: null,
+    offer: null,
+    credits: [],
+    history: [],
+    ending: null,
   };
 }
 
@@ -108,6 +144,11 @@ export const shiftOver = (s: GameState) => s.timeUp || s.decided.length === DAYS
 
 export function reduce(s: GameState, action: Action): GameState {
   switch (action.type) {
+    case 'offer': {
+      if (s.phase !== 'shift' || s.opened || s.day !== OFFER.day || s.offer !== null) return s;
+      const commendation: Credit[] = action.choice === 'handed-in' ? [{ kind: 'commendation', count: 1, each: OFFER.commendation }] : [];
+      return { ...s, offer: action.choice, credits: [...s.credits, ...commendation] };
+    }
     case 'open':
       return s.phase === 'shift' ? { ...s, opened: true } : s;
     case 'call':
@@ -147,15 +188,29 @@ export function reduce(s: GameState, action: Action): GameState {
       return s.phase === 'court' ? { ...s, phase: 'statement' } : s;
     case 'next-day': {
       if (s.phase !== 'statement' || !s.end) return s;
-      if (s.end.fired || s.end.promoted) return { ...s, phase: 'ending', savings: s.end.after };
+      const log = dayLog(s, action.queue);
+      const history = [...s.history, log];
+      const ending = endingTonight({
+        fired: s.end.fired,
+        lastDay: s.day === LAST_DAY,
+        unitsStamped: unitsStamped(history).length,
+        cloneOnFile: cloneOnFile(s.registry),
+        clerkRegistered: s.registry.some((r) => r.name === CLERK.name && r.day === LAST_DAY),
+      });
+      if (ending) return { ...s, phase: 'ending', savings: s.end.after, history, ending };
       const day = s.day + 1;
-      const gazette = writeGazette(day, yesterday(s, action.queue), s.shown);
+      const gazette = writeGazette(day, yesterday(s, action.queue), s.shown, { handedIn: s.day === OFFER.day && s.offer === 'handed-in' });
+      // Signed, Likeness pays for every unit stamped in: an envelope on the desk in the morning.
+      const paid = s.offer === 'signed' ? log.registered.filter((r) => r.unit && r.by === 'stamp').map((r) => r.name) : [];
       return {
         ...startWeek(s.seed, day),
         savings: s.end.after,
         registry: morning(s.registry, day),
         gazette,
         shown: [...s.shown, gazette.headlineLine],
+        offer: s.offer,
+        credits: paid.length > 0 ? [{ kind: 'fee', count: paid.length, each: OFFER.fee, for: paid }] : [],
+        history,
       };
     }
   }
@@ -184,11 +239,73 @@ function sit(s: GameState, bench: Bench, cases: CourtCase[], printed: readonly R
     const court = d.decision === 'challenge' ? heardAt.get(i) : undefined;
     return { decision: d.decision, correct: d.outcome.correct, ...(court ? { court } : {}) };
   });
-  return { ...s, bench, registry: settled.registry, rulings, shown, end: endDay(s.savings, s.day, tally, s.seed) };
+  return { ...s, bench, registry: settled.registry, rulings, shown, end: endDay(s.savings, s.day, tally, s.seed, s.credits) };
 }
 
-/** The memo at the foot of a citation: a unit's is the day's, everyone else's the rule's. */
+/** The day as its evening closes it, for the week's log. */
+function dayLog(s: GameState, queue: GeneratedApplicant[]): DayLog {
+  const ruling = new Map(s.rulings.map((r) => [r.index, r]));
+  const registered = s.decided.flatMap((d, i): DayLog['registered'] => {
+    const by = d.decision === 'accept' ? 'stamp' : ruling.get(i)?.upheld === false ? 'court' : null;
+    return by ? [{ name: queue[i].name, broke: d.outcome.violations.length > 0, unit: queue[i].cast === 'unit', by }] : [];
+  });
+  const own = queue.findIndex((a) => a.cast === 'clerk');
+  const mine = own >= 0 ? s.decided[own] : undefined;
+  return {
+    day: s.day,
+    marks: queue.map((_, i) => (!s.decided[i] ? 'home' : s.decided[i].outcome.correct ? 'right' : 'wrong')),
+    registered,
+    challenged: s.decided.filter((d) => d.decision === 'challenge').length,
+    upheld: s.rulings.filter((r) => r.upheld).length,
+    fooled: s.decided.filter((d) => d.decision === 'accept' && !d.outcome.correct).length,
+    wronged: s.decided.filter((d) => d.decision === 'challenge' && !d.outcome.correct).length,
+    ...(mine ? { self: mine.decision === 'accept' ? 'accepted' : ruling.get(own)?.upheld ? 'upheld' : 'dismissed' } : {}),
+    ...(ruling.get(own)?.removed ? { selfVoucher: ruling.get(own)!.removed! } : {}),
+    savings: s.end!.after,
+  };
+}
+
+/** Likeness units the clerk stamped in this week, in order, with the day. */
+export const unitsStamped = (history: readonly DayLog[]) =>
+  history.flatMap((d) => d.registered.filter((r) => r.unit && r.by === 'stamp').map((r) => ({ name: r.name, day: d.day })));
+
+/** A Robin Hale registered this week before Humanity Day: the clone, whose day is day 6. The clerk's own renewal is day 7's. */
+const cloneOnFile = (registry: Registry) => registry.some((r) => r.name === CLERK.name && r.day >= 1 && r.day < LAST_DAY);
+
+/** What the letter and the special edition need to know about a week that has ended. */
+export function weekEnd(s: GameState): { end: WeekEnd; numbers: WeekInNumbers } | null {
+  if (s.phase !== 'ending' || !s.ending) return null;
+  const marks = s.history.flatMap((d) => d.marks);
+  const right = marks.filter((m) => m === 'right').length;
+  const stamped = marks.filter((m) => m !== 'home').length;
+  const pat = s.registry.filter((r) => r.name === PAT.name && r.day >= 1).map((r) => r.day);
+  return {
+    end: {
+      ending: s.ending,
+      day: s.day,
+      savings: s.savings,
+      grade: gradeOf(right, stamped, s.savings),
+      unitsStamped: unitsStamped(s.history),
+      self: s.history.find((d) => d.self)?.self ?? null,
+      voucherRemoved: s.history.find((d) => d.selfVoucher)?.selfVoucher ?? null,
+      fakesRegistered: s.history.reduce((n, d) => n + d.fooled, 0),
+      humansChallenged: s.history.reduce((n, d) => n + d.wronged, 0),
+      offer: s.offer,
+    },
+    numbers: {
+      registered: s.history.flatMap((d) => d.registered.map((r) => ({ name: r.name, day: d.day, unit: r.unit, by: r.by }))),
+      challenged: s.history.reduce((n, d) => n + d.challenged, 0),
+      upheld: s.history.reduce((n, d) => n + d.upheld, 0),
+      patDay: pat.length > 0 ? Math.min(...pat) : null,
+      patDays: PAT_DAYS,
+      handedIn: s.offer === 'handed-in',
+    },
+  };
+}
+
+/** The memo at the foot of a citation: a unit's is the day's, the clerk's own is the week's last, everyone else's the rule's. */
 function citationMemo(s: GameState, applicant: GeneratedApplicant, outcome: Outcome): string | null {
+  if (applicant.cast === 'clerk' && !s.shown.includes(CLERK_MEMO)) return CLERK_MEMO;
   if (applicant.cast === 'unit') {
     const line = UNIT_MEMOS[s.day - 1];
     if (line && !s.shown.includes(line)) return line;

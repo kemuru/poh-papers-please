@@ -39,17 +39,17 @@ describe('the week', () => {
     for (const a of scripted) expect(a.place, `seed ${a.seed}, day ${a.day}: ${a.name}`).toBeLessThan(a.length / 2);
   });
 
-  it('sends a Likeness unit once a day on days 1 to 6, with a new face each day, caught by one thing only', () => {
+  it('sends a Likeness unit once a day, with a new face each day, caught by one thing only', () => {
     for (const week of weeks) {
       const units = week.queues.map((queue) => queue.filter((a) => a.cast === 'unit'));
-      expect(units.map((u) => u.length)).toEqual([1, 1, 1, 1, 1, 1, 0]);
+      expect(units.map((u) => u.length)).toEqual([1, 1, 1, 1, 1, 1, 1]);
       // The lamp under Rule 0, but on day 4 its maker's vouch, and on day 5 its factory face, on file at Window 7.
-      expect(units.slice(0, 6).map(([u]) => u.planted.map((p) => `${p.rule}:${p.mistake}`))).toEqual([
-        ['human:machine'], ['human:machine'], ['human:machine'], ['vouch:company'], ['duplicate:unit'], ['human:machine'],
+      expect(units.map(([u]) => u.planted.map((p) => `${p.rule}:${p.mistake}`))).toEqual([
+        ['human:machine'], ['human:machine'], ['human:machine'], ['vouch:company'], ['duplicate:unit'], ['human:machine'], ['human:machine'],
       ]);
       // Nothing at the window gives a unit away: its photo is its own face, and each day's face is new.
-      units.slice(0, 6).forEach(([u], i) => expect(u.photo).toEqual(UNIT_FACES[i]));
-      expect(new Set(units.slice(0, 6).map(([u]) => JSON.stringify(u.photo.face))).size).toBe(6);
+      units.forEach(([u], i) => expect(u.photo).toEqual(UNIT_FACES[i]));
+      expect(new Set(units.map(([u]) => JSON.stringify(u.photo.face))).size).toBe(7);
     }
   });
 

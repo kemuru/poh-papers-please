@@ -1,9 +1,11 @@
 // The morning Gazette, written from what the clerk actually did yesterday. Pure: the same day,
 // the same yesterday and the same lines already printed give the same newspaper.
-import { countdown, HEADLINES, REPORT, RULE_NOTICES, SMALL_NOTICES, THREAD } from '../content/gazette';
+import { countdown, HEADLINES, LIKENESS_FINED, REPORT, RULE_NOTICES, SMALL_NOTICES, SPECIAL, THREAD } from '../content/gazette';
+import type { EndingId } from '../economy/endings';
 import { RULEBOOK } from '../content/rulebook';
 import type { Decision } from '../rules/judge';
 import type { RuleId } from '../rules/types';
+import { listOf } from './letters';
 import { freshLine } from './lines';
 
 /** One case from yesterday, as the Gazette's reporter heard it. */
@@ -34,9 +36,14 @@ export type Gazette = {
   small: string;
 };
 
-export function writeGazette(day: number, yesterday: Yesterday | null, shown: readonly string[]): Gazette {
+/**
+ * The morning paper. `handedIn`: yesterday the clerk handed Likeness's letter to the supervisor, and this
+ * morning Likeness has been fined for it, which leads the paper unless a unit was registered.
+ */
+export function writeGazette(day: number, yesterday: Yesterday | null, shown: readonly string[], { handedIn = false } = {}): Gazette {
   const { pool, name, rule, count } = story(yesterday);
-  const line = freshLine(HEADLINES[pool], shown, day) ?? freshLine(HEADLINES.clean, shown, day) ?? HEADLINES.clean[0];
+  const fined = handedIn && pool !== 'unit';
+  const line = fined ? LIKENESS_FINED.headline : (freshLine(HEADLINES[pool], shown, day) ?? freshLine(HEADLINES.clean, shown, day) ?? HEADLINES.clean[0]);
   const headline = line
     .replaceAll('{NAME}', name.toUpperCase())
     .replaceAll('{RULE}', rule ? String(RULEBOOK[rule].number) : '')
@@ -48,8 +55,45 @@ export function writeGazette(day: number, yesterday: Yesterday | null, shown: re
     headlineLine: line,
     report: yesterday ? report(yesterday) : [REPORT.none],
     notice: RULE_NOTICES[day] ?? '',
-    thread: THREAD[day] ?? '',
+    thread: [handedIn ? LIKENESS_FINED.thread : '', THREAD[day] ?? ''].filter(Boolean).join(' '),
     small: SMALL_NOTICES[day] ?? '',
+  };
+}
+
+/** Everyone registered this week, and how, as the special edition counts them. */
+export type WeekInNumbers = {
+  /** Registered this week, by the clerk's stamp or by the court, in order. */
+  registered: readonly { name: string; day: number; unit: boolean; by: 'stamp' | 'court' }[];
+  challenged: number;
+  upheld: number;
+  /** The day Pat was first registered, if Pat was. */
+  patDay: number | null;
+  /** The day of each of Pat's visits this week, first to last. */
+  patDays: readonly number[];
+  /** The clerk handed Likeness's letter in. */
+  handedIn: boolean;
+};
+
+export type Special = { masthead: string; headline: string; report: string[]; likeness: string; small: string; caption: string };
+
+/** The Gazette's last edition, beside the letter at the end of every week that reaches five o'clock on Humanity Day. */
+export function writeSpecial(ending: Exclude<EndingId, 'fired'>, w: WeekInNumbers): Special {
+  const fill = (line: string, values: Record<string, string | number>) =>
+    Object.entries(values).reduce((out, [key, value]) => out.replaceAll(`{${key}}`, String(value)), line);
+  const units = w.registered.filter((r) => r.unit).map((r) => fill(r.by === 'court' ? SPECIAL.unitByCourt : SPECIAL.unit, { name: r.name, day: r.day }));
+  const attempt = w.patDay === null ? -1 : w.patDays.indexOf(w.patDay);
+  const report = [
+    fill(SPECIAL.week, { registered: w.registered.length, challenged: w.challenged, upheld: w.upheld }),
+    units.length === 0 ? SPECIAL.noUnits : fill(SPECIAL.units, { units: listOf(units) }),
+    ...(attempt >= 0 ? [fill(SPECIAL.pat, { day: w.patDay!, attempt: SPECIAL.attempts[attempt] })] : []),
+  ];
+  return {
+    masthead: SPECIAL.masthead,
+    headline: SPECIAL.headline,
+    report,
+    likeness: [SPECIAL.likeness, w.handedIn ? SPECIAL.apology : ''].filter(Boolean).join(' '),
+    small: SPECIAL.price,
+    caption: SPECIAL.captions[ending],
   };
 }
 

@@ -31,7 +31,7 @@ describe('oracle check', () => {
     const phrase = applicants.flatMap((a) => a.planted.flatMap((p) => (p.rule === 'phrase' ? [p.mistake] : [])));
     expect(new Set(phrase)).toEqual(new Set(Object.keys(PHRASE_MISTAKES)));
     const cast = new Set(applicants.map((a) => a.cast));
-    const everyone = [null, 'unit', 'pat', 'patMother', 'twins', 'sybilFarm', 'agent', 'deepfake', 'cutout', 'clone', 'influencer', ...Object.keys(REGULARS)];
+    const everyone = [null, 'unit', 'pat', 'patMother', 'twins', 'sybilFarm', 'agent', 'deepfake', 'cutout', 'clone', 'influencer', 'binns', 'clerk', ...Object.keys(REGULARS)];
     expect(cast).toEqual(new Set(everyone));
   });
 

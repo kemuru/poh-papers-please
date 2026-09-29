@@ -58,7 +58,11 @@ export const UNIT_MEMOS: readonly string[] = [
   'Memo 4-L: A company is not a registered human, whatever its brochure says.',
   'Memo 5-L: The factory made this face twice. The registry takes each face once.',
   'Memo 0-P: Likeness Robotics has asked what the income is per unit. The Ministry has not replied.',
+  'Memo 0-Q: Likeness Robotics had resolved all known issues. This was not one of the known ones.',
 ];
+
+/** The memo on the week's last citation, if the clerk registers their own renewal. */
+export const CLERK_MEMO = 'Memo 1-Z: You registered a clerk.';
 
 /** A Rule 0 citation reprints the video. "{n}" is the frame its evidence names, "{time}" when it was taken. */
 export const CITATION_FILM = {
@@ -111,6 +115,7 @@ export const CAST_RULINGS: Record<CastId, { upheld?: readonly string[]; dismisse
       'Likeness Robotics sent a letter of support. The court has asked it to stop sending letters.',
       'The court was shown the registration at Window 7: the same face, under another name.',
       'The applicant thanked the court and asked to be told the outcome by email.',
+      'The court asked the applicant to keep its eyes open for the rest of the hearing. It did, without difficulty.',
     ],
   },
   brenda: { dismissed: ['The court examined the applicant closely and found nothing at all. It was unsettling.'] },
@@ -154,26 +159,126 @@ export const CAST_RULINGS: Record<CastId, { upheld?: readonly string[]; dismisse
     upheld: ['The court compared the photograph with the video. The court preferred the photograph, and upheld the challenge anyway.'],
     dismissed: ['The applicant has asked if the court would like to follow her.'],
   },
+  binns: {
+    upheld: ['The court notes that the robots have been sold, and that this does not change the application.'],
+    dismissed: ['The court heard that the robots had been sold. It did not ask to whom.'],
+  },
+  clerk: {
+    upheld: ['The court asked the applicant what they were. The applicant said "a clerk" again, and stamped the ruling themselves.'],
+    dismissed: ['The court found the applicant human, on balance. The applicant asked the court to look again.'],
+  },
 };
 
 export const EMPTY_COURT = 'No challenges were filed today. The court has gone home early.';
 
-/** The letters at the end. "{day}" is the day it happened. */
+/**
+ * The letters at the end of the week, one per ending (notes/game-design.md, Endings). Each adds up what
+ * this week did: "{day}", "{savings}", "{units}", "{fakes}" and "{humans}" are filled from the run, and a
+ * line that is an object is chosen by what the clerk did with their own renewal. Human Resources reports;
+ * it does not joke.
+ */
 export const ENDINGS = {
   fired: {
     title: 'Notice of termination',
+    stamp: 'Terminated',
     lines: [
-      'Your savings fell below zero at the end of day {day}.',
+      'Your savings fell below zero at the end of day {day}: {savings} PNK.',
+      '{costs}',
       'The Ministry cannot employ a clerk who cannot afford the Ministry.',
       'Please return your stamps. The green one first.',
     ],
   },
+  replaced: {
+    title: 'Notice of replacement',
+    stamp: 'Replaced',
+    lines: [
+      'This week you stamped {count} home robots into the registry: {units}.',
+      'The Ministry has concluded that Window 3 is being run for Likeness Robotics, and has asked Likeness Robotics to run it.',
+      'A unit in your likeness takes your chair at nine on Monday. Its papers are in order.',
+      'Please leave your lanyard on the desk.',
+    ],
+  },
+  superseded: {
+    title: 'Notice of duplication',
+    stamp: 'Superseded',
+    lines: [
+      'On day 6 the registry took in Robin Hale, who has your name, your face and a better haircut.',
+      {
+        accepted: 'At five o’clock you registered yourself as well. That registration has been removed.',
+        upheld: 'At five o’clock you challenged your own renewal, and the court agreed.',
+        dismissed: 'At five o’clock you challenged your own renewal, and the court registered you. That registration has been removed.',
+      },
+      '{voucherRemoved}',
+      'The registry takes each face once, and keeps the registration it had first. The Robin Hale on file starts at Window 3 on Monday.',
+      'Please clear the desk by five and leave the stamps. He knows where they go.',
+    ],
+    grade: 'Grade: Clerk, {grade} Class, awarded to Robin Hale.',
+  },
+  reclassified: {
+    title: 'Notice of reclassification',
+    stamp: 'Reclassified',
+    lines: [
+      'At five o’clock the Humanity Court upheld your challenge to your own renewal. In your video you certify that you are a real clerk.',
+      '{voucherRemoved}',
+      'The registry is for humans. You have been reclassified as registry equipment, with immediate effect, and added to the inventory of Window 3.',
+      'Your salary continues. Equipment is not eligible for the income.',
+      'Window 3 opens at nine on Monday. Please be at it.',
+    ],
+    grade: 'Grade: Equipment, {grade} Class.',
+  },
   promoted: {
     title: 'Notice of promotion',
+    stamp: 'Promoted',
     lines: [
       'You have completed seven days at Window 3 with your savings intact.',
+      {
+        accepted: 'Your own renewal was registered at five o’clock, by you. A note has been placed on your file: “Registered a clerk.”',
+        dismissed: 'You challenged your own renewal, and the Humanity Court found you human. The Ministry accepts its finding, and has asked it not to look again.',
+      },
       'You are promoted to Window 2, with immediate effect.',
       'Window 2 has left the Ministry. The promotion stands.',
     ],
+    grade: 'Grade: Clerk, {grade} Class.',
   },
 } as const;
+
+/**
+ * In the letter, where the clerk's own challenge was upheld: whoever vouched for the clerk went with
+ * them, as the rulebook's Rule 4 says of every upheld challenge. Usually the week's first registration.
+ */
+export const VOUCHER_REMOVED = {
+  line: '{voucher}, who vouched for you, has been removed from the registry with you, as the rulebook says.',
+  first: 'She was the first person you registered this week.',
+};
+
+/** What cost a fired clerk their savings, as their letter puts it. "{fakes}" and "{humans}" count applicants. */
+export const FIRED_COSTS = {
+  both: 'This week you registered {fakes} who broke a rule, and challenged {humans} who broke none.',
+  fakes: 'This week you registered {fakes} who broke a rule.',
+  humans: 'This week you challenged {humans} who broke no rule.',
+};
+
+/** The last line of a letter, if Likeness's offer has a bearing on it. */
+export const LETTER_NOTES = {
+  handedIn: 'Your commendation of day 3 is on file.',
+  signed: 'A signed letter from Likeness Robotics was found in your drawer. It has been filed.',
+  signedReplaced: 'Your partner fees will now be paid to the unit.',
+};
+
+/** Clipped to a Humanity Day letter when the clerk signed Likeness's offer and stamped in one or two units. */
+export const HEADHUNTED = {
+  head: 'Likeness Robotics Ltd · Partner programme',
+  title: 'An offer',
+  lines: [
+    'Dear Robin Hale,',
+    'Thank you for your partnership this week: {units}.',
+    'We would like to offer you the position of Head of Human Relations, from Monday. The position is not eligible for the income. Neither are we.',
+  ],
+  /** To the Ministry, when the clerk has become its equipment. */
+  equipment: [
+    'Dear Ministry,',
+    'Thank you for your clerk’s partnership this week: {units}.',
+    'We understand the clerk is now equipment. We would like to buy it.',
+  ],
+  sign: 'Likeness Robotics Ltd, a company',
+};

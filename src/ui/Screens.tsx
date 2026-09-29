@@ -1,16 +1,22 @@
 import { useEffect, useRef, useState, type AnimationEvent } from 'react';
+import { CREDITS } from '../content/bills';
 import { STATEMENT_FOOTERS } from '../content/hall';
 import { MENU } from '../content/menu';
-import { EMPTY_COURT, ENDINGS } from '../content/verdicts';
+import { GAZETTE_TITLE, VACANCY } from '../content/gazette';
+import { CLERK_PORTRAIT, CLONE_PORTRAIT } from '../content/portraits';
+import { EMPTY_COURT } from '../content/verdicts';
+import type { EndingId } from '../economy/endings';
+import { writeSpecial, type Special } from '../gen/gazette';
+import { writeClip, writeLetter } from '../gen/letters';
 import { PAY, payLines, type DayEnd, type PayLine } from '../economy/economy';
 import { RULEBOOK } from '../content/rulebook';
 import type { GeneratedApplicant } from '../gen/applicant';
-import { generatePortrait } from '../gen/portrait';
+import { generatePortrait, type Portrait } from '../gen/portrait';
 import { appealFee, JURY_SIZES, type Round } from './court';
 import { BUBBLES, COURT_SESSION, HUNCH_LINE, JUROR_NAMES } from '../content/court';
 import { asPointed, evidenceLine, evidenceWords } from './evidence';
 import { pick } from './Slips';
-import type { Ruling } from './week';
+import { weekEnd, type GameState, type Ruling } from './week';
 import { PixelPortrait } from './PixelPortrait';
 import { caseNumber } from './Shift';
 import { thunk, tick } from './sound';
@@ -333,6 +339,7 @@ export function Statement({ day, end, unprocessed, onNext }: { day: number; end:
     ...payLines(pay)
       .filter((line) => line.kind === 'registrations' || line.count > 0 || (line.kind === 'fines' && pay.warnings > 0))
       .map((line) => ({ label: label(line), amount: line.amount })),
+    ...end.credits.map((c) => ({ label: c.kind === 'fee' ? `${CREDITS.fee}, ${c.count} × ${c.each}` : CREDITS.commendation, amount: c.count * c.each })),
     ...(unprocessed ? [{ label: `Sent home unprocessed: ${unprocessed}`, amount: null }] : []),
     ...end.bills.map((b) => ({ label: b.item, amount: -b.amount })),
     { label: 'Savings carried forward', amount: end.after, kind: 'total' },
@@ -381,29 +388,107 @@ const PAY_LABELS: Record<Exclude<PayLine['kind'], 'fines'>, string> = {
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 const signed = (amount: number, kind?: string) => (kind ? `${amount} PNK` : amount > 0 ? `+${amount}` : String(amount));
 
-export function Ending({ kind, day, savings, onNewWeek, onDayAgain }: { kind: 'fired' | 'promoted'; day: number; savings: number; onNewWeek: () => void; onDayAgain: () => void }) {
-  const letter = ENDINGS[kind];
+/** How the week ended, laid out on the desk: Human Resources' letter, anything clipped to it, and the Gazette's last edition. */
+export function Ending({ state, onNewWeek, onDayAgain }: { state: GameState; onNewWeek: () => void; onDayAgain: () => void }) {
+  const week = weekEnd(state);
+  if (!week) return null;
+  const { ending } = week.end;
+  const letter = writeLetter(week.end);
+  const clip = writeClip(week.end);
+  const special = ending === 'fired' ? null : writeSpecial(ending, week.numbers);
   return (
-    <main className="screen ending-screen">
-      <article className={`notice notice-${kind}`} aria-label="Notice">
-        <p className="notice-head">Ministry of Humanity · Human Resources</p>
-        <h2>{letter.title}</h2>
-        {letter.lines.map((line) => (
-          <p key={line}>{line.replace('{day}', String(day))}</p>
-        ))}
-        <p className="notice-savings">Final savings: {savings} PNK</p>
-        <div className="notice-stamp">{kind === 'fired' ? 'Terminated' : 'Promoted'}</div>
-        <div className="notice-actions">
-          <button className="screen-button" onClick={onNewWeek}>
-            {MENU.newWeek}
-          </button>
-          {kind === 'fired' && (
-            <button className="menu-link" onClick={onDayAgain}>
-              {MENU.dayAgain.replace('{day}', String(day))}
-            </button>
+    <main className={`screen ending-screen ending-${ending}`}>
+      <div className="ending-desk" data-testid="ending" data-ending={ending}>
+        <div className="ending-letters">
+        <article className={`notice notice-${ending}`} aria-label="Notice">
+          <p className="notice-head">Ministry of Humanity · Human Resources</p>
+          <h2>{letter.title}</h2>
+          {letter.lines.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+          {letter.grade && (
+            <p className="notice-grade" data-testid="grade">
+              {letter.grade}
+            </p>
           )}
+          {letter.note && <p className="notice-note">{letter.note}</p>}
+          <p className="notice-savings">Final savings: {state.savings} PNK</p>
+          <div className="notice-stamp">{letter.stamp}</div>
+        </article>
+        {clip && (
+          <aside className="notice-clip" aria-label={clip.head} data-testid="headhunted">
+            <p className="notice-clip-head">{clip.head}</p>
+            <h3>{clip.title}</h3>
+            {clip.lines.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+            <p className="notice-clip-sign">{clip.sign}</p>
+          </aside>
+        )}
         </div>
-      </article>
+        <div className="ending-side">
+          {special ? <SpecialEdition special={special} ending={ending as Exclude<EndingId, 'fired'>} /> : <p className="classified">{VACANCY}</p>}
+          <div className="notice-actions ending-actions">
+            <button className="screen-button" onClick={onNewWeek}>
+              {MENU.newWeek}
+            </button>
+            {ending === 'fired' && (
+              <button className="menu-link" onClick={onDayAgain}>
+                {MENU.dayAgain.replace('{day}', String(state.day))}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
     </main>
+  );
+}
+
+/** The unit Likeness sent to take the clerk's chair: the clerk's face, and the night lamp every unit has. */
+const IN_YOUR_LIKENESS: Portrait = { ...CLERK_PORTRAIT, species: 'android', lamp: 'glow' };
+
+/** The Gazette's last edition: the income, told once, the week in numbers, and a photograph. */
+function SpecialEdition({ special, ending }: { special: Special; ending: Exclude<EndingId, 'fired'> }) {
+  return (
+    <article className="gazette special" aria-label="The Registry Gazette, Humanity Day special" data-testid="special">
+      <header className="gazette-mast">
+        <span>Day 7</span>
+        <h2>{GAZETTE_TITLE}</h2>
+        <span>{special.masthead}</span>
+      </header>
+      <h3 className="gazette-headline" data-testid="special-headline">
+        {special.headline}
+      </h3>
+      <div className="special-body">
+        <figure className={`special-photo photo-${ending}`}>
+          {ending === 'replaced' ? (
+            <span className="cctv" role="img" aria-label="The hall camera over Window 3: a unit in the clerk's chair. It blinks, and a light shows between its brows.">
+              <span className="cctv-frame cctv-open">
+                <PixelPortrait portrait={IN_YOUR_LIKENESS} scale={3} background="#26302a" />
+              </span>
+              <span className="cctv-frame cctv-shut">
+                <PixelPortrait portrait={IN_YOUR_LIKENESS} eyes="closed" scale={3} background="#26302a" />
+              </span>
+              <span className="cctv-stamp">CAM 2 · 17:04</span>
+            </span>
+          ) : (
+            <span className="press-photo">
+              <PixelPortrait portrait={ending === 'superseded' ? CLONE_PORTRAIT : CLERK_PORTRAIT} scale={3} background="#cfd3cf" title={special.caption} />
+              {ending === 'reclassified' && <span className="asset-tag">3-0417</span>}
+            </span>
+          )}
+          <figcaption>{special.caption}</figcaption>
+        </figure>
+        <section className="special-report">
+          {special.report.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+          <p>{special.likeness}</p>
+        </section>
+      </div>
+      <footer className="gazette-foot">
+        <p className="gazette-small">{special.small}</p>
+      </footer>
+    </article>
   );
 }

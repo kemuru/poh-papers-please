@@ -7,6 +7,7 @@
 import { APPEALS } from '../economy/economy';
 import { createRng, type Rng } from '../gen/rng';
 import { register, remove } from '../rules/registry';
+import type { LampSize } from '../gen/portrait';
 import type { Registry, RuleId, Violation } from '../rules/types';
 import { JUROR_POOL, JURY_SIZES, type CourtCase, type CourtEngine, type Reason, type Round, type Seat } from './types';
 
@@ -49,16 +50,23 @@ const MANY_MISSING = 3;
 const FEW_WRONG = 3;
 
 /**
+ * How plainly a unit's lamp shows to a juror who looks for it: as plainly as it shows on the desk. The
+ * day 1 unit's bloom often, the glow of days 2 and 3 sometimes, the small lamp and the slit rarely.
+ */
+const LAMP_TIERS: Record<LampSize, Tier> = { bloom: 'often', glow: 'sometimes', small: 'rare', slit: 'rare' };
+
+/**
  * How visible a fault is. Silence, a square of dots, no sign, nobody vouching, a year before Christ
  * and a version number for a year are plain; a wrong word, a mirror, someone else's address often seen; a typo in the year, no
  * blink, another face, a picture held up and the generator's mark sometimes; a lamp lit only in the
- * frames with the eyes shut, an ear that changes, two wrong characters, and whatever needs the
- * registry (a voucher not registered or already vouching, a face on file) rarely.
+ * frames with the eyes shut as its size allows (LAMP_TIERS); an ear that changes, two wrong characters,
+ * and whatever needs the registry (a voucher not registered or already vouching, a face on file) rarely.
  */
 export function visibility(v: Violation): Tier {
   switch (v.rule) {
     case 'human':
-      return v.problem === 'machine' || v.problem === 'changes' ? 'rare' : 'sometimes';
+      if (v.problem === 'machine') return LAMP_TIERS[v.lamp ?? 'small'];
+      return v.problem === 'changes' ? 'rare' : 'sometimes';
     case 'phrase':
       return v.heard.length === 0 || v.expected.filter((m) => !m.ok).length >= MANY_MISSING ? 'plain' : 'often';
     case 'photo':
