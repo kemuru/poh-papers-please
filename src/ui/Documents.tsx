@@ -1,5 +1,6 @@
-import { Fragment, type ReactNode } from 'react';
-import { RULEBOOK } from '../content/rulebook';
+import { Fragment, useMemo, type ReactNode } from 'react';
+import { figureLamp, SPECIMEN } from '../content/portraits';
+import { RULEBOOK, type Figure } from '../content/rulebook';
 import { frameFaces, framePoses } from '../rules/face';
 import { RULE_DAYS, type Decision } from '../rules/judge';
 import { shortAddress } from '../rules/sign';
@@ -10,7 +11,7 @@ import { PixelPortrait } from './PixelPortrait';
 
 const PHOTO_BG = '#cfd8dc';
 const VIDEO_BG = '#8f9b9e';
-const FRAME_TIMES = ['00:01', '00:03', '00:05'];
+export const FRAME_TIMES = ['00:01', '00:03', '00:05'];
 
 // A click leaves the focus where it was, so Space still pulls the lever.
 const keepFocus = (e: { preventDefault: () => void }) => e.preventDefault();
@@ -96,12 +97,25 @@ export function ProfileCard({
   );
 }
 
+const boardOf = (video: Video) => (!video.sign ? undefined : video.sign.kind === 'qr' ? ('qr' as const) : video.sign.phone ? ('phone' as const) : ('writing' as const));
+
+/**
+ * One frame of the video as the camera took it: posed as Rule 0 reads it, a unit's lamp drawn where its eyes
+ * are shut (the twin never has one). `title` names it on the desk; the citation's reprint is not named.
+ */
+export function FramePicture({ video, frame, title }: { video: Video; frame: number; title?: string }) {
+  const pose = framePoses(video)[frame - 1];
+  const portrait = { ...frameFaces(video)[frame - 1], board: boardOf(video), ...(video.generated ? { mark: true as const } : {}), ...(video.lamp ? { lamp: video.lamp } : {}) };
+  return (
+    <span className="frame-picture">
+      <PixelPortrait portrait={portrait} {...pose} scale={2} background={VIDEO_BG} title={title} />
+      {video.with && <PixelPortrait portrait={video.with} {...pose} scale={2} background={VIDEO_BG} title={title && `${title}, beside them`} />}
+    </span>
+  );
+}
+
 export function VideoStrip({ video, onSearchFace }: { video: Video; /** From day 4: search the registry for the face in the video. */ onSearchFace?: () => void }) {
   const spoke = video.transcript.trim() !== '';
-  const faces = frameFaces(video);
-  const board = !video.sign ? undefined : video.sign.kind === 'qr' ? ('qr' as const) : video.sign.phone ? ('phone' as const) : ('writing' as const);
-  // Posed as Rule 0 reads them; a unit's lamp is drawn in the frames with the eyes shut. The twin never has one.
-  const frames = framePoses(video).map((pose, i) => ({ time: FRAME_TIMES[i], pose }));
   return (
     <div className="doc video">
       <div className="doc-head">
@@ -110,24 +124,10 @@ export function VideoStrip({ video, onSearchFace }: { video: Video; /** From day
       </div>
       <div className="video-row">
         <div className="film">
-          {frames.map(({ time, pose }, i) => (
+          {FRAME_TIMES.map((time, i) => (
             <Inspectable key={time} item={{ kind: 'frame', frame: i + 1 }} label={`frame ${i + 1}`}>
               <figure className={video.with ? 'frame pair' : 'frame'} data-testid={`frame-${i + 1}`}>
-                <span className="frame-picture">
-                  <PixelPortrait
-                    portrait={{
-                      ...faces[i],
-                      board,
-                      ...(video.generated ? { mark: true as const } : {}),
-                      ...(video.lamp ? { lamp: video.lamp } : {}),
-                    }}
-                    {...pose}
-                    scale={2}
-                    background={VIDEO_BG}
-                    title={`Frame ${i + 1}`}
-                  />
-                  {video.with && <PixelPortrait portrait={video.with} {...pose} scale={2} background={VIDEO_BG} title={`Frame ${i + 1}, beside them`} />}
-                </span>
+                <FramePicture video={video} frame={i + 1} title={`Frame ${i + 1}`} />
                 <figcaption>{time}</figcaption>
               </figure>
             </Inspectable>
@@ -191,13 +191,13 @@ export function RulebookCard({ rulebook, day, page, onPage }: { rulebook: Rulebo
       </div>
       {/* Every page is in the book; only the open one shows. */}
       {rulebook.map((id) => (
-        <RulePage key={id} id={id} open={id === page} isNew={RULE_DAYS[id] === day} />
+        <RulePage key={id} id={id} open={id === page} isNew={RULE_DAYS[id] === day} day={day} />
       ))}
     </div>
   );
 }
 
-function RulePage({ id, open, isNew }: { id: RuleId; open: boolean; isNew: boolean }) {
+function RulePage({ id, open, isNew, day }: { id: RuleId; open: boolean; isNew: boolean; day: number }) {
   const rule = RULEBOOK[id];
   return (
     <article className="rule" hidden={!open} role="tabpanel">
@@ -219,14 +219,57 @@ function RulePage({ id, open, isNew }: { id: RuleId; open: boolean; isNew: boole
         )}
         {rule.checks && (
           <ul className="rule-checks">
-            {rule.checks.map((check) => (
-              <li key={check}>{check}</li>
+            {rule.checks.map((check, i) => (
+              <li key={check}>
+                {check}
+                {i === 0 && rule.figure && <RuleFigure figure={rule.figure} day={day} />}
+              </li>
             ))}
           </ul>
         )}
         <p className="rule-note">{rule.note}</p>
       </Inspectable>
     </article>
+  );
+}
+
+/** Where Fig. 0's stills are cut from the 40×48 portrait: crown to mouth, cheek to cheek, and every pixel a lamp can touch (rule0Figure.test.tsx). */
+export const FIGURE_CROP = { x: 9, y: 7, width: 22, height: 22 };
+
+/** Fig. 0: the specimen face as a video frame shows it, eyes shut, without and with a light as big as today's unit's. */
+function RuleFigure({ figure, day }: { figure: Figure; day: number }) {
+  const lit = useMemo(() => ({ ...SPECIMEN, lamp: figureLamp(day) }), [day]);
+  const plates = [
+    { mark: 'ok', caption: figure.ok, portrait: SPECIMEN },
+    { mark: 'not', caption: figure.not, portrait: lit },
+  ] as const;
+  return (
+    <figure className="rule-figure" role="img" aria-label={figure.label}>
+      {plates.map(({ mark, caption, portrait }) => (
+        <span key={mark} className="rule-plate">
+          <span className="rule-still">
+            <PixelPortrait portrait={portrait} eyes="closed" scale={2} background={VIDEO_BG} crop={FIGURE_CROP} />
+            <RuleMark mark={mark} />
+          </span>
+          <span className="rule-caption">
+            <b>{caption[0]}</b>
+            {caption.slice(1).map((line) => (
+              <span key={line}>{line}</span>
+            ))}
+          </span>
+        </span>
+      ))}
+    </figure>
+  );
+}
+
+/** ✓ or ✗, drawn, not typed: ink on paper for allowed, paper on ink for not. The caption says it in words too. */
+function RuleMark({ mark }: { mark: 'ok' | 'not' }) {
+  return (
+    <svg className={`rule-mark rule-mark-${mark}`} viewBox="0 0 14 14" width="14" height="14" aria-hidden="true">
+      <circle cx="7" cy="7" r="6.25" />
+      <path d={mark === 'ok' ? 'M3.8 7.2l2.2 2.3 4.3-4.8' : 'M4.5 4.5l5 5M9.5 4.5l-5 5'} />
+    </svg>
   );
 }
 

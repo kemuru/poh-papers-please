@@ -30,6 +30,9 @@ const OPENING_MINUTES = 8 * 60;
 
 export const caseNumber = (day: number, index: number) => `${day}-${String(index + 1).padStart(3, '0')}`;
 
+/** Day 1's second applicant is the one guided inspection of the week. */
+const guided = (day: number, at: number | null) => day === 1 && at === 1;
+
 /**
  * What Inspect found, as the challenge files it: the registry's record of the voucher names them as
  * the form does, not as the clerk typed the search.
@@ -73,8 +76,11 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu }
     plan.shiftSeconds === null ? (state.decided.length / queue.length) * OPENING_MINUTES : (elapsed / plan.shiftSeconds) * OPENING_MINUTES;
   const serving = DAYS.slice(0, state.day - 1).reduce((sum, d) => sum + d.applicants, 0) + state.called;
 
-  // The rulebook falls open at the day's new rule; on Humanity Day, at Rule 1, after the cover rule.
-  const [page, setPage] = useState<RuleId>(rulebook.find((r) => RULE_DAYS[r] === state.day) ?? rulebook.find((r) => RULE_DAYS[r] === 1)!);
+  // The rulebook falls open at the day's new rule; on Humanity Day, at Rule 1, after the cover rule. On day 1 it
+  // falls open at Rule 0, where the welcome letter and the sticky note start, and every call puts it back there.
+  const [page, setPage] = useState<RuleId>(() =>
+    state.day === 1 ? 'human' : (rulebook.find((r) => RULE_DAYS[r] === state.day) ?? rulebook.find((r) => RULE_DAYS[r] === 1)!),
+  );
   const [tab, setTab] = useState<'rulebook' | 'registry'>('rulebook');
   const [inspecting, setInspecting] = useState(false);
   const [picked, setPicked] = useState<Item | null>(null);
@@ -92,6 +98,8 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu }
     setEvidence(null);
     setLookup(null);
     setToolsUsed([]);
+    // Day 1: whoever is called, the book is back at Rule 0.
+    if (state.day === 1) setPage('human');
   }
 
   const pickItem = (item: Item) => {
@@ -111,16 +119,18 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu }
     if (finding) blip(finding.inForce ? 180 : 320);
     else tick();
   };
-  // Inspecting needs someone at the window: with nobody there, nothing on the desk could answer.
-  const toggleInspect = () => {
-    if (at === null && !inspecting) return;
-    setInspecting((on) => !on);
-    setPicked(null);
-  };
   const turnTo = (rule: RuleId) => {
     if (!rulebook.includes(rule)) return;
     setPage(rule);
     setTab('rulebook');
+  };
+  // Inspecting needs someone at the window: with nobody there, nothing on the desk could answer.
+  const toggleInspect = () => {
+    if (at === null && !inspecting) return;
+    // The guided inspection points at Rule 1: the book turns there as Inspect comes on.
+    if (!inspecting && guided(state.day, at)) turnTo('phrase');
+    setInspecting((on) => !on);
+    setPicked(null);
   };
 
   const stampedAt = useRef(0);
@@ -326,12 +336,12 @@ function inspectView(
 ): InspectView {
   const flagged = last?.finding ? last.items : [];
   const view = (message: string | null, tone: InspectView['tone'] = 'idle'): InspectView => ({ on, picked, flagged, message, tone });
-  // Day 1's second applicant is the one guided inspection of the week.
-  const tutorial = state.day === 1 && at === 1;
+  const tutorial = guided(state.day, at);
   if (last?.finding) {
     const { rule, inForce } = last.finding;
     if (!inForce) return view(INSPECT_LINES.notInForce, 'none');
-    const a = queue[at ?? 0];
+    // Whoever's papers are on the desk: after the stamp nobody is at the window, but the papers are still there.
+    const a = queue[at ?? state.called - 1];
     const found = judge(a, rulebookForDay(state.day), state.registry).violations.find((v) => v.rule === rule);
     const broke = found && asPointed(found, { rule, items: last.items }, a.video);
     const detail = broke ? ` ${evidenceLine(broke).replace(/^./, (c) => c.toUpperCase())}` : '';

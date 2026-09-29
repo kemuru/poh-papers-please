@@ -48,6 +48,30 @@ export const UNIT_LAMPS: readonly ({ lamp: LampSize; nervous?: true } | null)[] 
   { lamp: 'small' },
 ];
 
+/**
+ * The face in the rulebook's Fig. 0: the Ministry's specimen, nobody in the queue, with no fake's hair
+ * either. It was short and dark brown until that turned out to be every week's day 2 unit
+ * (src/ui/rule0Figure.test.tsx).
+ */
+export const SPECIMEN: Portrait = {
+  species: 'human',
+  face: { skin: 'olive', shape: 'oval', eyes: 'round', eyeColor: 'dark', brows: 'flat', nose: 'straight', mouth: 'neutral', ears: 'normal', age: 'adult', mark: 'none' },
+  hair: 'short',
+  hairColor: 'black',
+  facialHair: 'none',
+  outfit: 'shirt',
+  outfitColor: 'grey',
+  accessories: [],
+};
+
+/**
+ * Fig. 0-2's night lamp: the day's unit's, so the example is never bigger or smaller than the desk's; the
+ * smallest on a day without one (from day 4 the Gazette has reported the dimming). Day 7's unit has a lit
+ * slit, which LAMPS does not have yet: until slice 5 adds it, day 7 shows the small lamp, and slice 5 must
+ * give figureLamp(7) the slit.
+ */
+export const figureLamp = (day: number): LampSize => UNIT_LAMPS[day - 1]?.lamp ?? 'small';
+
 /** The unit Window 7 registered last month, in its own clothes: the factory made its face twice, and the day 5 unit has the other. */
 export const UNIT_ON_FILE: Portrait = { ...UNIT_FACES[4], hair: 'long', outfit: 'shirt', outfitColor: 'forest' };
 
