@@ -4,8 +4,8 @@
 // did, the save is set aside and a new week begins.
 import type { GeneratedApplicant } from '../gen/applicant';
 import { generateWeek, LAST_DAY } from '../gen/day';
-import type { Item } from '../rules/inspect';
-import type { Decision } from '../rules/judge';
+import { inspect, sameItem, type Item } from '../rules/inspect';
+import { rulebookForDay, type Decision } from '../rules/judge';
 import type { RuleId } from '../rules/types';
 import type { Evidence } from './court';
 import { atWindow, reduce, startWeek, type Action, type GameState } from './week';
@@ -86,7 +86,8 @@ function isItem(item: unknown): item is Item {
   if (typeof item !== 'object' || item === null) return false;
   const i = item as Record<string, unknown>;
   if (typeof i.kind !== 'string') return false;
-  if (i.kind === 'frame') return whole(i.frame);
+  // The video has three frames, as frameFaces shows them.
+  if (i.kind === 'frame') return i.frame === 1 || i.frame === 2 || i.frame === 3;
   if (i.kind === 'rule') return typeof i.rule === 'string' && RULES.has(i.rule);
   if (i.kind === 'name-record') return typeof i.name === 'string';
   return PLAIN_ITEMS.has(i.kind);
@@ -107,7 +108,7 @@ function actionOf(step: Step, s: GameState, week: Week): Action | null {
   if (typeof step === 'object') {
     if ('appeal' in step) return { type: 'appeal', index: step.appeal };
     const at = atWindow(s);
-    return at === null ? null : { type: 'decide', applicant: queue[at], decision: 'challenge', evidence: step.challenge };
+    return at === null || !found(step.challenge, queue[at], s) ? null : { type: 'decide', applicant: queue[at], decision: 'challenge', evidence: step.challenge };
   }
   if (step === 'accept' || step === 'challenge') {
     const at = atWindow(s);
@@ -116,6 +117,16 @@ function actionOf(step: Step, s: GameState, week: Week): Action | null {
   }
   if (step === 'close' || step === 'next-day') return { type: step, queue };
   return { type: step as 'open' | 'call' | 'time-up' | 'statement' };
+}
+
+/**
+ * Whether Inspect finds this evidence on the applicant at the window: two things that disagree under
+ * its rule, in force today, against the registry as the desk had it before the stamp.
+ */
+function found(e: Evidence, a: GeneratedApplicant, s: GameState): boolean {
+  const [x, y] = e.items;
+  const finding = sameItem(x, y) ? null : inspect(x, y, a, rulebookForDay(s.day), s.registry);
+  return finding !== null && finding.inForce && finding.rule === e.rule;
 }
 
 /** The week the steps lead to, or null if one of them no longer leads anywhere. */

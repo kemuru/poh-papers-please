@@ -39,8 +39,6 @@ export type Bench = {
   registry: Registry;
   /** Whoever was challenged, in the order of the rulings. */
   applicants: GeneratedApplicant[];
-  /** The lines printed before the court's notes. */
-  shown: string[];
 };
 
 export type GameState = {
@@ -137,13 +135,13 @@ export function reduce(s: GameState, action: Action): GameState {
           ? [{ applicant: action.queue[index], court: hearCase({ seed: s.seed, day: s.day, index, violations: d.outcome.violations, evidence: d.evidence ?? null }) }]
           : [],
       );
-      const bench: Bench = { registry: s.registry, applicants: heard.map((h) => h.applicant), shown: s.shown };
-      return sit({ ...s, phase: 'court' }, bench, heard.map((h) => h.court));
+      const bench: Bench = { registry: s.registry, applicants: heard.map((h) => h.applicant) };
+      return sit({ ...s, phase: 'court' }, bench, heard.map((h) => h.court), []);
     }
     case 'appeal': {
       const n = s.rulings.findIndex((r) => r.index === action.index);
       if (s.phase !== 'court' || !s.bench || n < 0 || !canAppeal(s.rulings[n].court)) return s;
-      return sit(s, s.bench, s.rulings.map((r, k) => (k === n ? appealCase(r.court) : r.court)));
+      return sit(s, s.bench, s.rulings.map((r, k) => (k === n ? appealCase(r.court) : r.court)), s.rulings);
     }
     case 'statement':
       return s.phase === 'court' ? { ...s, phase: 'statement' } : s;
@@ -165,15 +163,18 @@ export function reduce(s: GameState, action: Action): GameState {
 
 /**
  * The day's cases as they stand, applied to the registry the court sat with: the rulings, their
- * notes, the registry and the accounts. Run at five o'clock and again after every appeal.
+ * notes, the registry and the accounts. Run at five o'clock, with nothing printed yet, and again
+ * after every appeal, with the rulings as printed. A printed note stays where it is: a case gets a
+ * new one only when its ruling changes, from the lines not shown yet this run.
  */
-function sit(s: GameState, bench: Bench, cases: CourtCase[]): GameState {
+function sit(s: GameState, bench: Bench, cases: CourtCase[], printed: readonly Ruling[]): GameState {
   const settled = settle(bench.registry, s.day, cases.map((c, n) => ({ applicant: bench.applicants[n], upheld: isUpheld(c) })));
-  const shown = [...bench.shown];
+  const shown = [...s.shown];
   const rulings = cases.map((court, n): Ruling => {
     const upheld = isUpheld(court);
-    const note = courtNote(s.day, bench.applicants[n], upheld, court.index, shown);
-    if (note) shown.push(note);
+    const was = printed[n];
+    const note = was && was.upheld === upheld ? was.note : courtNote(s.day, bench.applicants[n], upheld, court.index, shown);
+    if (note && note !== was?.note) shown.push(note);
     return { index: court.index, upheld, removed: settled.removed[n], note, court };
   });
   // A challenge is paid as the court ends it: upheld, the bounty (and after an appeal the fees back

@@ -45,8 +45,12 @@ export const formatYear = (year: number | string) => (typeof year !== 'number' ?
 export const registeredWhere = (r: { day: number; window?: string }) =>
   r.window ? `at ${r.window}` : r.day === 0 ? 'before this week' : `on day ${r.day} at Window 3`;
 
-/** The evidence in one line, without the rule's name. */
-export function evidenceLine(v: Violation): string {
+/**
+ * The evidence in one line, without the rule's name. The court sits after the day's registrations and
+ * removals, so it puts a voucher's standing and a face on file as they were at the window; the desk,
+ * as they are.
+ */
+export function evidenceLine(v: Violation, at: 'desk' | 'court' = 'desk'): string {
   switch (v.rule) {
     case 'human':
       if (v.problem === 'machine') return `in frame ${v.frame} the skin at the ${v.where} is open, and there is machinery behind it.`;
@@ -71,10 +75,10 @@ export function evidenceLine(v: Violation): string {
     case 'vouch':
       if (v.problem === 'none') return 'nobody vouched for the applicant.';
       if (v.problem === 'self') return 'the applicant vouched for themselves.';
-      if (v.problem === 'unregistered') return `${v.voucher} is not registered.`;
+      if (v.problem === 'unregistered') return at === 'court' ? `${v.voucher} was not registered when the applicant applied.` : `${v.voucher} is not registered.`;
       return `${v.voucher} was already vouching for ${v.vouchingFor}.`;
     case 'duplicate':
-      return `the face is registered already, as ${v.match.name}, ${registeredWhere(v.match)}.`;
+      return `the face ${at === 'court' ? 'was' : 'is'} registered already, as ${v.match.name}, ${registeredWhere(v.match)}.`;
     case 'living':
       return v.problem === 'born' ? `born ${formatYear(v.born)}.` : 'no frame shows a blink.';
   }

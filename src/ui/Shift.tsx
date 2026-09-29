@@ -8,7 +8,8 @@ import type { GeneratedApplicant } from '../gen/applicant';
 import { DAYS } from '../gen/day';
 import { inspect, sameItem, type Finding, type Item } from '../rules/inspect';
 import { judge, RULE_DAYS, rulebookForDay, type Decision } from '../rules/judge';
-import type { RuleId } from '../rules/types';
+import { sameName } from '../rules/registry';
+import type { Applicant, RuleId } from '../rules/types';
 import { Booth } from './Booth';
 import type { Evidence } from './court';
 import { Desk, type InspectView } from './Desk';
@@ -28,6 +29,15 @@ const CITATION_SEEN_MS = CITATION_BEAT_MS + 750 + 600;
 const OPENING_MINUTES = 8 * 60;
 
 export const caseNumber = (day: number, index: number) => `${day}-${String(index + 1).padStart(3, '0')}`;
+
+/**
+ * What Inspect found, as the challenge files it: the registry's record of the voucher names them as
+ * the form does, not as the clerk typed the search.
+ */
+export function evidenceOf(rule: RuleId, items: [Item, Item], a: Applicant): Evidence {
+  const spelled = (item: Item): Item => (item.kind === 'name-record' && a.voucher && sameName(item.name, a.voucher) ? { ...item, name: a.voucher } : item);
+  return { rule, items: [spelled(items[0]), spelled(items[1])] };
+}
 
 type ShiftProps = {
   state: GameState;
@@ -96,7 +106,7 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu }
     const finding = inspect(picked, item, queue[at], rulebook, state.registry);
     setLast({ items: [picked, item], finding });
     // Two things that agree later on do not unsay the two that did not.
-    if (finding?.inForce) setEvidence({ rule: finding.rule, items: [picked, item] });
+    if (finding?.inForce) setEvidence(evidenceOf(finding.rule, [picked, item], queue[at]));
     setPicked(null);
     if (finding) blip(finding.inForce ? 180 : 320);
     else tick();

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type AnimationEvent } from 'react';
 import { STATEMENT_FOOTERS } from '../content/hall';
 import { MENU } from '../content/menu';
 import { EMPTY_COURT, ENDINGS } from '../content/verdicts';
@@ -62,6 +62,14 @@ function timeline(rulings: readonly Ruling[]) {
   });
 }
 
+/**
+ * How the docket is laid out for this many cases: two to a row; three, on a wider bench, when the
+ * clerk challenged five or six; and past six a board of mugshots, five across.
+ */
+function layoutFor(cases: number): 'two' | 'three' | 'crowded' {
+  return cases > 6 ? 'crowded' : cases > 4 ? 'three' : 'two';
+}
+
 export function Court({
   day,
   queue,
@@ -75,27 +83,39 @@ export function Court({
   onAppeal: (index: number) => void;
   onDone: () => void;
 }) {
-  useKeyToContinue(onDone);
   // Laid out once, as the court sat: an appeal plays in place and moves nothing else.
   const [times] = useState(() => timeline(rulings));
   const [sat] = useState(() => new Map(rulings.map((r) => [r.index, r.court.rounds.length])));
-  useStampSounds(times.map((t) => t.stamp));
+  const silence = useStampSounds(times.map((t) => t.stamp));
   const end = times.length ? times[times.length - 1].stamp + 0.4 : 0.4;
-  const crowded = rulings.length > 6;
+  const layout = layoutFor(rulings.length);
+  const crowded = layout === 'crowded';
+  const section = useRef<HTMLElement>(null);
+  // Space or Enter while the court is still sitting (a press carried over from the desk, or during
+  // an appeal's jury) brings every stamp down at once; only a press after that moves on.
+  useKeyToContinue(() => {
+    const sitting = section.current?.getAnimations?.({ subtree: true }).filter((a) => a.playState !== 'finished') ?? [];
+    if (sitting.length === 0) return onDone();
+    sitting.forEach((a) => a.finish());
+    silence();
+    thunk();
+  });
   const appeal = (index: number) => {
     thunk();
     onAppeal(index);
   };
+  // Two rows of cases: a shorter heading, and an appealed case keeps only the tally of the juries before.
+  const classes = (base: string) => [base, layout === 'two' ? '' : layout, rulings.length > 2 ? 'stacked' : ''].filter(Boolean).join(' ');
   return (
-    <main className={crowded ? 'screen court-screen crowded' : 'screen court-screen'}>
-      <section className={crowded ? 'court crowded' : 'court'} aria-label="Humanity Court">
+    <main className={classes('screen court-screen')}>
+      <section ref={section} className={classes('court')} aria-label="Humanity Court">
         <header className="court-head">
           <p className="court-kicker">In the matter of the Registry</p>
           <h2>The Humanity Court</h2>
           <p>{COURT_SESSION.replace('{day}', String(day))}</p>
         </header>
         {rulings.length === 0 && <p className="court-empty">{EMPTY_COURT}</p>}
-        <div className={crowded ? 'docket crowded' : 'docket'}>
+        <div className={classes('docket')}>
           {rulings.map((r, n) => (
             <Hearing
               key={r.index}
@@ -103,6 +123,7 @@ export function Court({
               applicant={queue[r.index]}
               ruling={r}
               crowded={crowded}
+              roomy={layout === 'two'}
               start={times[n].start}
               stamp={times[n].stamp}
               heardAtSitting={sat.get(r.index) ?? 1}
@@ -118,13 +139,15 @@ export function Court({
   );
 }
 
-/** A thunk as each ruling is stamped. */
+/** A thunk as each ruling is stamped. Returns what silences the ones still to come. */
 function useStampSounds(at: readonly number[]) {
+  const timers = useRef<number[]>([]);
   useEffect(() => {
-    const timers = at.map((s) => window.setTimeout(thunk, s * 1000));
-    return () => timers.forEach((t) => window.clearTimeout(t));
+    timers.current = at.map((s) => window.setTimeout(thunk, s * 1000));
+    return () => timers.current.forEach((t) => window.clearTimeout(t));
     // Once, as the court sits: an appeal's stamp makes its own noise.
   }, []);
+  return () => timers.current.forEach((t) => window.clearTimeout(t));
 }
 
 function Hearing({
@@ -132,6 +155,7 @@ function Hearing({
   applicant: a,
   ruling: r,
   crowded,
+  roomy,
   start,
   stamp,
   heardAtSitting,
@@ -141,6 +165,8 @@ function Hearing({
   applicant: GeneratedApplicant;
   ruling: Ruling;
   crowded: boolean;
+  /** Two to a row: room for the line that says there was no evidence. */
+  roomy: boolean;
   start: number;
   stamp: number;
   /** Rounds already heard when the screen opened; later ones are appeals played here. */
@@ -154,13 +180,26 @@ function Hearing({
   const stampAt = appealed ? 0.35 + lastRound.size * APPEAL_SEAT_GAP : stamp;
   const fee = appealFee(court);
   let seatAt = start + 0.45;
-  // An appeal plays where the case is: if the new jury runs past the fold, the docket follows it.
   const card = useRef<HTMLElement>(null);
+  const next = useRef<HTMLButtonElement>(null);
+  /** The last APPEAL was pressed from the keyboard, not clicked. */
+  const byKey = useRef(false);
   useEffect(() => {
-    if (appealed) card.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+    if (!appealed) return;
+    // An appeal plays where the case is: if the new jury runs past the fold, the docket follows it.
+    card.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+    // The APPEAL pressed went with the jury it appealed: the focus stays on the case, not the page,
+    // so the next Space or Enter is about this case.
+    if (!document.activeElement || document.activeElement === document.body) card.current?.focus({ preventScroll: true });
   }, [appealed, court.rounds.length]);
+  // Pressed from the keyboard, the APPEAL comes back under the key once the new stamp is down, if
+  // there is another round: Enter again takes the case further. A click leaves the focus on the case,
+  // so a Space afterwards moves on, and spends nothing.
+  const stamped = (e: AnimationEvent) => {
+    if (appealed && byKey.current && e.target === e.currentTarget && document.activeElement === card.current) next.current?.focus();
+  };
   return (
-    <article ref={card} className="hearing" data-testid="ruling" data-upheld={r.upheld} style={{ animationDelay: `${start}s` }}>
+    <article ref={card} tabIndex={-1} className={court.evidence ? 'hearing proven' : 'hearing'} data-testid="ruling" data-upheld={r.upheld} style={{ animationDelay: `${start}s` }}>
       <div className="hearing-face">
         <PixelPortrait portrait={a.photo} scale={crowded ? 1 : 1.5} background="#cfd8dc" title={`Photo of ${a.name}`} />
       </div>
@@ -174,16 +213,26 @@ function Hearing({
           </p>
         ) : (
           <>
-            {!crowded && <p className="hearing-heard">{HUNCH_LINE}</p>}
+            {roomy && <p className="hearing-heard">{HUNCH_LINE}</p>}
             {court.rounds.map((round, k) => {
               const fresh = k >= heardAtSitting;
               const first = fresh ? 0.1 : seatAt;
               if (!fresh) seatAt += round.size * (heardAtSitting > 1 ? APPEAL_SEAT_GAP : SEAT_GAP);
-              return <Jury key={k} round={round} n={k} crowded={crowded} first={first} gap={fresh || heardAtSitting > 1 ? APPEAL_SEAT_GAP : SEAT_GAP} />;
+              return (
+                <Jury
+                  key={k}
+                  round={round}
+                  n={k}
+                  crowded={crowded}
+                  past={k < court.rounds.length - 1}
+                  first={first}
+                  gap={fresh || heardAtSitting > 1 ? APPEAL_SEAT_GAP : SEAT_GAP}
+                />
+              );
             })}
           </>
         )}
-        <div className="hearing-outcome" key={court.rounds.length} style={{ animationDelay: `${stampAt}s` }}>
+        <div className="hearing-outcome" key={court.rounds.length} style={{ animationDelay: `${stampAt}s` }} onAnimationEnd={stamped}>
           {r.upheld ? (
             <p className="hearing-ruling">
               <strong>Challenge upheld.</strong> Bounty: +{PAY.bounty} PNK.
@@ -196,13 +245,21 @@ function Hearing({
           {r.upheld &&
             court.violations.map((v) => (
               <p key={v.rule} className="hearing-evidence">
-                Rule {RULEBOOK[v.rule].number}: {evidenceLine(v)}
+                Rule {RULEBOOK[v.rule].number}: {evidenceLine(v, 'court')}
               </p>
             ))}
           {r.removed && <p className="hearing-evidence">Removed from the registry with them: {r.removed}, who vouched for them.</p>}
           {r.note && <p className="court-note">{r.note}</p>}
           {fee !== null && (
-            <button className="appeal-button" data-testid="appeal" onClick={onAppeal}>
+            <button
+              ref={next}
+              className="appeal-button"
+              data-testid="appeal"
+              onClick={(e) => {
+                byKey.current = e.detail === 0;
+                onAppeal();
+              }}
+            >
               Appeal · {JURY_SIZES[court.rounds.length]} jurors · {fee} PNK
             </button>
           )}
@@ -219,13 +276,20 @@ function Hearing({
   );
 }
 
-/** One jury: its seats in the order drawn, each face with its vote and what it said. */
-function Jury({ round, n, crowded, first, gap }: { round: Round; n: number; crowded: boolean; first: number; gap: number }) {
+/**
+ * One jury: its seats in the order drawn, each face with its vote and what it said. A `past` jury has
+ * been appealed from; where the docket is short of room it shows only its tally. The size shows at
+ * once, the tally only once the last seat has sat: before that it would give the stamp away.
+ */
+function Jury({ round, n, crowded, past, first, gap }: { round: Round; n: number; crowded: boolean; past: boolean; first: number; gap: number }) {
   const upholds = round.seats.filter((s) => s.vote === 'uphold').length;
   return (
-    <div className={`jury jury-${round.size}${crowded ? ' collapsed' : ''}${n === 0 ? ' first' : ''}`} data-testid="round" data-size={round.size}>
+    <div className={`jury jury-${round.size}${crowded ? ' collapsed' : ''}${n === 0 ? ' first' : ''}${past ? ' past' : ''}`} data-testid="round" data-size={round.size}>
       <p className="jury-head">
-        {n === 0 ? `Jury of ${round.size}` : `Appeal ${n} · jury of ${round.size}`} · {upholds} of {round.size} uphold
+        {n === 0 ? `Jury of ${round.size}` : `Appeal ${n} · jury of ${round.size}`}
+        <span className="jury-tally" style={{ animationDelay: `${first + round.size * gap}s` }}>
+          {` · ${upholds} of ${round.size} uphold`}
+        </span>
       </p>
       <ol className="jurors">
         {round.seats.map((seat, k) => {
