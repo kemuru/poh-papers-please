@@ -74,11 +74,11 @@ export type Mark = { word: string; ok: boolean };
 
 export type Violation =
   /**
-   * The video is not of a real human: a light between the brows in that frame, the eyes shut; a face
-   * that changes to another in that frame; a picture held up (every frame the same); or a video
-   * generator's mark in the corner of every frame.
+   * The video is not of a real human: a light between the brows in that frame, the eyes shut (as big as
+   * `lamp`); a face that changes to another in that frame; a picture held up (every frame the same); or
+   * a video generator's mark in the corner of every frame.
    */
-  | { rule: 'human'; problem: 'machine' | 'changes' | 'picture' | 'generated'; frame: number }
+  | { rule: 'human'; problem: 'machine' | 'changes' | 'picture' | 'generated'; frame: number; lamp?: LampSize }
   | { rule: 'phrase'; heard: Mark[]; expected: Mark[] }
   /** The photo is not the face in that frame (1 to 3), or it is a mirror image. */
   | { rule: 'photo'; frame: number; mirrored: boolean }

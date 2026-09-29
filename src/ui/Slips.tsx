@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { RULEBOOK } from '../content/rulebook';
+import { NIGHT } from '../content/night';
 import { CITATION_FILM, CITATION_TERMS } from '../content/verdicts';
 import { PAY } from '../economy/economy';
 import { shortAddress } from '../rules/sign';
@@ -12,17 +13,48 @@ import type { Decided } from './week';
 /** One line from a pool: the same number always prints the same line. */
 export const pick = <T,>(pool: readonly T[], n: number) => pool[Math.abs(n) % pool.length];
 
-/** Printed the moment a fake is registered. The day's first is a warning; the rest are fines. */
-export function CitationSlip({ decided, caseNo, video }: { decided: Decided; caseNo: string; /** The video on the papers stamped: a Rule 0 citation reprints it. */ video: Video }) {
-  const warning = decided.citation === 'warning';
+/**
+ * Printed the moment a fake is registered. The day's first is a warning; the rest are fines. On the night
+ * shift (`night`, the citation's number) there is no pay to fine, only a count to three.
+ */
+export function CitationSlip({ decided, caseNo, video, night }: { decided: Decided; caseNo: string; /** The video on the papers stamped: a Rule 0 citation reprints it. */ video: Video; night?: number }) {
+  const warning = decided.citation === 'warning' && night === undefined;
+  const title = night !== undefined ? NIGHT.citation.replace('{n}', String(night)) : warning ? 'Citation · Warning' : 'Citation';
   return (
-    <Slip kind="citation" variant={warning ? 'warning' : 'fine'} title={warning ? 'Citation · Warning' : 'Citation'} number={`No. ${caseNo}`}>
+    <Slip kind="citation" variant={warning ? 'warning' : 'fine'} title={title} number={`No. ${caseNo}`}>
       <p>Issued to: Clerk, Registry Window 3</p>
       {decided.outcome.violations.map((v) => (
         <Breach key={v.rule} lead="Offence: registered an applicant who broke" violation={v} video={video} />
       ))}
       {decided.memo && <p className="memo">{decided.memo}</p>}
-      <p className="terms">{warning ? CITATION_TERMS.warning : CITATION_TERMS.fine.replace('{fine}', String(PAY.fine))}</p>
+      <p className="terms">{night !== undefined ? NIGHT.terms : warning ? CITATION_TERMS.warning : CITATION_TERMS.fine.replace('{fine}', String(PAY.fine))}</p>
+    </Slip>
+  );
+}
+
+/**
+ * The night shift's challenge, decided at once: a fake is refused, with the first rule it broke and the
+ * evidence; a human challenged is a citation.
+ */
+export function NightChallengeSlip({ decided, caseNo, name, night, video }: { decided: Decided; caseNo: string; name: string; night: number; video: Video }) {
+  const [broke] = decided.outcome.violations;
+  if (!broke) {
+    return (
+      <Slip kind="citation" variant="fine" title={NIGHT.citation.replace('{n}', String(night))} number={`No. ${caseNo}`}>
+        <p>Issued to: Clerk, Registry Window 3</p>
+        <p>
+          {NIGHT.wronged} <strong>{name}</strong>.
+        </p>
+        <p className="terms">{NIGHT.terms}</p>
+      </Slip>
+    );
+  }
+  return (
+    <Slip kind="filing" title={NIGHT.refused} number={`Case no. ${caseNo}`}>
+      <p>
+        <strong>{NIGHT.caseTitle.replace('{name}', name)}</strong>
+      </p>
+      <Breach lead={NIGHT.refusedLead} violation={broke} video={video} />
     </Slip>
   );
 }

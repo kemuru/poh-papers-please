@@ -139,7 +139,12 @@ describe('drawPortrait', () => {
   });
 
   /** Pixels the lamp changes, and how many of them are its core, by size. */
-  const LIT: Record<LampSize, { changed: number; core: number }> = { bloom: { changed: 36, core: 4 }, glow: { changed: 36, core: 4 }, small: { changed: 8, core: 2 } };
+  const LIT: Record<LampSize, { changed: number; core: number }> = {
+    bloom: { changed: 36, core: 4 },
+    glow: { changed: 36, core: 4 },
+    small: { changed: 8, core: 2 },
+    slit: { changed: 4, core: 2 },
+  };
   /** The top row of the eyes: the first row a blink changes. */
   const eyeTop = (p: Portrait) => Math.min(...changed(drawPortrait(p), drawPortrait(p, { eyes: 'closed' })).map(({ y }) => y));
 
@@ -178,10 +183,10 @@ describe('drawPortrait', () => {
       const under = diff.map(({ x, y }) => before.pixels[y * before.width + x]!);
       expect(diff.length, `day ${d + 1}`).toBe(LIT[tell.lamp].changed);
       for (const [k, px] of under.entries()) expect(face.has(px), `day ${d + 1} at ${diff[k].x},${diff[k].y}`).toBe(true);
-      // Its light falls on the brows, as light does and paint does not.
-      if (tell.lamp !== 'small') expect(under, `day ${d + 1}`).toContain(hair.lo);
+      // Its light falls on the brows, as light does and paint does not; the small lamp and the slit spill none.
+      if (tell.lamp === 'bloom' || tell.lamp === 'glow') expect(under, `day ${d + 1}`).toContain(hair.lo);
     });
-    expect(lit).toBe(4);
+    expect(lit).toBe(5);
   });
 
   it('matches the golden images', () => {

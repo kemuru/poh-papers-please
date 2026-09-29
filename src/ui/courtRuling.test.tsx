@@ -413,7 +413,7 @@ describe('the frame the clerk pointed at', () => {
       s = reduce(s, { type: 'call' });
       if (i === unitAt) {
         expect(inspect(evidence.items[0], evidence.items[1], a, rulebook, s.registry)).toEqual({ rule: 'human', inForce: true });
-        expect(judge(a, rulebook, s.registry).violations).toEqual([{ rule: 'human', problem: 'machine', frame: 1 }]);
+        expect(judge(a, rulebook, s.registry).violations).toEqual([{ rule: 'human', problem: 'machine', frame: 1, lamp: 'glow' }]);
         s = reduce(s, { type: 'decide', applicant: a, decision: 'challenge', evidence });
       } else s = reduce(s, { type: 'decide', applicant: a, decision: 'accept' });
     });

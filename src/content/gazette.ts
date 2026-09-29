@@ -82,7 +82,7 @@ export const RULE_NOTICES: Record<number, string> = {
   4: 'Following the registration at Window 6 of a man who vouched for himself, each applicant must now be vouched for by one registered human, not themselves. The registry lookup is open at Window 3.',
   5: 'Following the registration of one face four times at Window 5, in four hats, a face may now be registered once.',
   6: 'Following the registration of a man born in 470 BC, applicants must now be living: born between 1900 and today, and seen to blink.',
-  7: 'There is no new rule today. Rule 0 remains in force, as it always has. The Universal Basic Income opens at five o’clock.',
+  7: 'There is no new rule today. Rule 0 remains in force, as it always has. Clerks whose registrations expire today will be renewed at their own windows, like anyone. The Universal Basic Income opens at five o’clock.',
 };
 
 /** The week's running stories, one item a morning: the countdown, the fork, Pat, the Likeness units. */
@@ -92,8 +92,51 @@ export const THREAD: Record<number, string> = {
   4: 'Window 2 is voting. Under its rules the vote has an automatic extension of six months. Likeness Robotics has dimmed the night lamp in its older units, in response to customer feedback.',
   5: 'Window 2 has left the Ministry, taking half the stationery, and says it is the real Ministry. Separately: Pat is practising.',
   6: 'A Likeness unit registered at Window 7 last month has been withdrawn, after an inquiry into its face. Window 7 has been sent a copy of Rule 0.',
-  7: 'The income opens at five. It is paid by the hour, for life, one income per human.',
+  7: 'The income opens at five. It is paid by the hour, for life, one income per human. Likeness Robotics says all known issues with its units have been resolved.',
 };
+
+/** The day 4 Gazette, when the clerk handed Likeness's letter in on day 3: the headline, unless a unit was registered, and the thread's first item. */
+export const LIKENESS_FINED = {
+  headline: 'LIKENESS ROBOTICS FINED FOR WRITING TO A CLERK',
+  thread: 'Likeness Robotics has been fined for writing to a clerk at Window 3 with an offer. It has written to the clerk to apologise.',
+};
+
+/**
+ * The Humanity Day special: the Gazette's last edition, beside the letter at the end of the week. The
+ * income's price is the week's last punchline, told once, here. "{name}", "{day}", "{count}" and the
+ * rest are filled from the week.
+ */
+export const SPECIAL = {
+  masthead: 'Humanity Day · Special edition',
+  headline: 'INCOME OPENS AT FIVE. ONE UBI IS WORTH 0.0003 PNK.',
+  price: 'At that rate a registered human earns a day’s rent in fifteen years. The Ministry does not comment on the price of UBI.',
+  week: 'The week at Window 3: {registered} registered, {challenged} challenged, {upheld} upheld in court.',
+  noUnits: 'No home robots were registered at Window 3 this week.',
+  units: 'Home robots registered at Window 3 this week: {units}.',
+  unit: '{name} (day {day})',
+  unitByCourt: '{name} (day {day}, by the court)',
+  pat: 'Pat Oakes was registered on day {day}, at the {attempt} attempt.',
+  attempts: ['first', 'second', 'third', 'fourth', 'fifth'],
+  likeness: 'Likeness Robotics said it was disappointed by the price, and has withdrawn its remaining units from the queue.',
+  /** And, if the clerk handed its letter in: */
+  apology: 'It has also written to Window 3 again, to apologise for the last letter.',
+  captions: {
+    promoted: 'Robin Hale, of Window 3, promoted to Window 2.',
+    reclassified: 'Registry equipment, Window 3: item 3-0417, a clerk.',
+    superseded: 'Robin Hale, who starts at Window 3 on Monday.',
+    replaced: 'Window 3, camera 2, 17:04.',
+  },
+  /** On the clerk's photograph, Reclassified: the inventory tag. */
+  assetTag: '3-0417',
+  /** Replaced: the hall camera's still, and what it shows, for a screen reader. */
+  camera: {
+    stamp: 'CAM 2 · 17:04',
+    label: 'The hall camera over Window 3: a unit with the clerk’s face in the clerk’s chair. It blinks, and a light shows between its brows.',
+  },
+} as const;
+
+/** Clipped to the Fired letter: the Gazette's small ads. */
+export const VACANCY = 'Vacancy: clerk, Registry Window 3. Must be able to afford the Ministry. Apply at Window 3.';
 
 /** One small notice a morning. */
 export const SMALL_NOTICES: Record<number, string> = {

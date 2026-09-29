@@ -139,6 +139,8 @@ export const LAMPS: Record<LampSize, { art: readonly string[]; spill: number }> 
   bloom: { art: ['...ss...', '.ssssss.', '.ssrrss.', 'ssrccrss', 'ssrccrss', '.ssrrss.'], spill: 0.5 },
   glow: { art: ['...ss...', '.ssssss.', '.ssrrss.', 'ssrccrss', 'ssrccrss', '.ssrrss.'], spill: 0.3 },
   small: { art: ['........', '........', '........', '...rr...', '..rccr..', '...rr...'], spill: 0 },
+  /** Day 7, after Likeness's update: the small lamp's middle row alone, a slit on the brow line. */
+  slit: { art: ['........', '........', '........', '........', '..rccr..', '........'], spill: 0 },
 };
 
 /** 3x5 glyphs: five octal digits, one per row, 4 = left column, 1 = right column. */

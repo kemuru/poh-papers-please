@@ -1,16 +1,24 @@
 import { useEffect, useRef, useState, type AnimationEvent } from 'react';
+import { BOARD } from '../content/board';
+import { useSettings } from './settings';
+import { CREDITS } from '../content/bills';
 import { STATEMENT_FOOTERS } from '../content/hall';
 import { MENU } from '../content/menu';
-import { EMPTY_COURT, ENDINGS } from '../content/verdicts';
+import { GAZETTE_TITLE, SPECIAL, VACANCY } from '../content/gazette';
+import { CLERK_PORTRAIT, CLONE_PORTRAIT } from '../content/portraits';
+import { EMPTY_COURT, LETTER_HEAD } from '../content/verdicts';
+import type { EndingId } from '../economy/endings';
+import { writeSpecial, type Special } from '../gen/gazette';
+import { writeClip, writeLetter } from '../gen/letters';
 import { PAY, payLines, type DayEnd, type PayLine } from '../economy/economy';
 import { RULEBOOK } from '../content/rulebook';
 import type { GeneratedApplicant } from '../gen/applicant';
-import { generatePortrait } from '../gen/portrait';
+import { generatePortrait, type Portrait } from '../gen/portrait';
 import { appealFee, JURY_SIZES, type Round } from './court';
 import { BUBBLES, COURT_SESSION, HUNCH_LINE, JUROR_NAMES } from '../content/court';
 import { asPointed, evidenceLine, evidenceWords } from './evidence';
 import { pick } from './Slips';
-import type { Ruling } from './week';
+import { weekEnd, type GameState, type Ruling } from './week';
 import { PixelPortrait } from './PixelPortrait';
 import { caseNumber } from './Shift';
 import { thunk, tick } from './sound';
@@ -22,9 +30,13 @@ import { thunk, tick } from './sound';
 function useKeyToContinue(onContinue: () => void) {
   const go = useRef(onContinue);
   go.current = onContinue;
+  // With single-key shortcuts off, only the focused button moves on.
+  const { settings } = useSettings();
+  const shortcuts = useRef(settings.shortcuts);
+  shortcuts.current = settings.shortcuts;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.key !== ' ' && e.key !== 'Enter') || e.repeat || (e.target as HTMLElement).closest?.('button, a, dialog')) return;
+      if (!shortcuts.current || (e.key !== ' ' && e.key !== 'Enter') || e.repeat || (e.target as HTMLElement).closest?.('button, a, dialog')) return;
       e.preventDefault();
       go.current();
     };
@@ -333,6 +345,7 @@ export function Statement({ day, end, unprocessed, onNext }: { day: number; end:
     ...payLines(pay)
       .filter((line) => line.kind === 'registrations' || line.count > 0 || (line.kind === 'fines' && pay.warnings > 0))
       .map((line) => ({ label: label(line), amount: line.amount })),
+    ...end.credits.map((c) => ({ label: c.kind === 'fee' ? `${CREDITS.fee}, ${c.count} × ${c.each}` : CREDITS.commendation, amount: c.count * c.each })),
     ...(unprocessed ? [{ label: `Sent home unprocessed: ${unprocessed}`, amount: null }] : []),
     ...end.bills.map((b) => ({ label: b.item, amount: -b.amount })),
     { label: 'Savings carried forward', amount: end.after, kind: 'total' },
@@ -381,29 +394,143 @@ const PAY_LABELS: Record<Exclude<PayLine['kind'], 'fines'>, string> = {
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 const signed = (amount: number, kind?: string) => (kind ? `${amount} PNK` : amount > 0 ? `+${amount}` : String(amount));
 
-export function Ending({ kind, day, savings, onNewWeek, onDayAgain }: { kind: 'fired' | 'promoted'; day: number; savings: number; onNewWeek: () => void; onDayAgain: () => void }) {
-  const letter = ENDINGS[kind];
+type EndingProps = {
+  state: GameState;
+  /** "Copy my week": the week's card, to paste where the clerk likes. */
+  card: string;
+  /** The mornings of this week the clerk can go back to, to try another way. */
+  earlier: readonly number[];
+  onNewWeek: () => void;
+  onBack: (day: number) => void;
+  onBoard: () => void;
+};
+
+/** How the week ended, laid out on the desk: Human Resources' letter, anything clipped to it, and the Gazette's last edition. */
+export function Ending({ state, card, earlier, onNewWeek, onBack, onBoard }: EndingProps) {
+  const [copied, setCopied] = useState<string | null>(null);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(card);
+      setCopied(BOARD.today.copied);
+    } catch {
+      setCopied(BOARD.today.uncopied);
+    }
+  };
+  const week = weekEnd(state);
+  if (!week) return null;
+  const { ending } = week.end;
+  const letter = writeLetter(week.end);
+  const clip = writeClip(week.end);
+  const special = ending === 'fired' ? null : writeSpecial(ending, week.numbers);
   return (
-    <main className="screen ending-screen">
-      <article className={`notice notice-${kind}`} aria-label="Notice">
-        <p className="notice-head">Ministry of Humanity · Human Resources</p>
-        <h2>{letter.title}</h2>
-        {letter.lines.map((line) => (
-          <p key={line}>{line.replace('{day}', String(day))}</p>
-        ))}
-        <p className="notice-savings">Final savings: {savings} PNK</p>
-        <div className="notice-stamp">{kind === 'fired' ? 'Terminated' : 'Promoted'}</div>
-        <div className="notice-actions">
-          <button className="screen-button" onClick={onNewWeek}>
-            {MENU.newWeek}
-          </button>
-          {kind === 'fired' && (
-            <button className="menu-link" onClick={onDayAgain}>
-              {MENU.dayAgain.replace('{day}', String(day))}
-            </button>
+    <main className={`screen ending-screen ending-${ending}`}>
+      <div className="ending-desk" data-testid="ending" data-ending={ending}>
+        <div className="ending-letters">
+        <article className={`notice notice-${ending}`} aria-label="Notice">
+          <p className="notice-head">{LETTER_HEAD}</p>
+          <h2>{letter.title}</h2>
+          {letter.lines.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+          {letter.grade && (
+            <p className="notice-grade" data-testid="grade">
+              {letter.grade}
+            </p>
           )}
+          {letter.note && <p className="notice-note">{letter.note}</p>}
+          <p className="notice-savings">Final savings: {state.savings} PNK</p>
+          <div className="notice-stamp">{letter.stamp}</div>
+        </article>
+        {clip && (
+          <aside className="notice-clip" aria-label={clip.head} data-testid="headhunted">
+            <p className="notice-clip-head">{clip.head}</p>
+            <h3>{clip.title}</h3>
+            {clip.lines.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+            <p className="notice-clip-sign">{clip.sign}</p>
+          </aside>
+        )}
         </div>
-      </article>
+        <div className="ending-side">
+          {special ? <SpecialEdition special={special} ending={ending as Exclude<EndingId, 'fired'>} /> : <p className="classified">{VACANCY}</p>}
+          <div className="notice-actions ending-actions">
+            <div className="ending-buttons">
+              <button className="screen-button" onClick={onNewWeek}>
+                {MENU.newWeek}
+              </button>
+              <button className="board-button" onClick={() => void copy()}>
+                {BOARD.today.copy}
+              </button>
+              <button className="board-button" onClick={onBoard}>
+                {MENU.board}
+              </button>
+              {copied && (
+                <span className="board-copied" role="status">
+                  {copied}
+                </span>
+              )}
+            </div>
+            <div className="menu-mornings ending-mornings">
+              <span>{MENU.backTo}</span>
+              {earlier.map((d) => (
+                <button key={d} className="menu-link" onClick={() => onBack(d)}>
+                  {MENU.backDay.replace('{day}', String(d))}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
+  );
+}
+
+/** The unit Likeness sent to take the clerk's chair: the clerk's face, and the night lamp every unit has. */
+const IN_YOUR_LIKENESS: Portrait = { ...CLERK_PORTRAIT, species: 'android', lamp: 'glow' };
+
+/** The Gazette's last edition: the income, told once, the week in numbers, and a photograph. */
+function SpecialEdition({ special, ending }: { special: Special; ending: Exclude<EndingId, 'fired'> }) {
+  return (
+    <article className="gazette special" aria-label="The Registry Gazette, Humanity Day special" data-testid="special">
+      <header className="gazette-mast">
+        <span>Day 7</span>
+        <h2>{GAZETTE_TITLE}</h2>
+        <span>{special.masthead}</span>
+      </header>
+      <h3 className="gazette-headline" data-testid="special-headline">
+        {special.headline}
+      </h3>
+      <div className="special-body">
+        <figure className={`special-photo photo-${ending}`}>
+          {ending === 'replaced' ? (
+            <span className="cctv" role="img" aria-label={SPECIAL.camera.label}>
+              <span className="cctv-frame cctv-open">
+                <PixelPortrait portrait={IN_YOUR_LIKENESS} scale={3} background="#26302a" />
+              </span>
+              <span className="cctv-frame cctv-shut">
+                <PixelPortrait portrait={IN_YOUR_LIKENESS} eyes="closed" scale={3} background="#26302a" />
+              </span>
+              <span className="cctv-stamp">{SPECIAL.camera.stamp}</span>
+            </span>
+          ) : (
+            <span className="press-photo">
+              <PixelPortrait portrait={ending === 'superseded' ? CLONE_PORTRAIT : CLERK_PORTRAIT} scale={3} background="#cfd3cf" title={special.caption} />
+              {ending === 'reclassified' && <span className="asset-tag">{SPECIAL.assetTag}</span>}
+            </span>
+          )}
+          <figcaption>{special.caption}</figcaption>
+        </figure>
+        <section className="special-report">
+          {special.report.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+          <p>{special.likeness}</p>
+        </section>
+      </div>
+      <footer className="gazette-foot">
+        <p className="gazette-small">{special.small}</p>
+      </footer>
+    </article>
   );
 }

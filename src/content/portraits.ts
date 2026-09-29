@@ -32,12 +32,17 @@ export const UNIT_FACES: readonly Portrait[] = [
     { skin: 'ebony', shape: 'wide', eyes: 'tired', eyeColor: 'dark', brows: 'flat', nose: 'wide', mouth: 'smile', ears: 'normal', age: 'old', mark: 'none' },
     { hair: 'buzz', hairColor: 'grey', facialHair: 'none', outfit: 'sweater', outfitColor: 'navy' },
   ),
+  // Humanity Day's: nothing worn and no unibrow between the brows, where its slit shows.
+  android(
+    { skin: 'sand', shape: 'heart', eyes: 'round', eyeColor: 'grey', brows: 'thin', nose: 'straight', mouth: 'smile', ears: 'normal', age: 'adult', mark: 'none' },
+    { hair: 'curly', hairColor: 'brown', facialHair: 'none', outfit: 'shirt', outfitColor: 'khaki' },
+  ),
 ];
 
 /**
  * Each day's unit's night lamp, and on day 2 the second blink that lights it twice. Nothing on day 4
  * or day 5: those are Likeness's current model, whose lamp waits out a blink (their papers and face
- * give them away).
+ * give them away). Day 7's is an older unit after Likeness's update: a lit slit, the week's smallest.
  */
 export const UNIT_LAMPS: readonly ({ lamp: LampSize; nervous?: true } | null)[] = [
   { lamp: 'bloom' },
@@ -46,6 +51,7 @@ export const UNIT_LAMPS: readonly ({ lamp: LampSize; nervous?: true } | null)[] 
   null,
   null,
   { lamp: 'small' },
+  { lamp: 'slit' },
 ];
 
 /**
@@ -65,10 +71,9 @@ export const SPECIMEN: Portrait = {
 };
 
 /**
- * Fig. 0-2's night lamp: the day's unit's, so the example is never bigger or smaller than the desk's; the
- * smallest on a day without one (from day 4 the Gazette has reported the dimming). Day 7's unit has a lit
- * slit, which LAMPS does not have yet: until slice 5 adds it, day 7 shows the small lamp, and slice 5 must
- * give figureLamp(7) the slit.
+ * Fig. 0-2's night lamp: the day's unit's, so the example is never bigger or smaller than the desk's; on a
+ * day without one, the smallest the week has shown so far (from day 4 the Gazette has reported the dimming).
+ * On day 7, the slit.
  */
 export const figureLamp = (day: number): LampSize => UNIT_LAMPS[day - 1]?.lamp ?? 'small';
 

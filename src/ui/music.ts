@@ -12,7 +12,7 @@
 // odd note snags and plays twice, and by day 6 notes go missing.
 import { audioContext, readFlag, saveFlag, whiteNoise } from './sound';
 
-export type Scene = 'morning' | 'open' | 'closing' | 'court' | 'statement' | 'promoted' | 'fired';
+export type Scene = 'morning' | 'open' | 'closing' | 'court' | 'statement' | 'promoted' | 'reclassified' | 'superseded' | 'replaced' | 'fired';
 
 type Kind = 'bell' | 'choir';
 
@@ -44,6 +44,12 @@ export const SCENES: Record<Scene, readonly (NoteName | null)[]> = {
   statement: ['Bb2', 'A4', 'C5', 'D4', null, 'F4', null],
   // Promoted: F major, plain, with a high F on top.
   promoted: ['F3', 'A4', 'C5', 'C4', 'F5', 'G4', 'A3'],
+  // Reclassified: open fifths, no third, nobody's key: equipment humming.
+  reclassified: ['F3', null, 'C5', 'C4', null, 'F4', null],
+  // Superseded: the window's own chord, all seven voices. Window 3 goes on, with the other Robin Hale.
+  superseded: ['F3', 'A4', 'C5', 'C4', 'E5', 'G4', 'A3'],
+  // Replaced: D minor, thin, with a high E that does not settle.
+  replaced: ['D3', null, 'C5', 'A3', 'E5', null, null],
   // Fired: three low voices of D minor.
   fired: ['D3', null, null, 'A3', null, 'F4', null],
 };
@@ -110,6 +116,9 @@ const LEVELS: Record<Scene, { music: number; hall: number }> = {
   court: { music: 1, hall: 0 },
   statement: { music: 0.9, hall: 0 },
   promoted: { music: 1, hall: 0 },
+  reclassified: { music: 0.9, hall: 0 },
+  superseded: { music: 0.9, hall: 0 },
+  replaced: { music: 0.85, hall: 0 },
   fired: { music: 0.85, hall: 0 },
 };
 

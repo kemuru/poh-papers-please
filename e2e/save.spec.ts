@@ -16,7 +16,10 @@ test.beforeEach(({ page }) => {
 test.afterEach(() => expect(errors).toEqual([]));
 
 test('a reload finds the desk as it was left, behind a card that holds the queue', async ({ page }) => {
+  // A plain address opens at the notice board (slice 6): on a first visit, with a vacancy and no week to continue.
   await page.goto('/');
+  await expect(page.getByTestId('board-continue')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Start a new week' }).click();
   await page.getByRole('button', { name: /Open the window/ }).click();
   await page.getByRole('button', { name: 'Call next applicant' }).click();
   await page.getByRole('button', { name: 'Accept' }).click();
@@ -24,20 +27,18 @@ test('a reload finds the desk as it was left, behind a card that holds the queue
   await expect.poll(async () => (await game(page)).called).toBe(2);
   const before = await game(page);
 
+  // The card is the notice board, which holds the week and says where it stands; Continue has the focus.
   await page.reload();
-  await expect(menu(page)).toBeVisible();
-  await expect(menu(page)).toContainText('Welcome back');
-  await expect(menu(page)).toContainText('Day 1 · At the window');
-  await expect(page.getByRole('button', { name: 'Back to the window' })).toBeFocused();
+  await expect(page.getByTestId('board-continue')).toContainText('Day 1 · At the window');
+  await expect(page.getByRole('button', { name: 'Continue' })).toBeFocused();
   await shot(page, 'welcome-back.png');
+
+  // Space, out of habit, takes the week up again, with the same person at the window.
+  await page.keyboard.press('Space');
+  await expect(page.getByRole('region', { name: 'Profile card' }).getByTestId('name')).toHaveText(before.queue[1].name);
   const after = await game(page);
   expect(after.decided).toEqual(before.decided);
   expect(after.called).toBe(2);
-
-  // Space, out of habit, takes the safe way: back to the window, with the same person at it.
-  await page.keyboard.press('Space');
-  await expect(menu(page)).toBeHidden();
-  await expect(page.getByRole('region', { name: 'Profile card' }).getByTestId('name')).toHaveText(before.queue[1].name);
 });
 
 test('the shift clock stops for the menu, and a reload picks it up where it stopped', async ({ page }) => {
@@ -63,9 +64,10 @@ test('the shift clock stops for the menu, and a reload picks it up where it stop
   expect(clock).toBeGreaterThanOrEqual(55);
   expect(clock).toBeLessThan(70);
 
-  // A plain address carries on the saved week, the link's week included.
+  // A plain address opens at the notice board, where the saved week waits, the link's week included.
   await page.goto('/');
-  await expect(menu(page)).toContainText(/Day 2 · At the window · 5:0\d left/);
+  await expect(page.getByTestId('board-continue')).toContainText(/Day 2 · At the window · 5:0\d left/);
+  await page.getByRole('button', { name: 'Continue' }).click();
   expect((await game(page)).seed).toBe(3);
 });
 
@@ -113,9 +115,10 @@ test('starting today again asks first, then lays out this morning’s paper as i
   const again = await game(page);
   expect(again).toMatchObject({ day: 2, opened: false, decided: [], savings: morning.savings });
   expect(again.gazette).toEqual(morning.gazette);
-  // The link is behind us: a reload keeps this week, not the link's.
+  // The link is behind us: a reload keeps this week, not the link's, one Continue away.
   expect(new URL(page.url()).search).toBe('');
   await page.reload();
+  await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByTestId('gazette')).toBeVisible();
   expect((await game(page)).day).toBe(2);
 });
@@ -137,6 +140,7 @@ test('a new week asks first, then begins on day 1 with the next seed', async ({ 
   await expect(page.getByTestId('welcome')).toBeVisible();
   expect(await game(page)).toMatchObject({ seed: 6, day: 1 });
   await page.reload();
+  await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByTestId('welcome')).toBeVisible();
   expect((await game(page)).seed).toBe(6);
 });
@@ -146,8 +150,10 @@ test('a save that cannot be kept is set aside with a word, and a new week begins
   await page.goto('/?portraits');
   await page.evaluate(() => localStorage.setItem('poh-save', '{"v":1,"seed":7,"startDay":1,"steps":["call"],"clock":0,"check":"x"}'));
   await page.goto('/');
-  await expect(menu(page)).toContainText('revised its forms');
-  await page.getByRole('button', { name: 'Begin the week' }).click();
+  // The word is on the notice board, and the week it was begins again from the vacancy.
+  await expect(page.getByRole('region', { name: 'Notice board' })).toContainText('revised its forms');
+  await expect(page.getByTestId('board-continue')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Start a new week' }).click();
   await expect(page.getByTestId('welcome')).toBeVisible();
   expect(await game(page)).toMatchObject({ seed: 7, day: 1, decided: [] });
 });

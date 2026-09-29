@@ -8,9 +8,9 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 const PHRASE = 'I certify that I am a real human and that I am not already registered in this registry.';
 const CHATTY = '?seed=2155315&day=3'; // first up: "Ahem.", an aside, and "I'm" for "I am": all fine
 const CHATTY_SAYS = "Ahem. I certify that I am, you know, a real human and that I'm not already registered in this registry.";
-const HOOMAN = '?seed=2333944&day=7'; // first up: "Take two." then the phrase with "hang on" in it, and "hooman"
+const HOOMAN = '?seed=4880500&day=7'; // first up: "Take two." then the phrase with "hang on" in it, and "hooman"
 const HOOMAN_SAYS = 'Take two. I certify that I am a real, hang on, hooman and that I am not already registered in this registry.';
-const SILENT = '?seed=8&day=7'; // first up: says nothing
+const SILENT = '?seed=55&day=7'; // first up: says nothing
 
 const game = (page: Page) => page.evaluate(() => window.__game!);
 

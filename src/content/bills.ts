@@ -2,6 +2,12 @@
 
 export const RENT = 'Rent';
 
+/** Money in that is not pay, on the statement of the day it arrives. */
+export const CREDITS = {
+  fee: 'Partner fee, Likeness Robotics',
+  commendation: 'Commendation: a letter handed in',
+};
+
 /** Gas fees by day. The network gets busier as the week goes on. */
 export const GAS_FEES = [
   'Gas fees',

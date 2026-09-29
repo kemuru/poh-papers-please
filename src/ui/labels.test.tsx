@@ -38,7 +38,8 @@ describe('the papers on the desk', () => {
         }),
       );
     }
-    expect(checked).toBe(530);
+    // Ten weeks of 5, 7, 8, 8, 9, 10 and 7 (Humanity Day's six and the clerk).
+    expect(checked).toBe(540);
   }, 60_000);
 
   it('shows the blink only as closed eyes in a frame', () => {

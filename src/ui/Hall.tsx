@@ -1,7 +1,9 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { ANNOUNCEMENTS, BANNER, BOARD, POSTERS } from '../content/hall';
+import { CAST_PORTRAITS } from '../content/portraits';
 import type { GeneratedApplicant } from '../gen/applicant';
 import { drawPortrait, type PixelImage } from '../gen/drawPortrait';
+import { LAST_DAY } from '../gen/day';
 import { generatePortrait } from '../gen/portrait';
 import { pixelPaths } from './PixelPortrait';
 import { pa } from './sound';
@@ -43,8 +45,10 @@ type Props = {
   over: boolean;
 };
 
-export function Hall({ seed, day, queue, called, minutes, serving, opened, decided, over }: Props) {
+export function Hall({ seed, day, queue: papers, called, minutes, serving, opened, decided, over }: Props) {
   const rain = day === 3 || day === 6;
+  // Humanity Day's last papers are the clerk's own, and the clerk is not in the queue: behind the desk.
+  const queue = papers.filter((a) => a.cast !== 'clerk');
   return (
     <div className={`hall hall-day-${day}`}>
       <svg
@@ -53,7 +57,7 @@ export function Hall({ seed, day, queue, called, minutes, serving, opened, decid
         preserveAspectRatio="xMidYMax meet"
         shapeRendering="crispEdges"
         role="img"
-        aria-label={`The waiting hall. ${queue.length - called} waiting.`}
+        aria-label={`The waiting hall. ${Math.max(0, queue.length - called)} waiting.`}
       >
         <defs>
           <pattern id="hall-tiles" width="40" height="12" patternUnits="userSpaceOnUse">
@@ -122,7 +126,7 @@ export function Hall({ seed, day, queue, called, minutes, serving, opened, decid
         <rect x={-BEYOND} width={W + 2 * BEYOND} height={H} fill={tint(minutes).color} opacity={tint(minutes).opacity} className="hall-tint" />
         </g>
       </svg>
-      <PublicAddress day={day} opened={opened} decided={decided} total={queue.length} over={over} />
+      <PublicAddress day={day} opened={opened} decided={decided} total={papers.length} over={over} />
     </div>
   );
 }
@@ -321,9 +325,9 @@ function Poster({ x, text }: { x: number; text: string }) {
   );
 }
 
-/** Someone waiting for Window 2, which has other plans. */
+/** Someone waiting for Window 2, which has other plans; on Humanity Day, Pat, registered at last, waiting for five o'clock. */
 function Bench({ seed, day }: { seed: number; day: number }) {
-  const sitter = useMemo(() => drawPortrait(generatePortrait(Math.imul(seed, 97) + day)), [seed, day]);
+  const sitter = useMemo(() => drawPortrait(day === LAST_DAY ? CAST_PORTRAITS.pat : generatePortrait(Math.imul(seed, 97) + day)), [seed, day]);
   // A pew with a solid back, like the queue's railing: whoever sits on it shows from the chin up.
   return (
     <g>
@@ -376,7 +380,11 @@ function PublicAddress({ day, opened, decided, total, over }: { day: number; ope
     const timer = window.setTimeout(() => setShowing(null), ANNOUNCEMENT_MS);
     return () => window.clearTimeout(timer);
   }, [showing]);
-  const text = showing !== null && !over ? lines[showing] : over ? BOARD.closed : BOARD.waiting;
+  // Humanity Day at five: one chime, and the board says the income is open.
+  useEffect(() => {
+    if (over && day === LAST_DAY) pa();
+  }, [over, day]);
+  const text = showing !== null && !over ? lines[showing] : over ? (day === LAST_DAY ? BOARD.open : BOARD.closed) : BOARD.waiting;
   return (
     <div className={showing !== null && !over ? 'pa speaking' : 'pa'} role="status" aria-label="Announcements">
       <span key={text}>{text}</span>

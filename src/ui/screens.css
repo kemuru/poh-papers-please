@@ -651,7 +651,294 @@
 /* ------------------------------------------------------------ the letters */
 
 .ending-screen {
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   background: radial-gradient(ellipse at 50% 30%, #3a3d34, #161812);
+}
+
+/* The week's last desk: the letter on the left, anything clipped under it, and the paper beside them. */
+.ending-desk {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 30px;
+  width: min(1160px, 100%);
+}
+
+.ending-letters {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: min(560px, 100%);
+}
+
+.ending-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.ending-actions {
+  align-items: flex-start;
+}
+
+.ending-actions .screen-button {
+  animation-delay: 2.2s;
+}
+
+.notice-grade {
+  margin: 14px 0 6px;
+  font-family: var(--official);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.notice-note {
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+.notice-replaced .notice-stamp,
+.notice-superseded .notice-stamp {
+  color: var(--challenge);
+}
+
+.notice-reclassified .notice-stamp {
+  color: var(--pen);
+}
+
+/* Likeness's letter, clipped under Human Resources': another company's paper, in another company's colours. */
+.notice-clip {
+  position: relative;
+  z-index: 1;
+  width: 380px;
+  margin: -16px 0 0 70px;
+  padding: 14px 18px 12px;
+  background: #f4f1fb;
+  border-top: 5px solid #5b3fa6;
+  box-shadow: 0 10px 26px rgb(0 0 0 / 50%);
+  font-size: 13px;
+  line-height: 1.45;
+  rotate: 2.2deg;
+  animation: land 0.6s 1.5s both;
+}
+
+/* The paperclip. */
+.notice-clip::before {
+  content: '';
+  position: absolute;
+  top: -22px;
+  left: 30px;
+  width: 12px;
+  height: 38px;
+  border: 2px solid #9aa0a6;
+  border-radius: 7px;
+}
+
+.notice-clip p {
+  margin: 0 0 6px;
+}
+
+.notice-clip-head {
+  color: #5b3fa6;
+  font-family: var(--official);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.notice-clip h3 {
+  margin: 0 0 6px;
+  font-family: var(--official);
+  font-size: 17px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.notice-clip-sign {
+  font-family: var(--hand);
+  font-size: 15px;
+  text-align: right;
+}
+
+/* The Humanity Day special: the Gazette's last edition. */
+.gazette.special {
+  width: 490px;
+  margin: 0;
+  rotate: 0.8deg;
+  animation: land 0.6s 1s both;
+}
+
+.special .gazette-mast {
+  font-size: 10px;
+}
+
+.special .gazette-mast span {
+  white-space: nowrap;
+}
+
+.special .gazette-mast h2 {
+  font-size: 22px;
+  white-space: nowrap;
+}
+
+/* The stamp gets the foot of the letter to itself. */
+.ending-letters .notice {
+  padding-bottom: 76px;
+  line-height: 1.5;
+}
+
+.special-body {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.special-report p {
+  margin: 0 0 6px;
+}
+
+.special-photo {
+  margin: 0;
+  width: 124px;
+}
+
+.special-photo figcaption {
+  margin-top: 4px;
+  font-size: 11px;
+  font-style: italic;
+  line-height: 1.3;
+}
+
+.press-photo {
+  position: relative;
+  display: block;
+  line-height: 0;
+  border: 1px solid var(--ink);
+}
+
+/* Printed on newsprint. */
+.press-photo svg {
+  filter: grayscale(1) sepia(0.2) contrast(1.15);
+}
+
+/* Registry equipment has an inventory tag. */
+.asset-tag {
+  position: absolute;
+  bottom: 14px;
+  left: -10px;
+  padding: 3px 8px 3px 16px;
+  background: #fbf6df;
+  border: 1px solid var(--ink);
+  font-family: var(--typewriter);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  rotate: -9deg;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 35%);
+}
+
+.asset-tag::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 5px;
+  width: 6px;
+  height: 6px;
+  translate: 0 -50%;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+}
+
+/* The hall camera over Window 3, in its own grey-green: it sees what people do not. */
+.cctv {
+  position: relative;
+  display: block;
+  line-height: 0;
+  border: 1px solid var(--ink);
+  background: #141a16;
+}
+
+.cctv-frame svg {
+  filter: grayscale(1) sepia(1) hue-rotate(55deg) saturate(1.6) contrast(1.25) brightness(0.95);
+}
+
+.cctv-shut {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: cctv-blink 4.2s 2.4s steps(1) infinite;
+}
+
+/* Scan lines. */
+.cctv::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgb(0 0 0 / 22%) 0 1px, transparent 1px 3px);
+  pointer-events: none;
+}
+
+.cctv-stamp {
+  position: absolute;
+  top: 5px;
+  left: 6px;
+  z-index: 1;
+  color: #d9f2d0;
+  font-family: var(--typewriter);
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* Every few seconds it blinks, and for as long as its eyes are shut, the light shows. */
+@keyframes cctv-blink {
+  0%,
+  86% {
+    opacity: 0;
+  }
+  87%,
+  96% {
+    opacity: 1;
+  }
+  97%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* The Fired letter's clipping from the small ads. */
+.classified {
+  width: 250px;
+  margin: 40px 0 0;
+  padding: 12px 14px;
+  background: #e8e2cf;
+  border: 1px dashed #8d846e;
+  box-shadow: 0 8px 18px rgb(0 0 0 / 45%);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 13px;
+  line-height: 1.4;
+  rotate: -2.5deg;
+  animation: land 0.6s 1.1s both;
+}
+
+/* The still the camera keeps, when nothing moves: the eyes shut, and the light on. */
+@media (prefers-reduced-motion: reduce) {
+  .cctv-shut {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+.motion-reduced .cctv-shut {
+  animation: none;
+  opacity: 1;
 }
 
 .notice {

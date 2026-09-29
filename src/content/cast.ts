@@ -18,7 +18,9 @@ export type CastId =
   | 'deepfake'
   | 'cutout'
   | 'clone'
-  | 'influencer';
+  | 'influencer'
+  | 'binns'
+  | 'clerk';
 
 type Exits = { accept: string; challenge: string };
 
@@ -220,14 +222,40 @@ export const UNITS: readonly { name: string; address: string; birthYear: number;
   { name: 'Theo Marlow', address: '12 Inkwell Terrace, Little Ledgerby', birthYear: 1994, wallet: '0x13481A814871A50CCEAF2F0FF793A44404F8CB32', remark: "I'm on my lunch break. I've an hour, if that helps." },
   { name: 'Ruth Calloway', address: '17 Carbon Row, Old Stampton', birthYear: 1989, wallet: '0x6017A3641E430A189E385D455E32A93E21F72AD8', remark: "I've taken the morning off. First time this year." },
   { name: 'Simon Aldous', address: '9 Formsworth Lane, Upper Pendingham', birthYear: 1958, wallet: '0x2E5EAAC998646BA2F85AB208C1F396CAEC796D15', remark: "I'm told the income is paid by the hour. That seems fair." },
+  { name: 'Lydia Crane', address: '27 Paperclip Crescent, Greyford', birthYear: 1985, wallet: '0x7C41D0A9E3B2F58C11A6E0D94B3C27F5A08D6E91', remark: "Happy Humanity Day. I've been counting the hours." },
 ];
 
 export const UNIT_EXITS = { accept: 'Thank you. That was very efficient.', challenge: "I understand. I'll wait to hear from the court." };
 
-/** The Binnses of 16 Staple Street, registered long ago, who each own a unit and vouch for the day 5 and day 6 units. */
+/**
+ * The Binnses of 16 Staple Street, registered long ago, who each own a unit and vouch for the day 5 and
+ * day 6 units. Removed from the registry with them, they come back on Humanity Day, together, having
+ * sold the units: Wendell first, then Vera, whom Wendell vouches for. Nothing they say is about the
+ * registry, which may still have them: if the clerk let their unit in, they were never removed.
+ */
 export const UNIT_OWNERS = [
-  { day: 5, name: 'Wendell Binns', address: '16 Staple Street, Greyford', birthYear: 1948 },
-  { day: 6, name: 'Vera Binns', address: '16 Staple Street, Greyford', birthYear: 1951 },
+  {
+    day: 5,
+    name: 'Wendell Binns',
+    address: '16 Staple Street, Greyford',
+    birthYear: 1948,
+    back: {
+      remark: "We've sold the robots. Both of them. My wife's behind me. She's never been nervous before.",
+      video: `${PHRASE} Just me, this time.`,
+      exits: { accept: "Thank you. Vera! It's you next.", challenge: "Right. We'll see what the court says." },
+    },
+  },
+  {
+    day: 6,
+    name: 'Vera Binns',
+    address: '16 Staple Street, Greyford',
+    birthYear: 1951,
+    back: {
+      remark: 'The robots have gone to a good home. Well. A home. Wendell is vouching for me.',
+      video: `${PHRASE} And that's the last of the Binnses.`,
+      exits: { accept: "Lovely. Now there's just the two of us. As it was.", challenge: "Well. We've been through worse. We had robots." },
+    },
+  },
 ] as const;
 
 /** The unit Window 7 registered last month, next door to the Binnses, with the day 5 unit's face. Withdrawn on the morning of day 6. */
@@ -242,6 +270,21 @@ export const UNIT_ON_FILE_RECORD = {
 
 /** You. Registered before the week, like every clerk. Your clone has your name as well. */
 export const CLERK = { name: 'Robin Hale', address: '2 Inkwell Terrace, Greyford', birthYear: 1989, face: CLERK_PORTRAIT };
+
+/**
+ * Humanity Day: your own registration expires that morning, and renewal needs a new photo and video, so
+ * the last applicant of the week is you. The supervisor filmed the video before nine, after a week at
+ * the window. Nobody stands at the window: your reflection is in the glass, and nobody says anything.
+ */
+export const RENEWAL = {
+  video: 'I certify that I am a real clerk and that I am not already registered in this registry.',
+  /** In the speech box while your own papers are on the desk. */
+  remark: 'Nobody comes to the window. Your own papers come through the slot. Your registration ran out at nine.',
+  exits: {
+    accept: 'You stamp your own form. It makes the same noise as all the others.',
+    challenge: 'You file a case against yourself. The printer does not hesitate.',
+  },
+};
 
 /**
  * Pat: a real human the rules keep failing, each visit on the newest rule, each visit better

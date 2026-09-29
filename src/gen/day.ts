@@ -6,7 +6,7 @@
 // against the registry the clerk actually built.
 import { FIRST_NAMES, LAST_NAMES, ON_PAPER, REMARKS, STREETS, TOWNS } from '../content/applicants';
 import {
-  AGENT, CLERK, CLONE, CUTOUT, DEEPFAKE, FIRST_APPLICANT, INFLUENCER, LIKENESS, PAT, PAT_MOTHER, REGULARS, SYBIL_FARM, TWINS,
+  AGENT, CLERK, CLONE, CUTOUT, DEEPFAKE, FIRST_APPLICANT, INFLUENCER, LIKENESS, PAT, PAT_MOTHER, REGULARS, RENEWAL, SYBIL_FARM, TWINS,
   TWINS_FORM, UNIT_ON_FILE_RECORD, UNIT_OWNERS, UNITS, type CastId, type RegularId,
 } from '../content/cast';
 import {
@@ -29,7 +29,10 @@ export type DayPlan = {
   shiftSeconds: number | null;
 };
 
-/** The day table in notes/game-design.md. Day 1 is 3 valid out of 5: its tutorial needs a fake besides the unit. */
+/**
+ * The day table in notes/game-design.md. Day 1 is 3 valid out of 5: its tutorial needs a fake besides the
+ * unit. Day 7 is six in the queue, 4 of them valid, and then the clerk's own renewal, which is not.
+ */
 export const DAYS: readonly DayPlan[] = [
   { applicants: 5, fakes: 2, shiftSeconds: null },
   { applicants: 7, fakes: 2, shiftSeconds: 360 },
@@ -37,13 +40,13 @@ export const DAYS: readonly DayPlan[] = [
   { applicants: 8, fakes: 2, shiftSeconds: 360 },
   { applicants: 9, fakes: 3, shiftSeconds: 360 },
   { applicants: 10, fakes: 3, shiftSeconds: 360 },
-  { applicants: 6, fakes: 2, shiftSeconds: null },
+  { applicants: 7, fakes: 3, shiftSeconds: null },
 ];
 
 export const LAST_DAY = DAYS.length;
 
-/** The day each rule's newest offenders turn up to test it, and the day Pat has nothing wrong. */
-const PAT_DAYS = [1, 2, 3, 4, 6];
+/** Pat's visits: the day each rule's newest offender turns up to test it, and the day Pat has nothing wrong. */
+export const PAT_DAYS = [1, 2, 3, 4, 6];
 const TWIN_DAYS = [5, 6];
 /** Townsfolk registered before the week began: the queue's vouchers, until the week's own registrants join them. */
 const TOWNSFOLK = 10;
@@ -67,9 +70,16 @@ export const generateDay = (seed: number, day: number): GeneratedApplicant[] => 
 /** The registry on the morning of a day if the clerk has made no mistakes: where a week started on that day begins. */
 export const morningRegistry = (seed: number, day: number): Registry => planWeek(seed).mornings[day - 1];
 
-/** A new day at the registry: every vouch is free again, and anyone withdrawing that morning is gone. */
-export const morning = (registry: Registry, day: number): Registry =>
-  freeVouches(day === UNIT_ON_FILE_RECORD.withdraws ? remove(registry, UNIT_ON_FILE_RECORD.name) : registry);
+/**
+ * A new day at the registry: every vouch is free again, and anyone withdrawing that morning is gone. On
+ * Humanity Day the clerk's own registration runs out, the one made before the week; a Robin Hale
+ * registered this week (the clone, if the clerk let him in) is his own registration, and stays.
+ */
+export function morning(registry: Registry, day: number): Registry {
+  let today = day === UNIT_ON_FILE_RECORD.withdraws ? remove(registry, UNIT_ON_FILE_RECORD.name) : registry;
+  if (day === LAST_DAY) today = today.filter((r) => !(r.name === CLERK.name && r.day === 0));
+  return freeVouches(today);
+}
 
 /** Everyone who is somebody in particular: no ordinary applicant gets their name or address. */
 const CAST_NAMES = [
@@ -109,11 +119,13 @@ type Week = {
   faces: Set<string>;
   /** Everyone refused so far this week, if the clerk makes no mistakes. */
   refused: string[];
+  /** The Binnses' faces, as the registry had them before the week: they bring the same faces back on day 7. */
+  owners: Portrait[];
 };
 
 export function planWeek(seed: number): WeekPlan {
   const rng = createRng(seed);
-  const w: Week = { seed, rng, used: new Set(CAST_NAMES), faces: new Set(), refused: [] };
+  const w: Week = { seed, rng, used: new Set(CAST_NAMES), faces: new Set(), refused: [], owners: [] };
   for (const p of [...Object.values(CAST_PORTRAITS), FIRST_APPLICANT_PORTRAIT, CATALOGUE_GENTLEMAN, CLONE_PORTRAIT]) w.faces.add(faceKey(p));
 
   // Who comes when. Ethel is registered on the first morning; the other regulars come once, from
@@ -170,7 +182,17 @@ function pickExtras(rng: Rng, influencerFirst: boolean): Extra[] {
 /** Everyone registered before the week: the clerk, the unit Window 7 registered, the Binnses who own units, and some townsfolk. */
 function startingRegistry(w: Week): Registry {
   const before = (r: Omit<Registrant, 'day' | 'vouching'>): Registrant => ({ ...r, day: 0, vouching: null });
-  const owners = UNIT_OWNERS.map((v) => before({ name: v.name, address: v.address, birthYear: v.birthYear, face: newFace(w) }));
+  // Born around 1950, and they look it: an old face, and one nobody else has once it is old.
+  w.owners = UNIT_OWNERS.map(() => {
+    for (;;) {
+      const face = newFace(w);
+      const old: Portrait = { ...face, face: { ...face.face, age: 'old' } };
+      if (w.faces.has(faceKey(old))) continue;
+      w.faces.add(faceKey(old));
+      return old;
+    }
+  });
+  const owners = UNIT_OWNERS.map((v, i) => before({ name: v.name, address: v.address, birthYear: v.birthYear, face: w.owners[i] }));
   const townsfolk = Array.from({ length: TOWNSFOLK }, () => {
     const face = newFace(w);
     return before({ name: freshName(w), address: freshAddress(w), birthYear: w.rng.int(1935, 1995), face });
@@ -202,10 +224,14 @@ function compose(w: Week, day: number, plan: DayPlan, registry: Registry, cast: 
   const influencer = day === 1 && cast.influencerFirst ? influencerOn(day) : null;
   const extras = cast.extras.map((kind) => extra(w, kind, day, registry));
   const nigel = cast.regulars.find((a) => a.cast === 'nervousNigel');
-  // Day 7 is Humanity Day (slice 5 scripts it); until then its fakes are ordinary slips of the tongue.
-  const phraseFakes = day === 7 ? [fillIn(w, day, true), fillIn(w, day, true)] : [];
+  // Humanity Day: the Binnses back together, someone who slips on the phrase, and last of all the clerk.
+  const binnses = day === LAST_DAY ? [binnsBack(w, 0), binnsBack(w, 1)] : [];
+  const phraseFakes = day === LAST_DAY ? [fillIn(w, day, true)] : [];
+  const clerk = day === LAST_DAY ? renewal(registry) : null;
 
-  const fixed = [unit, pat, mother, ...farm, ...twins, influencer, ...cast.regulars, ...extras, ...phraseFakes].filter((a) => a !== null);
+  const fixed = [unit, pat, mother, ...farm, ...twins, influencer, ...cast.regulars, ...extras, ...binnses, ...phraseFakes, clerk].filter(
+    (a) => a !== null,
+  );
   const scriptedFakes = fixed.filter((a) => a.planted.length > 0).length;
   if (scriptedFakes !== plan.fakes) throw new Error(`Day ${day}: ${scriptedFakes} fakes, the day table says ${plan.fakes}`);
   const fillIns = Array.from({ length: plan.applicants - fixed.length - (day === 1 ? 1 : 0) }, () => fillIn(w, day, false));
@@ -226,6 +252,14 @@ function compose(w: Week, day: number, plan: DayPlan, registry: Registry, cast: 
     queue = [pat!, ...rest];
     queue.splice(rng.int(1, 2), 0, unit!);
     queue.splice(3, 0, mother!);
+  } else if (day === LAST_DAY) {
+    // The unit early (among the first four: Humanity Day has no clock to send it home), Vera straight
+    // after Wendell, and the clerk last of all.
+    const [wendell, vera] = binnses;
+    const rest = shuffle(rng, fixed.concat(fillIns).filter((a) => a !== unit && a !== vera && a !== clerk));
+    queue = arrange(rng, n - 2, null, [unit!], rest);
+    queue.splice(queue.indexOf(wendell) + 1, 0, vera);
+    queue.push(clerk!);
   } else {
     const scripted = day === 5 ? [unit!, ...farm] : [unit, pat].filter((a) => a !== null);
     const early = scripted.filter((a) => a !== tester);
@@ -335,8 +369,13 @@ function chooseVoucher(w: Week, a: GeneratedApplicant, registry: Registry, day: 
     a.lookAlike = { rule: 'vouch', kind: 'ethel' };
     return ethel.name;
   }
-  // Ethel, Pat's mother and the unit owners vouch only where the week has them do it.
-  const reserved = new Set<string>([CLERK.name, UNIT_ON_FILE_RECORD.name, REGULARS.grandmaEthel.name, PAT_MOTHER.name, ...UNIT_OWNERS.map((v) => v.name)]);
+  // Ethel, Pat's mother and the unit owners vouch only where the week has them do it, and on Humanity Day
+  // Hortense Cobbold keeps her vouch for the clerk. Pat vouches for nobody: registered at the fifth
+  // attempt, Pat is not to be taken off the registry with somebody else's fake.
+  const reserved = new Set<string>([
+    CLERK.name, UNIT_ON_FILE_RECORD.name, REGULARS.grandmaEthel.name, PAT.name, PAT_MOTHER.name, ...UNIT_OWNERS.map((v) => v.name),
+  ]);
+  if (day === LAST_DAY) reserved.add(FIRST_APPLICANT.name);
   const free = registry.filter((r) => r.vouching === null && r.face.species === 'human' && !reserved.has(r.name) && r.name !== a.name);
   if (free.length === 0) throw new Error(`Day ${day}: nobody free to vouch for ${a.name}`);
   // The honest and the fakes lean on the same people, the week's registrants more than the town, so
@@ -459,6 +498,34 @@ function patOn(w: Week, day: number): GeneratedApplicant {
   if (day === 6) a.voucher = PAT_MOTHER.name;
   if (day >= 3) a.wallet = wallet(w.rng);
   return a;
+}
+
+/**
+ * A Binns back on Humanity Day, the unit sold, with the face the registry had for them: Wendell first,
+ * vouched for by whoever the week has free, then Vera, whom Wendell vouches for. Valid if the registry
+ * removed them with their units, as it does when the clerk challenges those units.
+ */
+function binnsBack(w: Week, i: 0 | 1): GeneratedApplicant {
+  const owner = UNIT_OWNERS[i];
+  const face = w.owners[i];
+  return {
+    name: owner.name, address: owner.address, birthYear: owner.birthYear, photo: face, video: { face, transcript: owner.back.video, blinked: true },
+    remark: owner.back.remark, planted: [], cast: 'binns', ...(i === 1 ? { voucher: UNIT_OWNERS[0].name } : {}),
+  };
+}
+
+/**
+ * Humanity Day's last applicant: the clerk, whose registration ran out that morning. A new photo and a
+ * new video, filmed before nine after a week at the window: one word is wrong. Vouched for by Hortense
+ * Cobbold, the week's first registration, unless her vouch has gone with someone she vouched for.
+ */
+function renewal(registry: Registry): GeneratedApplicant {
+  const hortense = findName(registry, FIRST_APPLICANT.name);
+  return {
+    name: CLERK.name, address: CLERK.address, birthYear: CLERK.birthYear, photo: CLERK.face,
+    video: { face: CLERK.face, transcript: RENEWAL.video, blinked: true }, remark: RENEWAL.remark, cast: 'clerk',
+    planted: [{ rule: 'phrase', mistake: 'wrong-word' }], ...(hortense ? { voucher: hortense.name } : {}),
+  };
 }
 
 function patMother(): GeneratedApplicant {

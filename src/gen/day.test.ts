@@ -16,8 +16,8 @@ describe('generateWeek', () => {
     expect(generateDay(3, 5)).toEqual(generateWeek(3)[4]);
   });
 
-  it('has the applicant counts of the day table: 5, 7, 8, 8, 9, 10, 6', () => {
-    expect(DAYS.map((d) => d.applicants)).toEqual([5, 7, 8, 8, 9, 10, 6]);
+  it('has the applicant counts of the day table: 5, 7, 8, 8, 9, 10, and on Humanity Day six and the clerk', () => {
+    expect(DAYS.map((d) => d.applicants)).toEqual([5, 7, 8, 8, 9, 10, 7]);
     for (const week of weeks) expect(week.map((day) => day.length)).toEqual(DAYS.map((d) => d.applicants));
   });
 
@@ -25,9 +25,11 @@ describe('generateWeek', () => {
     expect(DAYS.map((d) => d.shiftSeconds !== null)).toEqual([false, true, true, true, true, true, false]);
   });
 
-  it('keeps 65 to 75% of each day valid (day 1: 3 of 5, the nearest its five applicants allow)', () => {
+  it('keeps 65 to 75% of each day valid (day 1: 3 of 5, the nearest its five applicants allow; day 7, the six before the clerk)', () => {
     for (const week of weeks) {
-      week.forEach((queue, i) => {
+      week.forEach((day, i) => {
+        // The clerk's own renewal ends Humanity Day, and is not the public's queue.
+        const queue = day.filter((a) => a.cast !== 'clerk');
         const share = queue.filter(valid).length / queue.length;
         if (i === 0) expect(share).toBe(0.6);
         else {
@@ -43,11 +45,11 @@ describe('generateWeek', () => {
     expect(cast.filter(valid).length / cast.length).toBeGreaterThanOrEqual(0.4);
   });
 
-  it('sends a Likeness unit once a day on days 1 to 6, each with a new face, never valid, with one fault', () => {
+  it('sends a Likeness unit once a day, each with a new face, never valid, with one fault', () => {
     for (const week of weeks) {
       const units = week.map((queue) => queue.filter((a) => a.cast === 'unit'));
-      expect(units.map((u) => u.length)).toEqual([1, 1, 1, 1, 1, 1, 0]);
-      units.slice(0, 6).forEach(([unit], i) => {
+      expect(units.map((u) => u.length)).toEqual([1, 1, 1, 1, 1, 1, 1]);
+      units.forEach(([unit], i) => {
         expect(unit.photo).toEqual(UNIT_FACES[i]);
         expect(unit.planted).toHaveLength(1);
       });
@@ -108,9 +110,9 @@ describe('generateWeek', () => {
   });
 
   it('lets no voucher say whether the papers are good: vouched for by the town or by this week, the odds are the same', () => {
-    // Over 300 weeks, ordinary applicants from day 5 (the cast's vouchers, Ethel and the Binnses, are the week's story).
+    // Over 400 weeks, ordinary applicants from day 5 (the cast's vouchers, Ethel and the Binnses, are the week's story).
     const tally = { town: [0, 0], week: [0, 0] };
-    for (let seed = 1; seed <= 300; seed++) {
+    for (let seed = 1; seed <= 400; seed++) {
       const plan = planWeek(seed);
       plan.queues.forEach((queue, d) =>
         queue.forEach((a, n) => {

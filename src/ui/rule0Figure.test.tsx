@@ -56,7 +56,7 @@ const painted = (svg: string, colour: string) => {
 
 describe("Rule 0's Fig. 0", () => {
   it("lights Fig. 0-2 as the day's unit is lit, and with the smallest lamp on a day without one", () => {
-    expect([1, 2, 3, 4, 5, 6, 7].map(figureLamp)).toEqual(['bloom', 'glow', 'glow', 'small', 'small', 'small', 'small']);
+    expect([1, 2, 3, 4, 5, 6, 7].map(figureLamp)).toEqual(['bloom', 'glow', 'glow', 'small', 'small', 'small', 'slit']);
   });
 
   it('differs between its plates by the lamp alone, all of it inside the crop, whatever the size', () => {
@@ -81,7 +81,7 @@ describe("Rule 0's Fig. 0", () => {
       expect(lit.pixels, lamp).toContain(PROPS.lamp.core);
       counts[lamp] = changed.length;
     }
-    expect(counts).toEqual({ bloom: 36, glow: 36, small: 8 });
+    expect(counts).toEqual({ bloom: 36, glow: 36, small: 8, slit: 4 });
   });
 
   // The first specimen proposed was Brenda's face: the valid trap who is so normal she is suspicious,

@@ -59,7 +59,7 @@ export const SUPERVISOR_NOTES: readonly string[] = [
   'New: press Look up beside the voucher, or V. Do not look up at the ceiling.',
   'New: Search this face, or F. Window 2 has left the Ministry. You are not interested.',
   'New: they have to blink. Humanity Day tomorrow. Keep stamping.',
-  'It has been an honour. The ceiling says hello.',
+  'Your registration ran out at nine, so you are last in the queue. It has been an honour.',
 ];
 
 /**
@@ -83,6 +83,8 @@ export const BANNER = 'WELCOME TO THE NEW REGISTRY';
 export const BOARD = {
   waiting: 'Please wait for your number to be called.',
   closed: 'Window 3 is closed. Please leave the building calmly.',
+  /** Humanity Day at five. */
+  open: 'The Universal Basic Income is now open. Happy Humanity Day.',
 };
 
 /** Printed at the foot of the clerk's statement each evening. */
@@ -104,4 +106,6 @@ export const WINDOW_LINES = {
   timeUp: "Oh. Is that the time? I'll come back another day, then.",
   finished: 'That was the last one. The Registry is closed for the day.',
   sentHome: 'The Registry is closed. Everyone still waiting has been sent home.',
+  /** Humanity Day, after the last stamp, which is the clerk's own. */
+  humanityDay: 'Five o’clock. The Universal Basic Income is open. Nothing else happens.',
 };

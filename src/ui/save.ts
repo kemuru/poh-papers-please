@@ -17,8 +17,20 @@ const SET_ASIDE_KEY = 'poh-save-set-aside';
 /**
  * One thing the clerk did. The applicant it was done to is the queue's to say, not the save's. A
  * challenge filed with evidence keeps the evidence; an appeal keeps the place in the queue of its case.
+ * On day 3's morning, Likeness's letter is signed or handed in.
  */
-export type Step = 'open' | 'call' | Decision | 'time-up' | 'close' | 'statement' | 'next-day' | { challenge: Evidence } | { appeal: number };
+export type Step =
+  | 'open'
+  | 'call'
+  | Decision
+  | 'time-up'
+  | 'close'
+  | 'statement'
+  | 'next-day'
+  | 'sign'
+  | 'hand-in'
+  | { challenge: Evidence }
+  | { appeal: number };
 
 export type Save = {
   v: 1;
@@ -73,11 +85,12 @@ export function canSave(store: Store | null): boolean {
 
 export function stepOf(action: Action): Step {
   if (action.type === 'appeal') return { appeal: action.index };
+  if (action.type === 'offer') return action.choice === 'signed' ? 'sign' : 'hand-in';
   if (action.type !== 'decide') return action.type;
   return action.decision === 'challenge' && action.evidence ? { challenge: action.evidence } : action.decision;
 }
 
-const STEPS = new Set<string>(['open', 'call', 'accept', 'challenge', 'time-up', 'close', 'statement', 'next-day']);
+const STEPS = new Set<string>(['open', 'call', 'accept', 'challenge', 'time-up', 'close', 'statement', 'next-day', 'sign', 'hand-in']);
 const RULES = new Set<string>(['human', 'phrase', 'photo', 'sign', 'vouch', 'duplicate', 'living'] satisfies RuleId[]);
 const PLAIN_ITEMS = new Set<string>(['photo', 'transcript', 'sign', 'name', 'birth-year', 'wallet', 'voucher', 'face-record'] satisfies Item['kind'][]);
 const whole = (n: unknown): n is number => Number.isSafeInteger(n) && (n as number) >= 0;
@@ -116,6 +129,7 @@ function actionOf(step: Step, s: GameState, week: Week): Action | null {
     return { type: 'decide', applicant: queue[at], decision: step };
   }
   if (step === 'close' || step === 'next-day') return { type: step, queue };
+  if (step === 'sign' || step === 'hand-in') return { type: 'offer', choice: step === 'sign' ? 'signed' : 'handed-in' };
   return { type: step as 'open' | 'call' | 'time-up' | 'statement' };
 }
 
@@ -167,6 +181,15 @@ export function clearSave(store: Store | null) {
     store?.removeItem(SAVE_KEY);
   } catch {
     // Nothing to clear.
+  }
+}
+
+/** Whether this browser has a week saved, kept or not. */
+export function hasSave(store: Store | null): boolean {
+  try {
+    return (store?.getItem(SAVE_KEY) ?? null) !== null;
+  } catch {
+    return false;
   }
 }
 
@@ -242,6 +265,21 @@ function morningOf(steps: readonly Step[], state: GameState): number {
 /** The same week, back at this morning's paper: every step up to last night's, and none since. */
 export function dayAgain(run: Run, steps: readonly Step[], state: GameState): Run {
   const kept = steps.slice(0, morningOf(steps, state));
+  const morning = replay(run.seed, run.startDay, kept, run.week);
+  return morning ? { ...run, steps: kept, state: morning, clock: 0, resumed: false, setAside: false } : newRun(run.seed, run.startDay, run.week);
+}
+
+/** Where the morning of `day` begins in the steps: just after the evening before it. */
+function morningAt(steps: readonly Step[], startDay: number, day: number): number {
+  let nights = day - startDay;
+  if (nights <= 0) return 0;
+  for (let i = 0; i < steps.length; i++) if (steps[i] === 'next-day' && --nights === 0) return i + 1;
+  return steps.length;
+}
+
+/** The same week, back at the morning of an earlier day: every step before it, and none since. */
+export function backTo(run: Run, steps: readonly Step[], day: number): Run {
+  const kept = steps.slice(0, morningAt(steps, run.startDay, day));
   const morning = replay(run.seed, run.startDay, kept, run.week);
   return morning ? { ...run, steps: kept, state: morning, clock: 0, resumed: false, setAside: false } : newRun(run.seed, run.startDay, run.week);
 }
