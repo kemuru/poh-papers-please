@@ -133,7 +133,7 @@ Every character wants something (usually the income, sometimes only the stamp), 
 **Cut from the cast (26 Sep 2026: random, off-topic or dated):** the Toaster, Kevin (two children on each other's shoulders), the time traveller, "trust me bro", the chatbot's "Certainly! Here is…", the AI avatar, the Mannequin and the Late Mr. Hargreaves. If one comes back (the add-applicant skill is smoke-tested with "a sentient toaster that can't blink"), it comes for the income like everyone else and breaks a real rule.
 
 ## The court (end of each shift)
-The court is where the week's satire of Kleros lives, and where being sure pays. It must never punish a proven case, and it must give the player a real decision. (Until slice 4 the court rules on the facts alone: upheld if the applicant broke a rule, dismissed if not.)
+The court is where the week's satire of Kleros lives, and where being sure pays. It must never punish a proven case, and it must give the player a real decision. (Until slice 4 the court ruled on the facts alone: upheld if the applicant broke a rule, dismissed if not.)
 - **Evidence or a hunch.** A challenge filed right after Inspect found a discrepancy on that applicant carries it as evidence: the case slip says "Evidence: Rule 3, the sign against the form." Any other challenge goes on a hunch, and the slip says the jury will look for itself. No rule is ever picked from a list; the evidence is whatever the clerk found.
 - **Three jurors hear every case.** With evidence, they uphold it: the fault is in front of them. On a hunch, each juror looks for a fault on their own, and finds a real one with a chance set by how visible it is: silence or a square of dots nearly always, a wrong word or a mirror often, a panel open in one frame or an ear that changes rarely. A majority finding it upholds the challenge. Jurors never invent a fault: a valid applicant is never refused.
 - **APPEAL.** A dismissed hunch can be appealed: 7 jurors, then 15, each round looking harder (the chance of finding a real fault rises toward certainty). The fee doubles each round, 10 then 20 PNK; a win refunds the fees and pays 10 on top; a loss keeps them. A correct challenge taken to the last round wins in at least 95% of seeds; a wrong one never wins, and costs more the longer it is defended. That is the decision: the player knows how sure they were; the jury does not.
@@ -141,6 +141,14 @@ The court is where the week's satire of Kleros lives, and where being sure pays.
 - **The ruling** names every rule broken and the things that disagree, so a missed fault is learned from.
 - **Kleros, played straight, as flavour, never as injustice:** jurors are drawn in proportion to their stake, so the same face can sit in two seats with a vote in each; the bubbles show jurors guessing what the others will vote ("Voting with the others."), a juror who did not open the file, a juror who refuses to arbitrate; at most once a week a letter offers a juror P plus epsilon. The court "does not have a specific way to make sure that jurors reviewed the evidence", and on a hunch, it shows.
 - **Pacing:** the whole day's court is one screen. A case with evidence is a line; a hunch shows its jurors' bubbles; an appeal plays in place. A court with no appeals reads in under 30 seconds.
+- **Measured 29 Sep 2026** (slice 4: `src/court/jury.ts`, `jury.test.ts`, `src/economy/jury-balance.test.ts`). On a hunch a seat finds a fault by its plainest tier, in juries of 3, 7 and 15:
+  - plain, 95, 98 and 99% a seat: silence, most key words missing, a QR code, no sign, nobody vouching, a year like 470 BC or v4;
+  - often, 70, 85 and 95%: a wrong word, a mirror, someone else's address;
+  - sometimes, 55, 75 and 90%: another face, a filter, a picture held up, the generator's mark, a year typo, no blink;
+  - rare, 45, 65 and 85%: a panel, an ear that changes, two or three wrong characters, a voucher not registered or already vouching, a face on file.
+  
+  A first jury upholds about 99, 79, 60 and 42% of such hunches. Taken to 15, every kind of fault won in every seed tried. Most of the week's fakes are rare, so a first jury misses more than half of the units.
+- **As built:** a dismissed ruling reads "No rule broken; registered." whether the applicant broke nothing or the jury missed what they broke. It is the court's finding, so the clerk decides on an appeal knowing only how sure they were and how the jury voted. By the next morning the court has risen, and the Gazette reports a fake the court registered as it would one stamped in.
 
 ## Economy (starting values; tune with the balance report)
 - Correct accept: +10 PNK. Correct challenge: +15 PNK bounty.
@@ -224,6 +232,16 @@ Research: `reports/Saving progress in browser games.md`. The week is saved in th
 ## Open decisions (need the owner's sign-off)
 - **A temptation** (settled 28 Sep 2026): Likeness's offer on day 3 (see The week). The other Ministry's note and the vouch seller stay in the Gazette as news; one temptation a week is enough.
 - **The first jury.** The real Humanity Court starts with one juror, then 3, 7, 15. The game keeps 3, 7, 15, which the court exercise in `notes/plan.md` also uses.
+- **The jury's tally and the appeal bonus** (found 29 Sep 2026, slice 4). Two things make a hunch pay better than evidence:
+  - Jurors never find a fault that is not there. So a dismissed hunch with even one uphold vote was a fake, the juror's bubble names the rule, and the appeal is a sure thing.
+  - A win on appeal pays the bounty and a 10 PNK bonus, where a case with evidence pays 15.
+  
+  A clerk who is sure without inspecting (they spot the fault by eye and challenge on a hunch) and appeals every dismissal ends the week at about 478 PNK. That is ahead of the careful clerk's 399 in 20 of 20 seeds. The acceptance row's clerk, who appeals only plain faults, ends at about 153. Options:
+  - drop or shrink the bonus;
+  - print only the outcome until the clerk has decided on the appeal, not how each juror voted;
+  - let a juror also vote with the others on a valid applicant, as a minority that never refuses anyone.
+  
+  Playtest before choosing: a minority juror who agrees with the clerk, and an appeal that pays, may be the court's best moment.
 
 ## Coming back (slice 6)
 A week takes about 45 minutes. What brings a player back is a better week, a missing ending, or tomorrow's week; each is cheap, because the week is already one seed. The first hour decides the rest: players who leave a negative review of a Papers, Please-like quit after 2 to 4 hours (research: `reports/Lessons from acclaimed desk games.md`), so polish days 1 to 3 before adding anything to day 7.
