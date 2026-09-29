@@ -5,7 +5,7 @@ import { inspect, type Item } from '../rules/inspect';
 import { judge, rulebookForDay, type Decision } from '../rules/judge';
 import type { Applicant, Registry, RuleId, Rulebook, Violation } from '../rules/types';
 import { hearChallenges, playDay } from './court';
-import { appealCase, appealFee, canAppeal, caseSeed, FIND, hearCase, isUpheld, JUROR_STAKES, plainest, settle, TIERS, visibility } from './jury';
+import { appealCase, appealFee, canAppeal, caseSeed, FIND, hearCase, isUpheld, JUROR_STAKES, plainest, settle, TIERS, visibility, type Tier } from './jury';
 import { JUROR_POOL, JURY_SIZES, type CourtCase, type Evidence, type Filed } from './types';
 
 // acceptance.md, slice 4: the jury. Real applicants from 200 seeded weeks, each judged under the
@@ -117,6 +117,54 @@ describe('the jury', () => {
     expect(rates[TIERS.length - 1]).toBeLessThan(0.5);
     // Each seat looks harder in each appeal.
     for (const tier of TIERS) for (let n = 1; n < 3; n++) expect(FIND[tier][n]).toBeGreaterThan(FIND[tier][n - 1]);
+  });
+
+  it('sees each fault the design names as it says, and the tuned ones rarely, on every generated applicant', () => {
+    const table: [kind: string, tier: Tier][] = [
+      // "Silence or a square of dots nearly always, a wrong word or a mirror often, a panel open in
+      // one frame or an ear that changes rarely."
+      ['phrase:silence', 'plain'],
+      ['sign:qr', 'plain'],
+      ['sign:no-sign', 'plain'],
+      ['phrase:wrong-word', 'often'],
+      ['photo:mirrored', 'often'],
+      ['human:machine', 'rare'],
+      ['human:deepfake', 'rare'],
+      // Tuned: two wrong characters, a voucher not registered or already vouching, a face on file.
+      ['sign:two-wrong', 'rare'],
+      ['vouch:unregistered', 'rare'],
+      ['vouch:busy', 'rare'],
+      ['duplicate:farm', 'rare'],
+      ['duplicate:clone', 'rare'],
+      ['duplicate:unit', 'rare'],
+      ['duplicate:back-in-a-hat', 'rare'],
+    ];
+    for (const [kind, tier] of table) {
+      const rule = kind.split(':')[0];
+      const seen = fakes.filter((h) => h.kind.split(' + ').includes(kind)).map((h) => h.violations.find((v) => v.rule === rule)!);
+      expect(seen.length, kind).toBeGreaterThan(10);
+      expect(new Set(seen.map(visibility)), kind).toEqual(new Set([tier]));
+    }
+  });
+
+  it('sees a panel and a changing ear rarely, and a sign rarely up to three wrong characters, often from four', () => {
+    const wallet = `0x${'ab'.repeat(20)}`;
+    const sign = (wrong: number[]): Violation => ({
+      rule: 'sign',
+      sign: { kind: 'address', text: [...wallet].map((c, k) => (wrong.includes(k) ? '0' : c)).join('') },
+      wallet,
+      wrong,
+    });
+    const table: [Violation, Tier][] = [
+      [{ rule: 'human', problem: 'machine', frame: 2, where: 'cheek' }, 'rare'],
+      [{ rule: 'human', problem: 'changes', frame: 3 }, 'rare'],
+      [sign([7, 30]), 'rare'],
+      [sign([7, 19, 30]), 'rare'],
+      [sign([7, 19, 30, 41]), 'often'],
+      [{ rule: 'vouch', voucher: 'Ann Lee', problem: 'unregistered' }, 'rare'],
+      [{ rule: 'vouch', voucher: 'Ann Lee', problem: 'busy', vouchingFor: 'Bo Ray' }, 'rare'],
+    ];
+    for (const [v, tier] of table) expect(visibility(v), JSON.stringify(v)).toBe(tier);
   });
 
   it('never has a seat uphold a valid applicant, on a hunch or on evidence that names nothing they broke, to the last round', () => {

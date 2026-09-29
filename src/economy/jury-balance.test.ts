@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { playDay } from '../court/court';
-import { plainest } from '../court/jury';
+import { isUpheld, plainest } from '../court/jury';
 import type { CourtCase, Evidence } from '../court/types';
 import type { GeneratedApplicant } from '../gen/applicant';
 import { generateWeek, morning, morningRegistry } from '../gen/day';
@@ -41,14 +41,23 @@ const twoMistakes: Clerk = {
   appeal: () => false,
 };
 
-type Week = { savings: number; earned: number; promoted: boolean; appeals: number; bonuses: number; feesKept: number };
+type Week = {
+  savings: number;
+  earned: number;
+  promoted: boolean;
+  appeals: number;
+  bonuses: number;
+  feesKept: number;
+  /** Every case the court heard this week, as it ended. */
+  cases: CourtCase[];
+};
 
 function playWeek(seed: number, clerk: Clerk): Week {
   const rng = createRng(seed * 7919);
   let savings = STARTING_SAVINGS;
   let earned = 0;
   let registry = morningRegistry(seed, 1);
-  const week: Week = { savings, earned, promoted: false, appeals: 0, bonuses: 0, feesKept: 0 };
+  const week: Week = { savings, earned, promoted: false, appeals: 0, bonuses: 0, feesKept: 0, cases: [] };
   for (const [i, queue] of generateWeek(seed).entries()) {
     const day = i + 1;
     registry = morning(registry, day);
@@ -67,6 +76,7 @@ function playWeek(seed: number, clerk: Clerk): Week {
     const end = endDay(savings, day, cases, seed);
     earned += end.pay.total;
     savings = end.after;
+    week.cases.push(...played.cases);
     week.appeals += played.cases.reduce((n, c) => n + c.rounds.length - 1, 0);
     week.bonuses += end.pay.wonOnAppeal ?? 0;
     week.feesKept += (end.pay.lostAt7 ?? 0) * APPEALS.fees[0] + (end.pay.lostAt15 ?? 0) * APPEALS.fees[1];
@@ -91,12 +101,20 @@ describe('balance with the jury (20 seeded weeks per clerk)', () => {
     const ahead = SEEDS.filter((_, i) => results.hunch[i].savings > results.twoMistakes[i].savings).length;
     expect(behind).toBeGreaterThanOrEqual(18);
     expect(ahead).toBeGreaterThanOrEqual(18);
-    // It went to appeal, and the court both paid and kept fees on the way.
+    // It went to appeal at least once. A first jury nearly always finds a plain fault, so this clerk
+    // seldom has one to appeal; BALANCE_REPORT=1 prints how often, and what it won or lost.
     expect(results.hunch.reduce((n, w) => n + w.appeals, 0)).toBeGreaterThan(0);
   });
 
   it('a careful clerk is never dismissed on a real fault, so never appeals', () => {
     for (const w of results.careful) {
+      // Every challenge carried evidence, and the first jury upheld it: nothing was left to appeal.
+      expect(w.cases.length).toBeGreaterThan(0);
+      for (const c of w.cases) {
+        expect(c.evidence).not.toBeNull();
+        expect(isUpheld(c)).toBe(true);
+        expect(c.rounds).toHaveLength(1);
+      }
       expect(w.promoted).toBe(true);
       expect(w.appeals).toBe(0);
     }
