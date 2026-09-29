@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { ANNOUNCEMENTS, BANNER, BOARD, POSTERS } from '../content/hall';
+import { ANNOUNCEMENTS, BANNER, CLOSING, POSTERS } from '../content/hall';
 import { CAST_PORTRAITS } from '../content/portraits';
 import type { GeneratedApplicant } from '../gen/applicant';
 import { drawPortrait, type PixelImage } from '../gen/drawPortrait';
@@ -124,9 +124,9 @@ export function Hall({ seed, day, queue: papers, called, minutes, serving, opene
         ))}
 
         <rect x={-BEYOND} width={W + 2 * BEYOND} height={H} fill={tint(minutes).color} opacity={tint(minutes).opacity} className="hall-tint" />
+        <PublicAddress day={day} opened={opened} decided={decided} total={papers.length} over={over} />
         </g>
       </svg>
-      <PublicAddress day={day} opened={opened} decided={decided} total={papers.length} over={over} />
     </div>
   );
 }
@@ -355,13 +355,17 @@ function Railing() {
   );
 }
 
-/** How long the board shows an announcement before going back to the sign. */
+/** How long the PA's words hang in the hall after an announcement. */
 const ANNOUNCEMENT_MS = 9000;
+/** The loudspeaker, on the ceiling between the clock and the banner. */
+const SPEAKER = { x: 290, y: 1 };
+/** Characters that fit one line of the PA's bubble. */
+const BUBBLE_LINE = 62;
 
 /**
- * The hall's PA, on the board above the queue. It reads each of the day's announcements once, at a
- * quiet moment: the first as the window opens, the rest spread over the day's stamps. In between,
- * the board shows a plain sign, so no joke sits on screen for the whole shift.
+ * The hall's PA: a loudspeaker on the ceiling. It reads each of the day's announcements once, at a quiet
+ * moment (the first as the window opens, the rest spread over the day's stamps), and its words hang in
+ * a bubble while it speaks. Otherwise it says nothing, and nothing funny sits on screen all shift.
  */
 function PublicAddress({ day, opened, decided, total, over }: { day: number; opened: boolean; decided: number; total: number; over: boolean }) {
   const lines = ANNOUNCEMENTS[day - 1];
@@ -380,14 +384,29 @@ function PublicAddress({ day, opened, decided, total, over }: { day: number; ope
     const timer = window.setTimeout(() => setShowing(null), ANNOUNCEMENT_MS);
     return () => window.clearTimeout(timer);
   }, [showing]);
-  // Humanity Day at five: one chime, and the board says the income is open.
+  // Humanity Day at five: one chime, and the PA says the income is open.
   useEffect(() => {
     if (over && day === LAST_DAY) pa();
   }, [over, day]);
-  const text = showing !== null && !over ? lines[showing] : over ? (day === LAST_DAY ? BOARD.open : BOARD.closed) : BOARD.waiting;
+  const text = over ? (day === LAST_DAY ? CLOSING.open : CLOSING.closed) : showing !== null ? lines[showing] : null;
+  const rows = text ? Math.ceil(text.length / BUBBLE_LINE) : 0;
+  const { x, y } = SPEAKER;
   return (
-    <div className={showing !== null && !over ? 'pa speaking' : 'pa'} role="status" aria-label="Announcements">
-      <span key={text}>{text}</span>
-    </div>
+    <g className="pa" role="status" aria-label="Announcements" aria-live="polite">
+      {/* A horn loudspeaker on a bracket, facing the queue. */}
+      <rect x={x + 3} y={y} width={1} height={3} fill="#3a3c33" />
+      <path d={`M${x} ${y + 3}h7v2h3v5h-3v2h-7z`} fill="#6f7466" />
+      <path d={`M${x + 10} ${y + 4}h2v7h-2z`} fill="#2d2f29" />
+      {text && (
+        <g key={text} className="pa-bubble">
+          <path d={`M${x + 12} ${y + 7}l6 -2v4z`} fill="#1d1f1a" />
+          <rect x={x + 17} y={y + 2} width={230} height={rows * 7 + 5} fill="#1d1f1a" />
+          <rect x={x + 18} y={y + 3} width={228} height={rows * 7 + 3} fill="#f1ead5" />
+          <foreignObject x={x + 20} y={y + 3.5} width={225} height={rows * 7 + 2}>
+            <p className="pa-text">{text}</p>
+          </foreignObject>
+        </g>
+      )}
+    </g>
   );
 }

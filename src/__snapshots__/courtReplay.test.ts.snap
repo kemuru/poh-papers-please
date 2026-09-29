@@ -5,7 +5,7 @@ exports[`same seed, same court, appeals included (snapshot) > gives identical ru
   "seed1": [
     {
       "day": 1,
-      "pay": 60,
+      "pay": 70,
       "rulings": [
         {
           "evidence": "phrase",
@@ -16,20 +16,20 @@ exports[`same seed, same court, appeals included (snapshot) > gives identical ru
         },
         {
           "evidence": "hunch",
-          "index": 2,
+          "index": 3,
           "rounds": [
             "3 jurors, fee 0: 2 uphold",
           ],
         },
       ],
-      "savings": 262,
+      "savings": 272,
     },
     {
       "day": 2,
       "pay": 80,
       "rulings": [
         {
-          "evidence": "human",
+          "evidence": "face",
           "index": 2,
           "rounds": [
             "3 jurors, fee 0: 3 uphold",
@@ -43,7 +43,7 @@ exports[`same seed, same court, appeals included (snapshot) > gives identical ru
           ],
         },
       ],
-      "savings": 287,
+      "savings": 297,
     },
     {
       "day": 3,
@@ -65,7 +65,7 @@ exports[`same seed, same court, appeals included (snapshot) > gives identical ru
           ],
         },
       ],
-      "savings": 321,
+      "savings": 331,
     },
     {
       "day": 4,
@@ -86,7 +86,7 @@ exports[`same seed, same court, appeals included (snapshot) > gives identical ru
           ],
         },
       ],
-      "savings": 344,
+      "savings": 354,
     },
     {
       "day": 5,
@@ -115,7 +115,7 @@ exports[`same seed, same court, appeals included (snapshot) > gives identical ru
           ],
         },
       ],
-      "savings": 379,
+      "savings": 389,
     },
     {
       "day": 6,
@@ -144,7 +144,7 @@ exports[`same seed, same court, appeals included (snapshot) > gives identical ru
           ],
         },
       ],
-      "savings": 411,
+      "savings": 421,
     },
     {
       "day": 7,
@@ -172,13 +172,13 @@ exports[`same seed, same court, appeals included (snapshot) > gives identical ru
           ],
         },
       ],
-      "savings": 442,
+      "savings": 452,
     },
   ],
   "seed2": [
     {
       "day": 1,
-      "pay": 60,
+      "pay": 70,
       "rulings": [
         {
           "evidence": "phrase",
@@ -189,20 +189,20 @@ exports[`same seed, same court, appeals included (snapshot) > gives identical ru
         },
         {
           "evidence": "hunch",
-          "index": 2,
+          "index": 3,
           "rounds": [
             "3 jurors, fee 0: 2 uphold",
           ],
         },
       ],
-      "savings": 260,
+      "savings": 270,
     },
     {
       "day": 2,
       "pay": 80,
       "rulings": [
         {
-          "evidence": "human",
+          "evidence": "face",
           "index": 0,
           "rounds": [
             "3 jurors, fee 0: 3 uphold",
@@ -216,14 +216,14 @@ exports[`same seed, same court, appeals included (snapshot) > gives identical ru
           ],
         },
       ],
-      "savings": 285,
+      "savings": 295,
     },
     {
       "day": 3,
       "pay": 100,
       "rulings": [
         {
-          "evidence": "human",
+          "evidence": "face",
           "index": 2,
           "rounds": [
             "3 jurors, fee 0: 3 uphold",
@@ -238,7 +238,7 @@ exports[`same seed, same court, appeals included (snapshot) > gives identical ru
           ],
         },
       ],
-      "savings": 318,
+      "savings": 328,
     },
     {
       "day": 4,
@@ -259,7 +259,7 @@ exports[`same seed, same court, appeals included (snapshot) > gives identical ru
           ],
         },
       ],
-      "savings": 342,
+      "savings": 352,
     },
     {
       "day": 5,
@@ -288,11 +288,11 @@ exports[`same seed, same court, appeals included (snapshot) > gives identical ru
           ],
         },
       ],
-      "savings": 377,
+      "savings": 387,
     },
     {
       "day": 6,
-      "pay": 125,
+      "pay": 135,
       "rulings": [
         {
           "evidence": "hunch",
@@ -303,7 +303,7 @@ exports[`same seed, same court, appeals included (snapshot) > gives identical ru
           ],
         },
         {
-          "evidence": "human",
+          "evidence": "living",
           "index": 2,
           "rounds": [
             "3 jurors, fee 0: 3 uphold",
@@ -313,18 +313,19 @@ exports[`same seed, same court, appeals included (snapshot) > gives identical ru
           "evidence": "hunch",
           "index": 9,
           "rounds": [
-            "3 jurors, fee 0: 2 uphold",
+            "3 jurors, fee 0: 1 uphold",
+            "7 jurors, fee 10: 6 uphold",
           ],
         },
       ],
-      "savings": 408,
+      "savings": 428,
     },
     {
       "day": 7,
       "pay": 85,
       "rulings": [
         {
-          "evidence": "human",
+          "evidence": "face",
           "index": 3,
           "rounds": [
             "3 jurors, fee 0: 3 uphold",
@@ -345,7 +346,7 @@ exports[`same seed, same court, appeals included (snapshot) > gives identical ru
           ],
         },
       ],
-      "savings": 440,
+      "savings": 460,
     },
   ],
 }

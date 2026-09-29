@@ -33,15 +33,15 @@ describe('Humanity Day', () => {
     }
   });
 
-  it('sends the last unit with a lit slit in its one blink frame, and papers that pass Rules 1 to 6', () => {
+  it('sends the last unit with a lit slit in its one blink frame, breaking Rule 2 only: its papers pass every other rule', () => {
     for (const { seed, queue, seen } of day7) {
       const i = queue.findIndex((a) => a.cast === 'unit');
       const unit = queue[i];
       expect(unit.photo).toEqual(UNIT_FACES[6]);
       expect(unit.video.lamp).toBe('slit');
       expect(litFrames(unit.video), `seed ${seed}`).toEqual([3]);
-      expect(unit.planted).toEqual([{ rule: 'human', mistake: 'machine' }]);
-      expect(rules(unit, seen[i]), `seed ${seed}`).toEqual(['human']);
+      expect(unit.planted).toEqual([{ rule: 'face', mistake: 'machine' }]);
+      expect(rules(unit, seen[i]), `seed ${seed}`).toEqual(['face']);
       // Vouched for by someone ordinary and registered: nothing on the form says "unit".
       expect(unit.voucher && findName(seen[i], unit.voucher), `seed ${seed}`).toBeTruthy();
     }

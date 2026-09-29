@@ -6,7 +6,7 @@ import { litFrames } from '../src/rules/face';
 // clerk's two clicks for each kind of fault the generator plants, so a spec can challenge a fake
 // with evidence, as a player who checked would.
 
-const RULE_KEY = { human: '0', phrase: '1', photo: '2', sign: '3', vouch: '4', duplicate: '5', living: '6' } as const;
+const RULE_KEY = { phrase: '1', face: '2', sign: '3', vouch: '4', duplicate: '5', living: '6' } as const;
 
 /** Points Inspect at the two things that show the applicant's (first) planted fault, and waits for the discrepancy. */
 export async function inspectFault(page: Page, a: GeneratedApplicant) {
@@ -21,17 +21,19 @@ export async function inspectFault(page: Page, a: GeneratedApplicant) {
     await point(`Rule ${RULE_KEY[fault.rule]}`);
   };
   switch (fault.rule) {
-    case 'human':
-      await point(`frame ${litFrames(a.video)[0] ?? a.video.glitch?.frame ?? 1}`);
-      await againstRule();
-      break;
     case 'phrase':
       await point('the transcript');
       await againstRule();
       break;
-    case 'photo':
-      await point('the photo');
-      await point('frame 1');
+    case 'face':
+      // A light or a face that turns into another shows in a frame, against the rule; anything else, the photo against a frame.
+      if (fault.mistake === 'machine' || fault.mistake === 'deepfake') {
+        await point(`frame ${litFrames(a.video)[0] ?? a.video.glitch?.frame ?? 1}`);
+        await againstRule();
+      } else {
+        await point('the photo');
+        await point('frame 1');
+      }
       break;
     case 'sign':
       await point('the sign');
@@ -48,7 +50,7 @@ export async function inspectFault(page: Page, a: GeneratedApplicant) {
       await point('the photo');
       break;
     case 'living':
-      await point(fault.mistake === 'no-blink' ? 'frame 1' : 'the year of birth');
+      await point(fault.mistake === 'version' || fault.mistake === 'year-typo' || fault.mistake === 'ancient' ? 'the year of birth' : 'frame 1');
       await againstRule();
       break;
   }

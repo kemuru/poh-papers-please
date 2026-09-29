@@ -17,7 +17,7 @@ export const pick = <T,>(pool: readonly T[], n: number) => pool[Math.abs(n) % po
  * Printed the moment a fake is registered. The day's first is a warning; the rest are fines. On the night
  * shift (`night`, the citation's number) there is no pay to fine, only a count to three.
  */
-export function CitationSlip({ decided, caseNo, video, night }: { decided: Decided; caseNo: string; /** The video on the papers stamped: a Rule 0 citation reprints it. */ video: Video; night?: number }) {
+export function CitationSlip({ decided, caseNo, video, night }: { decided: Decided; caseNo: string; /** The video on the papers stamped: a citation for a fault in it reprints it. */ video: Video; night?: number }) {
   const warning = decided.citation === 'warning' && night === undefined;
   const title = night !== undefined ? NIGHT.citation.replace('{n}', String(night)) : warning ? 'Citation · Warning' : 'Citation';
   return (
@@ -89,7 +89,7 @@ function Slip({ kind, variant, title, number, children }: { kind: string; varian
 
 /**
  * Names the broken rule and shows the evidence: the two things that disagree, with the difference marked.
- * Given the `video`, a Rule 0 breach reprints it.
+ * Given the `video`, a fault in the video itself reprints it.
  */
 export function Breach({ lead, violation: v, video }: { lead: string; violation: Violation; video?: Video }) {
   const rule = RULEBOOK[v.rule];
@@ -125,15 +125,19 @@ export function Breach({ lead, violation: v, video }: { lead: string; violation:
           <p className="evidence-line">
             <mark>{capitalise(evidenceLine(v))}</mark>
           </p>
-          {v.rule === 'human' && video && <CitationFilm video={video} named={v.problem === 'machine' || v.problem === 'changes' ? v.frame : null} />}
+          {filmed(v) && video && <CitationFilm video={video} named={v.rule === 'face' && (v.problem === 'machine' || v.problem === 'changes') ? v.frame : null} />}
         </>
       )}
     </>
   );
 }
 
+/** A fault that is in the video itself: a light, a face that turns into another, a picture held up, a generator's mark. */
+const filmed = (v: Violation) =>
+  (v.rule === 'face' && (v.problem === 'machine' || v.problem === 'changes')) || (v.rule === 'living' && (v.problem === 'picture' || v.problem === 'generated'));
+
 /**
- * A Rule 0 citation reprints the video as the desk showed it, the frame its evidence names outlined: the papers
+ * A citation for a fault in the video reprints it as the desk showed it, the frame its evidence names outlined: the papers
  * have gone back through the slot, so the evidence comes back on the slip. Nothing on it can be pointed at: no
  * Inspectable, no frame test ids, no frame names (the desk's papers are still in the DOM while they leave).
  */

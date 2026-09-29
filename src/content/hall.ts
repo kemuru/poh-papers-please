@@ -15,7 +15,7 @@ export const ANNOUNCEMENTS: readonly (readonly string[])[] = [
   ],
   [
     'A pigeon has entered the building. It has been asked to take a number.',
-    'Photographs must now be of the applicant. The Ministry thanks the catalogue for its understanding.',
+    'Applicants are reminded that the face in their photograph should be their own.',
     'Lost property: one face, very lifelike. Please collect it from Window 3.',
     'The Ministry registers humans only. Pets may wait in the car.',
   ],
@@ -32,7 +32,7 @@ export const ANNOUNCEMENTS: readonly (readonly string[])[] = [
     'Window 2 is closed while it votes on whether to leave the Ministry.',
   ],
   [
-    'The pigeon has been processed under Rule 0. The Ministry wishes it well.',
+    'The pigeon has been processed under Rule 2. The Ministry wishes it well.',
     'Applicants registered more than once may report themselves at Window 3 and keep a quarter of the income.',
     'Following a vote, Window 2 has left the Ministry. You are at the real one.',
     'Two days to Humanity Day. Applicants may be asked to remove their hat.',
@@ -51,25 +51,28 @@ export const ANNOUNCEMENTS: readonly (readonly string[])[] = [
   ],
 ];
 
-/** The supervisor's sticky note on the desk each morning: the day's new rule, and the week. */
+/**
+ * The supervisor's sticky note on the desk each morning. It points at the day's new page in the rulebook,
+ * which says the rule, rather than saying it again; and it says how to use a tool the day it arrives.
+ */
 export const SUPERVISOR_NOTES: readonly string[] = [
-  'NEXT calls someone. Check Rule 0 first, every frame. Court at five.',
-  'New: the photo must be the face in the video. Hair does not count. The clock starts today.',
-  'New: wallet on the form, wallet on the sign. Window 2 is voting. Window 3 is working.',
-  'New: press Look up beside the voucher, or V. Do not look up at the ceiling.',
-  'New: Search this face, or F. Window 2 has left the Ministry. You are not interested.',
-  'New: they have to blink. Humanity Day tomorrow. Keep stamping.',
+  'NEXT calls someone. Rule 1 is in the book. Court at five. You will be fine.',
+  'New in the book: Rule 2. The clock starts today.',
+  'New in the book: Rule 3. Window 2 is voting. Window 3 is working.',
+  'New: Rule 4. Look the voucher up with V. Do not look up at the ceiling.',
+  'New: Rule 5. Search the face with F. Window 2 has left the Ministry. You are not interested.',
+  'New: Rule 6. Humanity Day tomorrow. Keep stamping.',
   'Your registration ran out at nine, so you are last in the queue. It has been an honour.',
 ];
 
 /**
  * Posters on the waiting hall wall, two a day, in the pixel font: capitals, digits and . , ! ? ' - : only.
- * They repeat, as posters do. CHECK EVERY FRAME goes up with Rule 0 on day 1, and back up on day 4, the
- * morning the Gazette reports that the lamp has been dimmed.
+ * They repeat, as posters do. CHECK EVERY FRAME goes up with Rule 2 on day 2, and back up on day 4, the
+ * morning the Gazette reports that Likeness has changed its lamps.
  */
 export const POSTERS: readonly (readonly [string, string])[] = [
-  ['CHECK EVERY FRAME', 'ONE HUMAN, ONE QUEUE'],
-  ['BE YOURSELF. ONCE.', 'VOUCH RESPONSIBLY'],
+  ['BE YOURSELF. ONCE.', 'ONE HUMAN, ONE QUEUE'],
+  ['CHECK EVERY FRAME', 'VOUCH RESPONSIBLY'],
   ['HAVE YOUR HUMANITY READY', 'VOUCH RESPONSIBLY'],
   ['CHECK EVERY FRAME', 'ONE HUMAN, ONE VOTE'],
   ['CHECK EVERY FRAME', 'ONE FACE PER HUMAN'],
@@ -79,9 +82,8 @@ export const POSTERS: readonly (readonly [string, string])[] = [
 
 export const BANNER = 'WELCOME TO THE NEW REGISTRY';
 
-/** The announcement board between announcements: a plain sign, so nothing funny is on screen for long. */
-export const BOARD = {
-  waiting: 'Please wait for your number to be called.',
+/** What the PA says at five, and keeps saying until the hall is empty. */
+export const CLOSING = {
   closed: 'Window 3 is closed. Please leave the building calmly.',
   /** Humanity Day at five. */
   open: 'The Universal Basic Income is now open. Happy Humanity Day.',

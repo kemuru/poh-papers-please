@@ -6,14 +6,15 @@
 // against the registry the clerk actually built.
 import { FIRST_NAMES, LAST_NAMES, ON_PAPER, REMARKS, STREETS, TOWNS } from '../content/applicants';
 import {
-  AGENT, CLERK, CLONE, CUTOUT, DEEPFAKE, FIRST_APPLICANT, INFLUENCER, LIKENESS, PAT, PAT_MOTHER, REGULARS, RENEWAL, SYBIL_FARM, TWINS,
+  AGENT, CLERK, CLONE, CUTOUT, DEEPFAKE, FIRST_APPLICANT, FIRST_SLIP, INFLUENCER, LIKENESS, PAT, PAT_MOTHER, REGULARS, RENEWAL, SYBIL_FARM, TWINS,
   TWINS_FORM, UNIT_ON_FILE_RECORD, UNIT_OWNERS, UNITS, type CastId, type RegularId,
 } from '../content/cast';
 import {
-  CAST_PORTRAITS, CATALOGUE_GENTLEMAN, CLONE_PORTRAIT, DEEPFAKE_SLIP, FARM_HATS, FIRST_APPLICANT_PORTRAIT, INFLUENCER_PHOTO,
+  CAST_PORTRAITS, CATALOGUE_GENTLEMAN, CLONE_PORTRAIT, DEEPFAKE_SLIP, FARM_HATS, FIRST_APPLICANT_PORTRAIT, FIRST_SLIP_PORTRAIT, INFLUENCER_PHOTO,
   TWIN_TWO, UNIT_FACES, UNIT_LAMPS,
 } from '../content/portraits';
 import { hearChallenges } from '../court/court';
+import { RULE_DAYS } from '../rules/judge';
 import { PHRASE } from '../rules/phrase';
 import { atWindow, findName, freeVouches, register, remove } from '../rules/registry';
 import type { Registrant, Registry, Sign } from '../rules/types';
@@ -30,11 +31,12 @@ export type DayPlan = {
 };
 
 /**
- * The day table in notes/game-design.md. Day 1 is 3 valid out of 5: its tutorial needs a fake besides the
- * unit. Day 7 is six in the queue, 4 of them valid, and then the clerk's own renewal, which is not.
+ * The day table in notes/game-design.md. Day 1 is 4 valid out of 6: Pat's slip, which the guided Inspect
+ * finds, and Gordon Pim's, which the clerk finds alone; the unit is valid, since no rule reads a face
+ * yet. Day 7 is six in the queue, 4 of them valid, and then the clerk's own renewal, which is not.
  */
 export const DAYS: readonly DayPlan[] = [
-  { applicants: 5, fakes: 2, shiftSeconds: null },
+  { applicants: 6, fakes: 2, shiftSeconds: null },
   { applicants: 7, fakes: 2, shiftSeconds: 360 },
   { applicants: 8, fakes: 2, shiftSeconds: 360 },
   { applicants: 8, fakes: 2, shiftSeconds: 360 },
@@ -71,15 +73,21 @@ export const generateDay = (seed: number, day: number): GeneratedApplicant[] => 
 export const morningRegistry = (seed: number, day: number): Registry => planWeek(seed).mornings[day - 1];
 
 /**
- * A new day at the registry: every vouch is free again, and anyone withdrawing that morning is gone. On
- * Humanity Day the clerk's own registration runs out, the one made before the week; a Robin Hale
- * registered this week (the clone, if the clerk let him in) is his own registration, and stays.
+ * A new day at the registry: every vouch is free again, and anyone withdrawing that morning is gone: on
+ * day 2 the day 1 unit, whose household has told the press what it is, and on day 6 the unit Window 7
+ * registered last month. On Humanity Day the clerk's own registration runs out, the one made before the
+ * week; a Robin Hale registered this week (the clone, if the clerk let him in) is his own registration,
+ * and stays.
  */
 export function morning(registry: Registry, day: number): Registry {
   let today = day === UNIT_ON_FILE_RECORD.withdraws ? remove(registry, UNIT_ON_FILE_RECORD.name) : registry;
+  if (day === FIRST_UNIT_WITHDRAWN) today = remove(today, UNITS[0].name);
   if (day === LAST_DAY) today = today.filter((r) => !(r.name === CLERK.name && r.day === 0));
   return freeVouches(today);
 }
+
+/** The morning the day 1 unit leaves the registry: the morning its household tells the press. */
+export const FIRST_UNIT_WITHDRAWN = 2;
 
 /** Everyone who is somebody in particular: no ordinary applicant gets their name or address. */
 const CAST_NAMES = [
@@ -89,6 +97,7 @@ const CAST_NAMES = [
   PAT.name, PAT.address, PAT_MOTHER.name, ...TWINS.map((t) => t.name), TWINS_FORM.address,
   ...SYBIL_FARM.cousins.map((c) => c.name), SYBIL_FARM.address, AGENT.name, AGENT.address, DEEPFAKE.name, DEEPFAKE.address,
   CUTOUT.name, CUTOUT.address, INFLUENCER.name, INFLUENCER.address, FIRST_APPLICANT.name, FIRST_APPLICANT.address,
+  FIRST_SLIP.name, FIRST_SLIP.address,
 ];
 
 const REGULAR_IDS = Object.keys(REGULARS) as RegularId[];
@@ -99,7 +108,7 @@ const faceKey = (p: Portrait) => `${p.species}:${Object.values(p.face).join(',')
 type Extra = 'agent' | 'cutout' | 'deepfake' | 'clone' | 'influencer' | FillInFault;
 type FillInFault =
   | 'phrase'
-  | Extract<Mistakes['photo'], 'another-face' | 'mirrored'>
+  | Extract<Mistakes['face'], 'another-face' | 'mirrored'>
   | Extract<Mistakes['sign'], 'two-wrong' | 'no-sign' | 'wrong-address'>
   | Extract<Mistakes['vouch'], 'unregistered' | 'busy'>
   | Extract<Mistakes['duplicate'], 'back-in-a-hat'>
@@ -126,7 +135,7 @@ type Week = {
 export function planWeek(seed: number): WeekPlan {
   const rng = createRng(seed);
   const w: Week = { seed, rng, used: new Set(CAST_NAMES), faces: new Set(), refused: [], owners: [] };
-  for (const p of [...Object.values(CAST_PORTRAITS), FIRST_APPLICANT_PORTRAIT, CATALOGUE_GENTLEMAN, CLONE_PORTRAIT]) w.faces.add(faceKey(p));
+  for (const p of [...Object.values(CAST_PORTRAITS), FIRST_APPLICANT_PORTRAIT, FIRST_SLIP_PORTRAIT, CATALOGUE_GENTLEMAN, CLONE_PORTRAIT]) w.faces.add(faceKey(p));
 
   // Who comes when. Ethel is registered on the first morning; the other regulars come once, from
   // day 2, Socrates before the day his year catches up with him.
@@ -228,12 +237,15 @@ function compose(w: Week, day: number, plan: DayPlan, registry: Registry, cast: 
   const binnses = day === LAST_DAY ? [binnsBack(w, 0), binnsBack(w, 1)] : [];
   const phraseFakes = day === LAST_DAY ? [fillIn(w, day, true)] : [];
   const clerk = day === LAST_DAY ? renewal(registry) : null;
+  // Day 1's first slip, which the clerk catches alone.
+  const slip = day === 1 ? firstSlip() : null;
 
-  const fixed = [unit, pat, mother, ...farm, ...twins, influencer, ...cast.regulars, ...extras, ...binnses, ...phraseFakes, clerk].filter(
+  const fixed = [unit, pat, mother, ...farm, ...twins, influencer, ...cast.regulars, ...extras, ...binnses, ...phraseFakes, clerk, slip].filter(
     (a) => a !== null,
   );
   const scriptedFakes = fixed.filter((a) => a.planted.length > 0).length;
   if (scriptedFakes !== plan.fakes) throw new Error(`Day ${day}: ${scriptedFakes} fakes, the day table says ${plan.fakes}`);
+  // Day 1's first applicant is scripted too, and not in `fixed`.
   const fillIns = Array.from({ length: plan.applicants - fixed.length - (day === 1 ? 1 : 0) }, () => fillIn(w, day, false));
 
   // Some ordinary people look as if they break a rule, and do not.
@@ -245,7 +257,9 @@ function compose(w: Week, day: number, plan: DayPlan, registry: Registry, cast: 
   const n = plan.applicants;
   let queue: GeneratedApplicant[];
   if (day === 1) {
-    queue = [first(), pat!, unit!, ...shuffle(rng, [cast.regulars.find((a) => a.cast === 'grandmaEthel')!, influencer ?? fillIns[0]])];
+    // Hortense, then Pat for the guided Inspect, then the unit, legal today, then Gordon Pim, whom the
+    // clerk checks alone; Ethel and one more come last.
+    queue = [first(), pat!, unit!, slip!, ...shuffle(rng, [cast.regulars.find((a) => a.cast === 'grandmaEthel')!, influencer ?? fillIns[0]])];
   } else if (day === 4) {
     // Pat's mother is three places behind Pat, and Pat opens the day.
     const rest = shuffle(rng, fixed.concat(fillIns).filter((a) => a !== pat && a !== mother && a !== unit));
@@ -450,9 +464,20 @@ function first(): GeneratedApplicant {
   return { name: f.name, address: f.address, birthYear: f.birthYear, photo: face, video: { face, transcript: f.video, blinked: true }, remark: f.remark, planted: [], cast: null };
 }
 
+/** Gordon Pim, day 1's first slip: "in this ministry". Built without the week's random numbers, so nobody else changes. */
+function firstSlip(): GeneratedApplicant {
+  const f = FIRST_SLIP;
+  const face = FIRST_SLIP_PORTRAIT;
+  return {
+    name: f.name, address: f.address, birthYear: f.birthYear, photo: face, video: { face, transcript: f.video, blinked: true }, remark: f.remark,
+    planted: [{ rule: 'phrase', mistake: 'wrong-word' }], cast: null,
+  };
+}
+
 /**
  * The day's Likeness unit: a new face, an ordinary name, a flawless photo, the phrase word for word,
- * and one thing that gives it away. Built without the week's random numbers, so nobody else changes.
+ * and one thing that gives it away. Day 1's lamp breaks no rule: no rule reads a face until day 2, which
+ * brings Rule 2 because of it. Built without the week's random numbers, so nobody else changes.
  */
 function unitOn(day: number): GeneratedApplicant {
   const u = UNITS[day - 1];
@@ -461,7 +486,7 @@ function unitOn(day: number): GeneratedApplicant {
   const a: GeneratedApplicant = {
     name: u.name, address: u.address, birthYear: u.birthYear, photo: face, remark: u.remark, cast: 'unit',
     video: { face, transcript: PHRASE, blinked: true, ...(tell ?? {}) },
-    planted: tell ? [{ rule: 'human', mistake: 'machine' }] : [],
+    planted: tell && day >= RULE_DAYS.face ? [{ rule: 'face', mistake: 'machine' }] : [],
   };
   if (day >= 3) a.wallet = u.wallet;
   if (day === 4) {
@@ -488,7 +513,7 @@ function patOn(w: Week, day: number): GeneratedApplicant {
   if (day === 1) a.planted = [{ rule: 'phrase', mistake: 'wrong-word' }];
   if (day === 2) {
     a.mirrored = true;
-    a.planted = [{ rule: 'photo', mistake: 'mirrored' }];
+    a.planted = [{ rule: 'face', mistake: 'mirrored' }];
   }
   if (day === 3) a.planted = [{ rule: 'sign', mistake: 'two-wrong' }];
   if (day === 4) {
@@ -545,7 +570,7 @@ function regular(id: RegularId, day: number, n: number): GeneratedApplicant {
     video: { face: r.portrait, transcript: r.videos[n % r.videos.length], blinked: true, ...(r.nervous ? { nervous: true as const } : {}) },
     remark: r.remarks[n % r.remarks.length], planted: [], cast: id,
   };
-  if (id === 'dave') a.lookAlike = { rule: 'human', kind: 'costume' };
+  if (id === 'dave') a.lookAlike = { rule: 'face', kind: 'costume' };
   if (id === 'nervousNigel' && day >= 6) a.lookAlike = { rule: 'living', kind: 'blinks-a-lot' };
   return a;
 }
@@ -577,7 +602,7 @@ function influencerOn(day: number): GeneratedApplicant {
   const face = CAST_PORTRAITS.influencer;
   return {
     name: i.name, address: i.address, birthYear: i.birthYear, photo: INFLUENCER_PHOTO, video: { face, transcript: i.video, blinked: true },
-    remark: i.remark, cast: 'influencer', planted: day >= 2 ? [{ rule: 'photo', mistake: 'filter' }] : [],
+    remark: i.remark, cast: 'influencer', planted: day >= RULE_DAYS.face ? [{ rule: 'face', mistake: 'filter' }] : [],
   };
 }
 
@@ -588,7 +613,7 @@ function extra(w: Week, kind: Extra, day: number, registry: Registry): Generated
   switch (kind) {
     case 'agent': {
       const face = castFace('agent');
-      // Its video was generated, not filmed, which Rule 0 catches; and it gets one more thing wrong.
+      // Its video was generated, not filmed, which Rule 6 catches; and it gets one more thing wrong.
       const fault = rng.pick(['phrase', 'sign', 'living'] as const);
       return {
         name: AGENT.name, address: AGENT.address, birthYear: fault === 'living' ? AGENT.version : AGENT.birthYear, photo: face,
@@ -597,19 +622,21 @@ function extra(w: Week, kind: Extra, day: number, registry: Registry): Generated
           ...(fault === 'sign' ? { sign: { kind: 'qr' } as Sign } : {}),
         },
         remark: AGENT.remarks[fault], cast: 'agent',
-        planted: [
-          { rule: 'human', mistake: 'generated' },
-          fault === 'phrase' ? { rule: 'phrase', mistake: 'missing-words' } : fault === 'sign' ? { rule: 'sign', mistake: 'qr' } : { rule: 'living', mistake: 'version' },
-        ],
+        // One entry per rule broken, in rulebook order, as judge() reports them: a version number for a
+        // year is Rule 6's as well, and the year is what Rule 6 reads first.
+        planted:
+          fault === 'phrase' ? [{ rule: 'phrase', mistake: 'missing-words' }, { rule: 'living', mistake: 'generated' }]
+          : fault === 'sign' ? [{ rule: 'sign', mistake: 'qr' }, { rule: 'living', mistake: 'generated' }]
+          : [{ rule: 'living', mistake: 'version' }],
       };
     }
     case 'cutout': {
       const face = castFace('cutout');
       return {
         name: CUTOUT.name, address: CUTOUT.address, birthYear: CUTOUT.birthYear, photo: face, remark: CUTOUT.remark, cast: 'cutout',
-        // A printed face held up to the camera: a picture, not a person (Rule 0), and a picture does not blink (Rule 6).
+        // A printed face held up to the camera: a picture, not a person, and a picture does not blink (Rule 6).
         video: { face, transcript: CUTOUT.video, blinked: false, still: true },
-        planted: [{ rule: 'human', mistake: 'printed' }, { rule: 'living', mistake: 'no-blink' }],
+        planted: [{ rule: 'living', mistake: 'printed' }],
       };
     }
     case 'deepfake': {
@@ -617,7 +644,7 @@ function extra(w: Week, kind: Extra, day: number, registry: Registry): Generated
       return {
         name: DEEPFAKE.name, address: DEEPFAKE.address, birthYear: DEEPFAKE.birthYear, photo: face, remark: DEEPFAKE.remark, cast: 'deepfake',
         video: { face, transcript: PHRASE, blinked: true, glitch: { frame: rng.int(2, 3), face: DEEPFAKE_SLIP } },
-        planted: [{ rule: 'human', mistake: 'deepfake' }],
+        planted: [{ rule: 'face', mistake: 'deepfake' }],
       };
     }
     case 'clone':
@@ -641,7 +668,7 @@ function faultyFillIn(w: Week, kind: Exclude<FillInFault, 'phrase'>, registry: R
   switch (kind) {
     case 'another-face':
       a.photo = newFace(w);
-      a.planted = [{ rule: 'photo', mistake: 'another-face' }];
+      a.planted = [{ rule: 'face', mistake: 'another-face' }];
       break;
     case 'mirrored': {
       // A mole shows which way round a face is. A remark about the mark it had would not fit the mole.
@@ -650,7 +677,7 @@ function faultyFillIn(w: Week, kind: Exclude<FillInFault, 'phrase'>, registry: R
       a.photo = face;
       a.video = { ...a.video, face };
       a.mirrored = true;
-      a.planted = [{ rule: 'photo', mistake: 'mirrored' }];
+      a.planted = [{ rule: 'face', mistake: 'mirrored' }];
       break;
     }
     case 'two-wrong':
@@ -689,9 +716,9 @@ function faultyFillIn(w: Week, kind: Exclude<FillInFault, 'phrase'>, registry: R
 /** Makes a valid ordinary person look as if they break one of the day's rules, without breaking it. */
 function lookAlike(w: Week, a: GeneratedApplicant, day: number, newRule: boolean) {
   const { rng } = w;
-  const rules = (['photo', 'sign', 'living'] as const).filter((rule) => (newRule ? DAYS_OF[rule] === day : DAYS_OF[rule] <= day));
+  const rules = (['face', 'sign', 'living'] as const).filter((rule) => (newRule ? RULE_DAYS[rule] === day : RULE_DAYS[rule] <= day));
   const rule = rules.length > 0 ? rng.pick(rules) : null;
-  if (rule === 'photo') {
+  if (rule === 'face') {
     // A new haircut since the photo, or glasses on in one and off in the other: hair and glasses are not the face.
     const hairs = (['short', 'buzz', 'bob', 'curly', 'side-part', 'bald'] as const).filter((h) => h !== a.photo.hair);
     const glasses = a.photo.accessories.includes('glasses');
@@ -701,7 +728,7 @@ function lookAlike(w: Week, a: GeneratedApplicant, day: number, newRule: boolean
         ? { ...a.photo, hair: rng.pick(hairs) }
         : { ...a.photo, accessories: glasses ? a.photo.accessories.filter((x) => x !== 'glasses') : [...a.photo.accessories, 'glasses'] },
     };
-    a.lookAlike = { rule: 'photo', kind: 'new-look' };
+    a.lookAlike = { rule: 'face', kind: 'new-look' };
   } else if (rule === 'sign') {
     a.lookAlike = { rule: 'sign', kind: rng.next() < 0.6 ? 'one-wrong' : 'phone' };
   } else if (rule === 'living') {
@@ -713,8 +740,6 @@ function lookAlike(w: Week, a: GeneratedApplicant, day: number, newRule: boolean
     a.lookAlike = { rule: 'living', kind: 'very-old' };
   }
 }
-
-const DAYS_OF = { photo: 2, sign: 3, living: 6 } as const;
 
 function weightedPick<T>(rng: Rng, table: readonly (readonly [T, number])[]): T {
   const total = table.reduce((sum, [, weight]) => sum + weight, 0);

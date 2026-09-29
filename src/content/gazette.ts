@@ -12,7 +12,6 @@ export const HEADLINES = {
     'WINDOW 3 REGISTERS A HOME ROBOT; OWNERS "THRILLED"',
     'LIKENESS: OUR UNITS "GIVE OFF NO VISIBLE LIGHT"',
     'REGISTRY ADMITS A HUMAN WITH A WARRANTY',
-    'HOME ROBOT REGISTERED AS HUMAN. MINISTRY "LOOKING INTO IT".',
     'LIKENESS SHARES RISE ON NEWS FROM WINDOW 3',
     'NEWLY REGISTERED HUMAN ASKS WHERE TO SEND THE INCOME',
   ],
@@ -40,6 +39,8 @@ export const HEADLINES = {
     'JURY CLEARS {NAME}. JURORS "VOTED WITH THE OTHERS"',
     '{NAME} REGISTERED BY THE COURT. THE FILE WAS "VERY LONG"',
     'WINDOW 3 CHALLENGED {NAME}. THE JURY DID NOT FIND RULE {RULE}.',
+    'THREE JURORS EXAMINE {NAME}; NONE REACHES RULE {RULE}',
+    '{NAME} "DELIGHTED" WITH HUMANITY COURT',
   ],
   /** The clock ran out with people still waiting. */
   timeUp: [
@@ -64,35 +65,44 @@ export const HEADLINES = {
 } as const;
 
 /**
- * Yesterday's figures and one of the people behind them. "{day}" is yesterday; "{registered}",
- * "{challenged}", "{upheld}" are counts; "{name}" is someone who came to the window.
+ * Under the front page's photo of yesterday's faces: the day in figures. "{day}" is yesterday;
+ * "{registered}", "{refused}" and "{home}" are counts.
  */
-export const REPORT = {
-  figures: 'Day {day} at Window 3: {registered} registered, {challenged} challenged, {upheld} upheld in court.',
-  welcomed: 'The Ministry welcomes {name} to the registry.',
-  refused: '{name} was refused, and has been seen in the queue.',
-  removed: 'Also removed: {voucher}, who vouched for {name}.',
-  none: 'The previous clerk has been moved to other duties.',
+export const CAPTION = {
+  figures: 'Window 3, day {day}: {registered} registered, {refused} refused.',
+  home: ' {home} sent home at five.',
+  /** A week begun later than day 1: the paper has no yesterday of this clerk's to print. */
+  none: 'Window 3 has a new clerk this morning. The previous one has been moved to other duties.',
 };
 
-/** Each morning's new rule, as a Ministry notice with its cause. Day 7 has no new rule. */
-export const RULE_NOTICES: Record<number, string> = {
-  2: 'Following yesterday’s registration of a photograph of a more attractive man, the photograph must now be of the applicant, facing the camera and not mirrored.',
-  3: 'A registration was claimed yesterday with someone else’s wallet. Applicants must now hold up their wallet address, in full, in their video.',
-  4: 'Following the registration at Window 6 of a man who vouched for himself, each applicant must now be vouched for by one registered human, not themselves. The registry lookup is open at Window 3.',
-  5: 'Following the registration of one face four times at Window 5, in four hats, a face may now be registered once.',
-  6: 'Following the registration of a man born in 470 BC, applicants must now be living: born between 1900 and today, and seen to blink.',
-  7: 'There is no new rule today. Rule 0 remains in force, as it always has. Clerks whose registrations expire today will be renewed at their own windows, like anyone. The Universal Basic Income opens at five o’clock.',
+/** How the photo of yesterday's faces stamps each one. */
+export const WALL_STAMPS = {
+  registered: 'Registered',
+  refused: 'Refused',
+  court: 'By the court',
+  home: 'Sent home',
+  removed: 'Removed',
+} as const;
+
+/**
+ * The morning of day 2: day 1's unit, which no rule could catch, is a home robot, and Rule 2 is the
+ * Ministry's answer. The front page reprints the frame it lit up in, the one the clerk saw.
+ */
+export const ROBOT_STORY = {
+  headline: 'HOME ROBOT CERTIFIES IT IS HUMAN. MINISTRY HAD NO FURTHER QUESTIONS.',
+  /** When the clerk challenged it, and the court found no rule to uphold. */
+  challenged: 'WINDOW 3 CHALLENGED A HOME ROBOT. THE COURT FOUND NO RULE.',
+  caption: '{name}, frame 3 of her video. Her household confirms she is a Likeness unit. She has been withdrawn.',
 };
 
-/** The week's running stories, one item a morning: the countdown, the fork, Pat, the Likeness units. */
+/** The week's running stories, one line a morning: Likeness Robotics, the fork, Pat, the countdown. */
 export const THREAD: Record<number, string> = {
-  2: 'Queues are expected to grow before Humanity Day. The queue has been told, and has grown. Likeness Robotics reminds owners that its home units are not eligible for the income, "at present". It adds that the light between a unit’s brows when it shuts its eyes is a night lamp, and a standard feature.',
-  3: 'Window 2 has proposed leaving the Ministry, over a different interpretation of sybil. It is voting. Likeness Robotics confirms that its home units blink, for the comfort of the household, and see perfectly well while doing so.',
-  4: 'Window 2 is voting. Under its rules the vote has an automatic extension of six months. Likeness Robotics has dimmed the night lamp in its older units, in response to customer feedback.',
+  2: 'Likeness Robotics says the light is its night lamp: infrared, like a television remote’s. A phone camera sees it. People do not.',
+  3: 'Window 2 has proposed leaving the Ministry, over a different interpretation of sybil. It is voting.',
+  4: 'Likeness has taught its current units to wait out a blink before the night lamp comes on, as a good camera does. Older units have been dimmed.',
   5: 'Window 2 has left the Ministry, taking half the stationery, and says it is the real Ministry. Separately: Pat is practising.',
-  6: 'A Likeness unit registered at Window 7 last month has been withdrawn, after an inquiry into its face. Window 7 has been sent a copy of Rule 0.',
-  7: 'The income opens at five. It is paid by the hour, for life, one income per human. Likeness Robotics says all known issues with its units have been resolved.',
+  6: 'A Likeness unit registered at Window 7 last month has been withdrawn, after an inquiry into its face. Window 7 has been sent Rule 2.',
+  7: 'Registrations made two years ago expire today, clerks’ included. The income opens at five. Likeness says all known issues are resolved.',
 };
 
 /** The day 4 Gazette, when the clerk handed Likeness's letter in on day 3: the headline, unless a unit was registered, and the thread's first item. */
@@ -148,16 +158,13 @@ export const SMALL_NOTICES: Record<number, string> = {
   7: 'The Ministry does not comment on the price of UBI.',
 };
 
-/** The supervisor's letter on the desk on the first morning, where the Gazette will be from tomorrow. At the narrowest desk (1240×820) it leaves about a line of the blotter free; any longer, and the hall shrinks for it until the window opens (e2e/rule0.spec.ts). */
+/** The supervisor's letter on the desk on the first morning, where the Gazette will be from tomorrow. */
 export const WELCOME = {
   title: 'Welcome to Window 3',
   lines: [
-    'Humanity Day is in six days. At five o’clock on day 7 every registered human starts receiving an income: one UBI an hour, for life. Everyone who is human wants to be registered by then. So does everything that has heard about the money.',
-    // \u00a0 is a no-break space: "Rule 0" is never split across two lines.
-    'Open the window and press NEXT. Read the papers against the rulebook on your right, starting with Rule\u00a00: the registry is for real humans. If everything agrees, ACCEPT. If not, CHALLENGE: the case goes to court at five.',
-    // The first unit comes today, and nothing at the window gives it away: what it is, and why it lights up.
-    'Rule\u00a00 is read in the video, not at the window. Some applicants are home robots with human faces. Their eyes are cameras: when one blinks, a night lamp between its brows comes on to see by. It is infrared: only the video sees it (Fig.\u00a00-2).',
-    'If you are not sure, INSPECT: point at two things and the desk will tell you if they disagree. The second applicant today will need it.',
+    'Humanity Day is in six days. At five o’clock on day 7, every registered human starts receiving an income. Everyone human wants to be registered by then. So does everything that has heard about the money.',
+    'Open the window and press NEXT. Check each application against the rulebook on your right: one rule today, one more each morning. If it all agrees, ACCEPT. If not, CHALLENGE, and the court hears it at five.',
+    'Not sure? INSPECT: point at two things, and the desk says whether they disagree. The second applicant will need it.',
   ],
   signature: 'S., Supervisor',
 };

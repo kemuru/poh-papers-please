@@ -88,11 +88,8 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu, 
     limit === null ? (state.decided.length / queue.length) * OPENING_MINUTES : (elapsed / limit) * OPENING_MINUTES;
   const serving = DAYS.slice(0, state.day - 1).reduce((sum, d) => sum + d.applicants, 0) + state.called;
 
-  // The rulebook falls open at the day's new rule; on Humanity Day, at Rule 1, after the cover rule. On day 1 it
-  // falls open at Rule 0, where the welcome letter and the sticky note start, and every call puts it back there.
-  const [page, setPage] = useState<RuleId>(() =>
-    state.day === 1 ? 'human' : (rulebook.find((r) => RULE_DAYS[r] === state.day) ?? rulebook.find((r) => RULE_DAYS[r] === 1)!),
-  );
+  // The rulebook falls open at the day's new rule, Rule N on day N; on Humanity Day, which brings none, at Rule 1.
+  const [page, setPage] = useState<RuleId>(() => rulebook.find((r) => RULE_DAYS[r] === state.day) ?? rulebook[0]);
   const [tab, setTab] = useState<'rulebook' | 'registry'>('rulebook');
   const [inspecting, setInspecting] = useState(false);
   const [picked, setPicked] = useState<Item | null>(null);
@@ -110,8 +107,6 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu, 
     setEvidence(null);
     setLookup(null);
     setToolsUsed([]);
-    // Day 1: whoever is called, the book is back at Rule 0.
-    if (state.day === 1) setPage('human');
   }
 
   const pickItem = (item: Item) => {
@@ -139,8 +134,6 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu, 
   // Inspecting needs someone at the window: with nobody there, nothing on the desk could answer.
   const toggleInspect = () => {
     if (at === null && !inspecting) return;
-    // The guided inspection points at Rule 1: the book turns there as Inspect comes on.
-    if (!inspecting && guided(state.day, at)) turnTo('phrase');
     setInspecting((on) => !on);
     setPicked(null);
   };
@@ -198,7 +191,7 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu, 
   };
 
   // Keyboard: Space pulls the lever, A and C are the stamps, I inspects, V and F look up the voucher
-  // and the face, 0 to 6 turn the rulebook's pages.
+  // and the face, 1 to 6 turn the rulebook's pages.
   // With single-key shortcuts off (WCAG 2.1.4), only Escape is the desk's; every other key is the focused button's.
   const { settings } = useSettings();
   const shortcuts = settings.shortcuts;
@@ -226,7 +219,7 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu, 
         e.preventDefault();
         keys.current.escape();
       }
-      else if (/^[0-6]$/.test(key)) {
+      else if (/^[1-6]$/.test(key)) {
         const rule = keys.current.rulebook.find((r) => RULEBOOK[r].number === Number(key));
         if (rule) keys.current.turnTo(rule);
       }

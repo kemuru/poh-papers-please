@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
-import { HEADLINES } from '../src/content/gazette';
+import { HEADLINES, ROBOT_STORY } from '../src/content/gazette';
+import { RULEBOOK } from '../src/content/rulebook';
 import { inspectFault } from './inspectFault';
 
 // Slice 3 acceptance (notes/acceptance.md) in the browser: the rulebook's pages, inspect mode,
@@ -74,7 +75,7 @@ test('day 1: the first two applicants are scripted, and the second gets the one 
   await expect(inspector).toContainText('Point at the transcript, then at Rule 1');
   await page.getByRole('button', { name: 'Inspect the transcript' }).click();
   await page.getByRole('button', { name: 'Inspect Rule 1' }).click();
-  await expect(inspector).toContainText('Discrepancy · Rule 1: Certification phrase.');
+  await expect(inspector).toContainText('Discrepancy · Rule 1: The phrase.');
   await expect(inspector).toContainText('“hooman”');
   await expect(page.locator('[data-inspect="transcript"]')).toHaveClass(/flagged/);
   await expect(page.locator('[data-inspect="rule-phrase"]')).toHaveClass(/flagged/);
@@ -91,7 +92,7 @@ test('inspect mode: two things that disagree are marked and the rule is named; t
   const validAt = queue.findIndex((a) => a.planted.length === 0);
   const patAt = queue.findIndex((a) => a.cast === 'pat');
   const unitAt = queue.findIndex((a) => a.cast === 'unit');
-  expect(queue[patAt].planted[0]).toMatchObject({ rule: 'photo', mistake: 'mirrored' });
+  expect(queue[patAt].planted[0]).toMatchObject({ rule: 'face', mistake: 'mirrored' });
   expect(queue[unitAt].video).toMatchObject({ lamp: 'glow', nervous: true });
   const inspector = page.getByTestId('inspector');
   for (let i = 0; i < queue.length; i++) {
@@ -110,7 +111,7 @@ test('inspect mode: two things that disagree are marked and the rule is named; t
     } else if (i === patAt) {
       await page.getByRole('button', { name: 'Inspect the photo' }).click();
       await page.getByRole('button', { name: 'Inspect frame 1' }).click();
-      await expect(inspector).toContainText('Discrepancy · Rule 2: Photo. The photo is a mirror image of the face in the video.');
+      await expect(inspector).toContainText('Discrepancy · Rule 2: The face. The photo is a mirror image of the face in the video.');
       await expect(page.locator('[data-inspect="photo"]')).toHaveClass(/flagged/);
       await expect(page.locator('[data-inspect="frame-1"]')).toHaveClass(/flagged/);
       await expect(page.locator('.flagged')).toHaveCount(2);
@@ -118,18 +119,17 @@ test('inspect mode: two things that disagree are marked and the rule is named; t
       await page.getByRole('button', { name: 'Challenge' }).click();
     } else {
       // The unit looks like anyone, at the window and in its photo; in frame 1 its eyes are shut
-      // and its lamp is on.
+      // and its lamp is on. The book is open at Rule 2, the day's new rule.
       await page.getByRole('button', { name: 'Inspect frame 1' }).click();
-      await page.keyboard.press('0');
-      await page.getByRole('button', { name: 'Inspect Rule 0' }).click();
-      await expect(inspector).toContainText('Discrepancy · Rule 0: A real human. In frame 1 the eyes are shut, and there is a light between the brows.');
+      await page.getByRole('button', { name: 'Inspect Rule 2' }).click();
+      await expect(inspector).toContainText('Discrepancy · Rule 2: The face. In frame 1 the eyes are shut, and there is a light between the brows.');
       await shot(page, 'inspect-lamp.png');
       // Its eyes are shut in frame 3 too: pointed at, frame 3 is the frame Inspect names.
       await page.getByRole('button', { name: 'Inspect frame 3' }).click();
-      await page.getByRole('button', { name: 'Inspect Rule 0' }).click();
-      await expect(inspector).toContainText('Discrepancy · Rule 0: A real human. In frame 3 the eyes are shut, and there is a light between the brows.');
+      await page.getByRole('button', { name: 'Inspect Rule 2' }).click();
+      await expect(inspector).toContainText('Discrepancy · Rule 2: The face. In frame 3 the eyes are shut, and there is a light between the brows.');
       await expect(page.locator('[data-inspect="frame-3"]')).toHaveClass(/flagged/);
-      await expect(page.locator('[data-inspect="rule-human"]')).toHaveClass(/flagged/);
+      await expect(page.locator('[data-inspect="rule-face"]')).toHaveClass(/flagged/);
       await expect(page.locator('.flagged')).toHaveCount(2);
       await page.getByRole('button', { name: 'Challenge' }).click();
     }
@@ -154,7 +154,7 @@ test('a challenge names no rule: the court upholds it for whatever was broken, a
     const ruling = court.getByTestId('ruling').filter({ hasText: queue[i].name });
     await expect(ruling).toContainText('Challenge upheld.');
     // Every rule they broke, with its evidence.
-    for (const p of queue[i].planted) await expect(ruling).toContainText(`Rule ${{ human: 0, phrase: 1, photo: 2, sign: 3, vouch: 4, duplicate: 5, living: 6 }[p.rule]}:`);
+    for (const p of queue[i].planted) await expect(ruling).toContainText(`Rule ${{ phrase: 1, face: 2, sign: 3, vouch: 4, duplicate: 5, living: 6 }[p.rule]}:`);
   }
   await expect(court.getByTestId('ruling').filter({ hasText: queue[human].name })).toContainText('Challenge dismissed. No rule broken; registered.');
   await expect(court).not.toContainText('Grounds');
@@ -222,13 +222,14 @@ test('a week at the desk: the Gazette reports yesterday, the registry remembers,
   for (let i = 0; i < day1.length; i++) await stamp(page);
   await finishDay(page);
 
-  // Day 2's Gazette: yesterday by name, and why photographs are now checked.
+  // Day 2's Gazette: day 1's unit, which the clerk rightly registered, was a home robot; Rule 2 is in the
+  // book because of it, its reason at the foot of its page.
   const gazette = page.getByTestId('gazette');
   await expect(gazette).toContainText('Day 2');
-  await expect(page.getByTestId('report')).toContainText('Day 1 at Window 3: 3 registered, 2 challenged, 2 upheld in court.');
-  await expect(page.getByTestId('report')).toContainText(`The Ministry welcomes ${day1[4].name} to the registry.`);
-  await expect(page.getByTestId('rule-notice')).toContainText('Rule 2: Photo');
-  await expect(page.getByTestId('rule-notice')).toContainText('Following yesterday’s registration of a photograph of a more attractive man');
+  expect(day1[2].cast).toBe('unit');
+  await expect(page.getByTestId('headline')).toHaveText(ROBOT_STORY.headline);
+  await expect(page.getByTestId('report')).toContainText(day1[2].name);
+  await expect(page.getByTestId('rule-cause').filter({ visible: true })).toHaveText(RULEBOOK.face.cause);
   await shot(page, 'gazette-day2.png');
   await page.getByRole('button', { name: /Open the window/ }).click();
   for (let i = 0; i < 7; i++) await stamp(page);
@@ -277,7 +278,10 @@ test('a week at the desk: the Gazette reports yesterday, the registry remembers,
   await expect(page.getByTestId('ruling').filter({ hasText: day5[unit5].name })).toContainText('Removed from the registry with them: Wendell Binns, who vouched for them.');
   await page.getByRole('button', { name: /To the accounts/ }).click();
   await page.getByRole('button', { name: /Begin day/ }).click();
-  await expect(page.getByTestId('report')).toContainText('Also removed: Wendell Binns');
+  // The front page's photo of yesterday: the unit refused, and its owner removed with it.
+  const wall = page.getByTestId('wall');
+  await expect(wall.locator(`[aria-label="${day5[unit5].name}: Refused"]`)).toHaveCount(1);
+  await expect(wall.locator('[aria-label="Wendell Binns: Removed"]')).toHaveCount(1);
 
   // Day 6: Wendell Binns is no longer registered; the applicant vouched for by Joanna Pike, registered on day 3, is valid.
   await page.getByRole('button', { name: /Open the window/ }).click();
@@ -313,21 +317,21 @@ test('the rulebook has a page per rule in force, today’s open, and fits the wi
   await open(page, '?seed=1&day=6');
   await page.getByRole('button', { name: 'Call next applicant' }).click();
   const tabs = page.getByRole('tablist', { name: 'Rulebook pages' }).getByRole('tab');
-  await expect(tabs).toHaveText(['0', '1', '2', '3', '4', '5', '6']);
-  await expect(tabs.nth(6)).toHaveAttribute('aria-selected', 'true');
+  await expect(tabs).toHaveText(['1', '2', '3', '4', '5', '6']);
+  await expect(tabs.nth(5)).toHaveAttribute('aria-selected', 'true');
   await expect(page.getByRole('tabpanel')).toContainText('Rule 6: Living');
   await page.keyboard.press('3');
   await expect(page.getByRole('tabpanel')).toContainText('Rule 3: The sign');
   const box = (await page.getByRole('region', { name: 'Rulebook' }).boundingBox())!;
   expect(box.y + box.height).toBeLessThanOrEqual(700);
   await page.keyboard.press('1');
-  await expect(page.getByRole('tabpanel')).toContainText('Rule 1: Certification phrase');
+  await expect(page.getByRole('tabpanel')).toContainText('Rule 1: The phrase');
   const phrase = (await page.getByRole('region', { name: 'Rulebook' }).boundingBox())!;
   expect(phrase.y + phrase.height).toBeLessThanOrEqual(700);
-  await page.keyboard.press('0');
-  await expect(page.getByRole('tabpanel')).toContainText('Rule 0: A real human');
-  const human = (await page.getByRole('region', { name: 'Rulebook' }).boundingBox())!;
-  expect(human.y + human.height).toBeLessThanOrEqual(700);
+  await page.keyboard.press('2');
+  await expect(page.getByRole('tabpanel')).toContainText('Rule 2: The face');
+  const faceRule = (await page.getByRole('region', { name: 'Rulebook' }).boundingBox())!;
+  expect(faceRule.y + faceRule.height).toBeLessThanOrEqual(700);
   await shot(page, 'day6-desk.png');
 });
 

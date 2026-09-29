@@ -50,8 +50,9 @@ const MANY_MISSING = 3;
 const FEW_WRONG = 3;
 
 /**
- * How plainly a unit's lamp shows to a juror who looks for it: as plainly as it shows on the desk. The
- * day 1 unit's bloom often, the glow of days 2 and 3 sometimes, the small lamp and the slit rarely.
+ * How plainly a unit's lamp shows to a juror who looks for it: as plainly as it shows on the desk. A
+ * bloom often (only day 1's unit has one, and it breaks no rule), the glow of days 2 and 3 sometimes, the
+ * small lamp and the slit rarely.
  */
 const LAMP_TIERS: Record<LampSize, Tier> = { bloom: 'often', glow: 'sometimes', small: 'rare', slit: 'rare' };
 
@@ -64,13 +65,12 @@ const LAMP_TIERS: Record<LampSize, Tier> = { bloom: 'often', glow: 'sometimes', 
  */
 export function visibility(v: Violation): Tier {
   switch (v.rule) {
-    case 'human':
-      if (v.problem === 'machine') return LAMP_TIERS[v.lamp ?? 'small'];
-      return v.problem === 'changes' ? 'rare' : 'sometimes';
     case 'phrase':
       return v.heard.length === 0 || v.expected.filter((m) => !m.ok).length >= MANY_MISSING ? 'plain' : 'often';
-    case 'photo':
-      return v.mirrored ? 'often' : 'sometimes';
+    case 'face':
+      if (v.problem === 'machine') return LAMP_TIERS[v.lamp ?? 'small'];
+      if (v.problem === 'changes') return 'rare';
+      return v.problem === 'mirrored' ? 'often' : 'sometimes';
     case 'sign':
       if (v.sign === null || v.sign.kind === 'qr') return 'plain';
       return v.wrong.length > FEW_WRONG ? 'often' : 'rare';
@@ -79,7 +79,7 @@ export function visibility(v: Violation): Tier {
     case 'duplicate':
       return 'rare';
     case 'living':
-      if (v.problem === 'blink') return 'sometimes';
+      if (v.problem !== 'born') return 'sometimes';
       return typeof v.born === 'string' || v.born < 1000 ? 'plain' : 'sometimes';
   }
 }

@@ -89,7 +89,7 @@ test('accepting an invalid applicant prints a citation that names the rule and m
 
   await expect(page.getByTestId('stamp')).toHaveText('Registered');
   const citation = page.getByTestId('citation');
-  await expect(citation).toContainText('Rule 1: Certification phrase');
+  await expect(citation).toContainText('Rule 1: The phrase');
   // The first of the day is a warning.
   await expect(citation).toContainText('Warning only');
   await expect(citation.locator('mark', { hasText: 'hooman' })).toBeVisible();

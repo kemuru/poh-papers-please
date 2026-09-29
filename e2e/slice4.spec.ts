@@ -66,7 +66,7 @@ test('a hunch dismissed by 3 jurors is appealed in place to 7, who uphold it; th
   // and 3) is the fake a hunch loses to the first jury and wins on appeal; Pat's mirrored photo is
   // the day's other fake.
   const unitAt = 2;
-  expect(queue[unitAt].planted, 'seed 1 day 2 changed: pick another').toEqual([{ rule: 'human', mistake: 'machine' }]);
+  expect(queue[unitAt].planted, 'seed 1 day 2 changed: pick another').toEqual([{ rule: 'face', mistake: 'machine' }]);
   expect(queue.flatMap((a, i) => (a.planted.length > 0 ? [i] : [])), 'seed 1 day 2 changed: pick another').toEqual([2, 3]);
   const unit = queue[unitAt];
 
@@ -162,12 +162,12 @@ test('a case filed with what Inspect found is a line in court: upheld, with no j
   const { queue } = await game(page);
   // The same unit a hunch loses to the first jury (above), this time with what Inspect found.
   const unitAt = 2;
-  expect(queue[unitAt].planted, 'seed 1 day 2 changed: pick another').toEqual([{ rule: 'human', mistake: 'machine' }]);
+  expect(queue[unitAt].planted, 'seed 1 day 2 changed: pick another').toEqual([{ rule: 'face', mistake: 'machine' }]);
   for (let i = 0; i < queue.length; i++) {
     await stamp(page);
     if (i === unitAt) {
-      await expect(page.getByTestId('filing-evidence')).toHaveText('Evidence: Rule 0, frame 1 against the rule.');
-      expect((await game(page)).decided[i].evidence).toMatchObject({ rule: 'human' });
+      await expect(page.getByTestId('filing-evidence')).toHaveText('Evidence: Rule 2, frame 1 against the rule.');
+      expect((await game(page)).decided[i].evidence).toMatchObject({ rule: 'face' });
       await shot(page, 'evidence-slip.png');
     }
   }
@@ -175,10 +175,10 @@ test('a case filed with what Inspect found is a line in court: upheld, with no j
 
   const court = page.getByRole('region', { name: 'Humanity Court' });
   const ruling = court.getByTestId('ruling').filter({ hasText: queue[unitAt].name });
-  await expect(ruling.getByTestId('evidence-line')).toHaveText('Evidence: Rule 0, frame 1 against the rule.');
+  await expect(ruling.getByTestId('evidence-line')).toHaveText('Evidence: Rule 2, frame 1 against the rule.');
   await expect(ruling).toHaveAttribute('data-upheld', 'true');
   await expect(ruling).toContainText('Challenge upheld.');
-  await expect(ruling).toContainText(`Rule ${ruleNo('human')}:`);
+  await expect(ruling).toContainText(`Rule ${ruleNo('face')}:`);
   await expect(ruling.getByTestId('round')).toHaveCount(0);
   await expect(ruling.getByTestId('juror')).toHaveCount(0);
   await settled(page);
@@ -201,21 +201,21 @@ test('evidence goes to court with the case it was found on: the next fake, chall
   // Seed 1, day 2: the unit (third in the queue) is filed with what Inspect found; Pat, next, on a hunch.
   expect(queue.flatMap((a, i) => (a.planted.length > 0 ? [i] : [])), 'seed 1 day 2 changed: pick another').toEqual([2, 3]);
   for (let i = 0; i < 3; i++) await stamp(page);
-  await expect(page.getByTestId('filing-evidence')).toHaveText('Evidence: Rule 0, frame 1 against the rule.');
+  await expect(page.getByTestId('filing-evidence')).toHaveText('Evidence: Rule 2, frame 1 against the rule.');
   await stamp(page, 'hunch');
   const filing = page.getByTestId('filing');
   await expect(filing).toContainText(`The Registry v. ${queue[3].name}`);
   await expect(filing.getByTestId('filing-evidence')).toHaveText('No evidence filed. The jury will look for itself.');
   const { decided } = await game(page);
-  expect(decided[2].evidence).toMatchObject({ rule: 'human' });
+  expect(decided[2].evidence).toMatchObject({ rule: 'face' });
   expect(decided[3].evidence).toBeUndefined();
 });
 
 test('a discrepancy no rule in force covers yet is not evidence: the filtered photo on day 1 goes to court as a hunch', async ({ page }) => {
   await open(page, '?seed=1&day=1');
   const { queue } = await game(page);
-  // Seed 1, day 1: the Influencer, fourth in the queue, broke nothing today; her photo is filtered, and the photo rule is tomorrow's.
-  const at = 3;
+  // Seed 1, day 1: the Influencer, fifth in the queue, broke nothing today; her photo is filtered, and Rule 2, the face, is tomorrow's.
+  const at = 4;
   expect(queue[at].cast, 'seed 1 day 1 changed: pick another').toBe('influencer');
   expect(queue[at].planted).toEqual([]);
   for (let i = 0; i < at; i++) await stamp(page);

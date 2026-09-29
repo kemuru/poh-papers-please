@@ -208,8 +208,9 @@ export const LIKENESS = 'Likeness Robotics Ltd';
  * its remarks are ordinary and its photo is flawless. A unit sees through cameras in its eyes, and
  * blinks for the people in the room. The units of days 1, 2, 3 and 6 are older household models:
  * whenever the lids shut, even for a blink, the cameras are in the dark and a night lamp comes on
- * between the brows. People cannot see it; a phone camera can, so their videos give them away
- * (Rule 0), in every frame with the eyes shut. The lamp is smaller as the week goes on (the day 4
+ * between the brows. It is infrared, like a television remote's: people cannot see it, a phone camera
+ * can, so their videos give them away (Rule 2), in every frame with the eyes shut. Day 1's unit breaks
+ * no rule: no rule reads a face until day 2, which brings Rule 2 because of it. The lamp is smaller as the week goes on (the day 4
  * Gazette says why). Days 4 and 5 are the current model, whose lamp waits out a blink. Day 4 its
  * papers give it away: it is vouched for by its maker, which is a company, not a registered human.
  * Day 5 its face does: the factory made that face twice, and Window 7 registered the other unit
@@ -365,7 +366,7 @@ export const SYBIL_FARM = {
 
 /**
  * An AI agent with a wallet, applying on behalf of its principal, who is busy. Flawless manners,
- * a sincere wish to help. Its video is generated, so Rule 0 always catches it, and it trips on one
+ * a sincere wish to help. Its video is generated, so Rule 6 always catches it, and it trips on one
  * more thing a machine would: it puts the sentence in its own words, it brings the address as a QR
  * code, or it gives its version as its year of birth.
  */
@@ -427,4 +428,18 @@ export const FIRST_APPLICANT = {
   remark: "Am I the first? I've never been the first for anything.",
   video: `Okay. ${PHRASE}`,
   exits: { accept: 'First! Thank you.', challenge: 'Oh. First for that, then.' },
+};
+
+/**
+ * Day 1's fourth applicant, after the unit: the first slip the clerk has to catch alone. He means every
+ * word, and one of them is the wrong one: the registry is not a ministry.
+ */
+export const FIRST_SLIP = {
+  name: 'Gordon Pim',
+  // A real street, and a house number the generator never rolls (1 to 199), so no fill-in is ever given it.
+  address: '212 Pending Way, Sallowfield',
+  birthYear: 1974,
+  remark: "I've twenty minutes on the meter. How long does being human usually take?",
+  video: 'I certify that I am a real human and that I am not already registered in this ministry.',
+  exits: { accept: 'Lovely. Nineteen minutes left.', challenge: 'Right. I had better feed the meter, then.' },
 };

@@ -3,7 +3,7 @@ import { REGULARS, TWINS, TWINS_FORM } from '../content/cast';
 import { CAST_PORTRAITS, TWIN_TWO } from '../content/portraits';
 import { generateWeek, planWeek } from '../gen/day';
 import { generatePortrait, type Portrait } from '../gen/portrait';
-import { checkHuman } from './human';
+import { checkFace } from './face';
 import { judge, RULE_DAYS, RULES, rulebookForDay } from './judge';
 import { PHRASE } from './phrase';
 import type { Applicant, Registrant, Registry, RuleId } from './types';
@@ -47,9 +47,17 @@ function ruleTest(rule: RuleId, lookAlikes: Applicant[], offenders: Record<strin
   });
 }
 
+ruleTest('phrase', [valid({}, { transcript: `Ahem. ${PHRASE.replace('I am a', "I'm a")} Thank you.` })], {
+  hooman: valid({}, { transcript: PHRASE.replace('human', 'hooman') }),
+  silence: valid({}, { transcript: '' }),
+  'a key word left out': valid({}, { transcript: PHRASE.replace(' not', '') }),
+});
+
 ruleTest(
-  'human',
+  'face',
   [
+    // Hair and glasses are not the face.
+    valid({ photo: { ...face, hair: 'mohawk', accessories: ['glasses'] } }),
     // Anything worn or carried does not count: Dave's costume robot head under his arm, or a twin filmed beside them.
     valid({ photo: { ...face, accessories: ['robot-helmet'] } }, { face: { ...face, accessories: ['robot-helmet'] } }),
     valid({}, { with: generatePortrait(7) }),
@@ -57,29 +65,17 @@ ruleTest(
     valid({}, { nervous: true }),
   ],
   {
+    'someone else': valid({ photo: generatePortrait(99) }),
+    'a mirror selfie': valid({ mirrored: true }),
     'a light between the brows, eyes shut in frame 3': valid({}, { lamp: 'glow' }),
     'ears that change in frame 3': valid({}, { glitch: { frame: 3, face: { ...face, face: { ...face.face, ears: face.face.ears === 'big' ? 'small' : 'big' } } } }),
-    'a generated video': valid({}, { generated: true }),
-    // Blinked is set so that only Rule 0 is at stake here; the Cutout, who does not blink, breaks Rule 6 as well.
-    'a printed face held up': valid({}, { still: true }),
   },
 );
 
-describe('Rule 0, the lamp', () => {
+describe('Rule 2, the lamp', () => {
   it('finds nothing on a unit whose eyes never shut: its lamp never comes on', () => {
-    expect(checkHuman(valid({}, { lamp: 'glow', blinked: false }))).toBeNull();
+    expect(checkFace(valid({}, { lamp: 'glow', blinked: false }))).toBeNull();
   });
-});
-
-ruleTest('phrase', [valid({}, { transcript: `Ahem. ${PHRASE.replace('I am a', "I'm a")} Thank you.` })], {
-  hooman: valid({}, { transcript: PHRASE.replace('human', 'hooman') }),
-  silence: valid({}, { transcript: '' }),
-  'a key word left out': valid({}, { transcript: PHRASE.replace(' not', '') }),
-});
-
-ruleTest('photo', [valid({ photo: { ...face, hair: 'mohawk', accessories: ['glasses'] } })], {
-  'someone else': valid({ photo: generatePortrait(99) }),
-  'a mirror selfie': valid({ mirrored: true }),
 });
 
 ruleTest(
@@ -110,20 +106,22 @@ ruleTest('living', [valid({ birthYear: 1904 }), valid({}, { nervous: true })], {
   'born 1197': valid({ birthYear: 1197 }),
   'born v4': valid({ birthYear: 'v4' }),
   'no blink': valid({}, { blinked: false }),
+  // The Cutout: a picture held up, every frame the same, and a picture does not blink.
+  'a printed face held up': valid({}, { still: true, blinked: false }),
+  'a generated video': valid({}, { generated: true }),
 });
 
 describe('the rulebook, day by day', () => {
-  it('has Rule 0 from before the week, and adds the rest on the days of the design table: phrase, photo, the sign, one vouch, no duplicates, living', () => {
-    expect(RULE_DAYS).toEqual({ human: 0, phrase: 1, photo: 2, sign: 3, vouch: 4, duplicate: 5, living: 6 });
-    expect([1, 2, 3, 4, 5, 6, 7].map((d) => rulebookForDay(d).length)).toEqual([2, 3, 4, 5, 6, 7, 7]);
-    expect(rulebookForDay(1)[0]).toBe('human');
+  it('adds one rule a day, Rule N on day N: the phrase, the face, the sign, one vouch, no duplicates, living', () => {
+    expect(RULE_DAYS).toEqual({ phrase: 1, face: 2, sign: 3, vouch: 4, duplicate: 5, living: 6 });
+    expect([1, 2, 3, 4, 5, 6, 7].map((d) => rulebookForDay(d).length)).toEqual([1, 2, 3, 4, 5, 6, 6]);
+    expect(rulebookForDay(1)).toEqual(['phrase']);
   });
 
   it('has each rule in force from its day onward, never before', () => {
     const offenders: Record<RuleId, Applicant> = {
-      human: valid({}, { generated: true }),
       phrase: valid({}, { transcript: '' }),
-      photo: valid({ mirrored: true }),
+      face: valid({ mirrored: true }),
       sign: valid({}, { sign: null }),
       vouch: valid({ voucher: 'Maureen Notyet' }),
       duplicate: valid({ photo: onFile.face }, { face: onFile.face }),

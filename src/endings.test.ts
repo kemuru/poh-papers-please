@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { UNIT_FACES } from './content/portraits';
 import { CLERK, FIRST_APPLICANT } from './content/cast';
 import { HEADLINES, LIKENESS_FINED, SPECIAL } from './content/gazette';
 import { CLERK_MEMO } from './content/verdicts';
@@ -127,15 +128,16 @@ describe('the letter the week ends with', () => {
     }
   });
 
-  it('is decided at five on Humanity Day: three units stamped in by day 3 are Replaced then, not that evening', () => {
-    const { end, evenings } = runWeek(1, unless((a, day) => (a.cast === 'unit' && day <= 3 ? 'accept' : undefined)));
+  it('is decided at five on Humanity Day: three units stamped in by day 4 are Replaced then, not that evening', () => {
+    const { end, evenings } = runWeek(1, unless((a, day) => (a.cast === 'unit' && day <= 4 ? 'accept' : undefined)));
     expect(evenings.map((e) => e.day)).toEqual([1, 2, 3, 4, 5, 6, 7]);
     expect(end.ending).toBe('replaced');
     const w = weekEnd(end)!;
-    expect(w.end.unitsStamped.map((u) => u.day)).toEqual([1, 2, 3]);
-    expect(writeLetter(w.end).lines[0]).toBe('This week you stamped three home robots into the registry: Clara Voss (day 1), Martin Ellery (day 2) and Joanna Pike (day 3).');
+    // Day 1's unit broke no rule: stamping it in was right, and it is not counted.
+    expect(w.end.unitsStamped.map((u) => u.day)).toEqual([2, 3, 4]);
+    expect(writeLetter(w.end).lines[0]).toBe('This week you stamped three home robots into the registry: Martin Ellery (day 2), Joanna Pike (day 3) and Theo Marlow (day 4).');
     // Two units are not enough; and a unit the court registered is not the clerk's stamp.
-    expect(runWeek(1, unless((a, day) => (a.cast === 'unit' && day <= 2 ? 'accept' : undefined))).end.ending).toBe('reclassified');
+    expect(runWeek(1, unless((a, day) => (a.cast === 'unit' && day <= 3 ? 'accept' : undefined))).end.ending).toBe('reclassified');
   });
 
   it('is Superseded when the clone let in on day 6 is on file, whatever the clerk does with their own renewal', () => {
@@ -219,12 +221,12 @@ describe('Likeness’s offer', () => {
     expect(d3.end!.after).toBe(d3.end!.before + d3.end!.pay.total + OFFER.commendation - d3.end!.bills.reduce((n, b) => n + b.amount, 0));
     expect(d4.gazette!.headline).toBe(LIKENESS_FINED.headline);
     expect(d4.gazette!.thread.startsWith(LIKENESS_FINED.thread)).toBe(true);
-    expect(d4.gazette!.thread).toContain('Likeness Robotics has dimmed the night lamp');
+    expect(d4.gazette!.thread).toContain('Likeness has taught its current units to wait out a blink');
   });
 
   it('handed in, still lets a registered unit lead the paper', () => {
-    const unitIn = { name: 'Joanna Pike', unit: true, decision: 'accept' as const, broke: ['human' as const] };
-    const gazette = writeGazette(4, { day: 3, cases: [unitIn], unprocessed: 0 }, [], { handedIn: true });
+    const unitIn = { name: 'Joanna Pike', face: UNIT_FACES[2], unit: true, decision: 'accept' as const, broke: ['face' as const] };
+    const gazette = writeGazette(4, { day: 3, cases: [unitIn], sentHome: [] }, [], { handedIn: true });
     expect(HEADLINES.unit).toContain(gazette.headlineLine);
     expect(gazette.thread.startsWith(LIKENESS_FINED.thread)).toBe(true);
   });

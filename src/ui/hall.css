@@ -148,43 +148,21 @@
     opacity 2s;
 }
 
-/* The announcement board: a plain sign in dim amber, lit up while the PA reads an announcement. */
-.pa {
-  flex-shrink: 0;
-  overflow: hidden;
-  padding: 4px 16px;
-  background: #0c0d0a;
-  border-top: 2px solid #20231c;
-  color: rgb(255 179 71 / 45%);
-  font-family: var(--typewriter);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-align: center;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transition: color 0.4s;
+/* The PA's words, in a bubble from the loudspeaker on the ceiling, while it speaks. */
+.pa-text {
+  margin: 0;
+  color: #1d1f1a;
+  font-family: var(--official);
+  font-size: 5.2px;
+  line-height: 7px;
 }
 
-.pa span {
-  display: inline-block;
+.pa-bubble {
+  animation: pa-in 0.25s steps(3) both;
 }
 
-.pa.speaking {
-  color: var(--amber);
-  text-shadow: 0 0 6px rgb(255 179 71 / 55%);
-}
-
-/* Letters come on one after another, like the board's own bulbs. */
-.pa.speaking span {
-  animation: pa-type 1.4s 0.8s steps(28) both;
-}
-
-@keyframes pa-type {
+@keyframes pa-in {
   from {
-    clip-path: inset(0 100% 0 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
+    opacity: 0;
   }
 }

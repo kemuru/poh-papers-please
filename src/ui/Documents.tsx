@@ -100,7 +100,7 @@ export function ProfileCard({
 const boardOf = (video: Video) => (!video.sign ? undefined : video.sign.kind === 'qr' ? ('qr' as const) : video.sign.phone ? ('phone' as const) : ('writing' as const));
 
 /**
- * One frame of the video as the camera took it: posed as Rule 0 reads it, a unit's lamp drawn where its eyes
+ * One frame of the video as the camera took it: posed as Rules 2 and 6 read it, a unit's lamp drawn where its eyes
  * are shut (the twin never has one). `title` names it on the desk; the citation's reprint is not named.
  */
 export function FramePicture({ video, frame, title }: { video: Video; frame: number; title?: string }) {
@@ -222,21 +222,24 @@ function RulePage({ id, open, isNew, day }: { id: RuleId; open: boolean; isNew: 
             {rule.checks.map((check, i) => (
               <li key={check}>
                 {check}
-                {i === 0 && rule.figure && <RuleFigure figure={rule.figure} day={day} />}
+                {i === rule.figure?.under && <RuleFigure figure={rule.figure} day={day} />}
               </li>
             ))}
           </ul>
         )}
         <p className="rule-note">{rule.note}</p>
+        <p className="rule-cause" data-testid="rule-cause">
+          {rule.cause}
+        </p>
       </Inspectable>
     </article>
   );
 }
 
-/** Where Fig. 0's stills are cut from the 40×48 portrait: crown to mouth, cheek to cheek, and every pixel a lamp can touch (rule0Figure.test.tsx). */
+/** Where Fig. 2's stills are cut from the 40×48 portrait: crown to mouth, cheek to cheek, and every pixel a lamp can touch (faceFigure.test.tsx). */
 export const FIGURE_CROP = { x: 9, y: 7, width: 22, height: 22 };
 
-/** Fig. 0: the specimen face as a video frame shows it, eyes shut, without and with a light as big as today's unit's. */
+/** Fig. 2: the specimen face as a video frame shows it, eyes shut, without and with a light as big as today's unit's. */
 function RuleFigure({ figure, day }: { figure: Figure; day: number }) {
   const lit = useMemo(() => ({ ...SPECIMEN, lamp: figureLamp(day) }), [day]);
   const plates = [

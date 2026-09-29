@@ -45,20 +45,16 @@ const drawnLit = (a: Applicant) => {
 const shown = (address: string) => (address.slice(0, 6) + address.slice(-4)).toUpperCase();
 
 const CLUES: Record<RuleId, (a: Applicant, registry: Registry) => boolean> = {
-  // A frame with the eyes shut is drawn with a light between the brows, or a frame with a face that is not the face in
-  // the other frames; or all three frames are drawn the same, no mouth moving, no blink (a picture held up); or a
-  // generator's mark is in the corner.
-  human: (a) => {
+  // A word printed in bold in the rulebook is missing from the transcript under the video strip.
+  phrase: (a) => !saysBoldWords(a.video.transcript),
+  // The photo, as printed on the form (the right way round or not), is not the face drawn in a frame; or a frame
+  // with the eyes shut is drawn with a light between the brows; or a frame's face is not the face in the others.
+  face: (a) => {
     const faces = frames(a);
     const lamp = drawnLit(a).length > 0;
     const changes = new Set(faces.map((face) => pixels(face))).size > 1;
-    const marked = a.video.generated === true && pixels({ ...faces[0], mark: true }) !== pixels(faces[0]);
-    return lamp || changes || a.video.still === true || marked;
+    return lamp || changes || faces.some((face) => pixels(a.photo, a.mirrored) !== pixels(face));
   },
-  // A word printed in bold in the rulebook is missing from the transcript under the video strip.
-  phrase: (a) => !saysBoldWords(a.video.transcript),
-  // The photo, as printed on the form (the right way round or not), is not the face drawn in a frame.
-  photo: (a) => frames(a).some((face) => pixels(a.photo, a.mirrored) !== pixels(face)),
   // The enlarged sign shows no address, a shortened one, or two of the characters the form shows differ.
   sign: (a) => {
     const sign = a.video.sign;
@@ -78,11 +74,13 @@ const CLUES: Record<RuleId, (a: Applicant, registry: Registry) => boolean> = {
     const twin = a.video.with && pixels(a.video.with) === face ? 1 : 0;
     return onFile.length > twin;
   },
-  // The year printed on the form is not a year from 1900 to 2026, or no frame is drawn with closed eyes.
+  // The year printed on the form is not a year from 1900 to 2026; or no frame is drawn with closed eyes (a picture
+  // held up draws all three the same, no mouth moving, no blink); or a generator's mark is in the corner.
   living: (a) => {
     const year = a.birthYear;
     const blinks = a.video.nervous || (a.video.blinked && !a.video.still);
-    return typeof year !== 'number' || year < 1900 || year > 2026 || !blinks;
+    const marked = a.video.generated === true && pixels({ ...a.video.face, mark: true }) !== pixels(a.video.face);
+    return typeof year !== 'number' || year < 1900 || year > 2026 || !blinks || marked;
   },
 };
 
@@ -105,7 +103,7 @@ describe('fair clue check', () => {
     }
   });
 
-  it("lights a unit's lamp in exactly the frames litFrames names, the frames Rule 0 and Inspect read", () => {
+  it("lights a unit's lamp in exactly the frames litFrames names, the frames Rule 2 and Inspect read", () => {
     const units = applicants.filter((a) => a.video.lamp);
     expect(units.length).toBeGreaterThanOrEqual(40);
     for (const a of units) expect(drawnLit(a), a.name).toEqual(litFrames(a.video));
@@ -145,9 +143,8 @@ describe('fair clue check', () => {
     // Every kind the generator can plant came up, except Socrates's, who never comes on day 6.
     expect([...kinds].sort()).toEqual([
       'duplicate:back-in-a-hat', 'duplicate:clone', 'duplicate:farm', 'duplicate:unit',
-      'human:deepfake', 'human:generated', 'human:machine', 'human:printed',
-      'living:no-blink', 'living:version', 'living:year-typo',
-      'photo:another-face', 'photo:filter', 'photo:mirrored',
+      'face:another-face', 'face:deepfake', 'face:filter', 'face:machine', 'face:mirrored',
+      'living:generated', 'living:printed', 'living:version', 'living:year-typo',
       'phrase:missing-words', 'phrase:quiet-word', 'phrase:silence', 'phrase:wrong-word',
       'sign:no-sign', 'sign:qr', 'sign:two-wrong', 'sign:wrong-address',
       'vouch:busy', 'vouch:company', 'vouch:unregistered',

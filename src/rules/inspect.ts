@@ -45,25 +45,22 @@ function compare(x: Item, y: Item, a: Applicant, registry: Registry): RuleId | n
   const lit = litFrames(a.video);
   const is = (item: Item, kind: Item['kind']) => item.kind === kind;
   const isRule = (item: Item, rule: RuleId) => item.kind === 'rule' && item.rule === rule;
-  /** The face in this frame is not the face in the video, as checkHuman sees it. */
+  /** The face in this frame is not the face in the video, as checkFace sees it. */
   const turns = (frame: number) => !sameFace(frames[frame - 1], a.video.face);
 
-  // The photo against a frame: is it one face, the right way round? Unless the face in that frame
-  // turns into another, or gives off a light of its own, which is the video's fault, not the photo's.
+  // The photo against a frame: one face, the right way round, human in that frame: no face that turns
+  // into another, and no light of its own.
   if (x.kind === 'photo' && y.kind === 'frame') {
-    if (turns(y.frame) || lit.includes(y.frame)) return 'human';
-    return a.mirrored || !sameFace(a.photo, frames[y.frame - 1]) ? 'photo' : null;
+    return turns(y.frame) || lit.includes(y.frame) || a.mirrored || !sameFace(a.photo, frames[y.frame - 1]) ? 'face' : null;
   }
-  // One frame against another: a real face stays the same face, gives off no light, and moves: two
-  // frames exactly alike, mouth and eyes and all, are one picture held up.
+  // One frame against another: a human face stays the same face and gives off no light; and a live one
+  // moves: two frames exactly alike, mouth and eyes and all, are one picture held up.
   if (x.kind === 'frame' && y.kind === 'frame') {
-    const lamp = lit.includes(x.frame) || lit.includes(y.frame);
-    return lamp || a.video.still || !sameFace(frames[x.frame - 1], frames[y.frame - 1]) ? 'human' : null;
+    if (lit.includes(x.frame) || lit.includes(y.frame) || !sameFace(frames[x.frame - 1], frames[y.frame - 1])) return 'face';
+    return a.video.still ? 'living' : null;
   }
-  // A frame against Rule 0: a light of its own in it, a face that turns into another, a picture held up, or a generator's mark.
-  if (x.kind === 'frame' && isRule(y, 'human')) {
-    return lit.includes(x.frame) || turns(x.frame) || a.video.still || a.video.generated ? 'human' : null;
-  }
+  // A frame against Rule 2: a light of its own in it, or a face that turns into another.
+  if (x.kind === 'frame' && isRule(y, 'face')) return lit.includes(x.frame) || turns(x.frame) ? 'face' : null;
   if (is(x, 'transcript') && isRule(y, 'phrase')) return checkPhrase(a.video.transcript) ? 'phrase' : null;
   if (is(x, 'sign') && is(y, 'wallet')) return checkSign(a) ? 'sign' : null;
   // Without the wallet, the rule can only see that there is no address on the sign at all.
@@ -82,6 +79,7 @@ function compare(x: Item, y: Item, a: Applicant, registry: Registry): RuleId | n
     return checkDuplicate(a, registry) ? 'duplicate' : null;
   }
   if (is(x, 'birth-year') && isRule(y, 'living')) return isLivingYear(a.birthYear) ? null : 'living';
-  if (is(x, 'frame') && isRule(y, 'living')) return a.video.blinked ? null : 'living';
+  // A frame against Rule 6: a picture held up, a generator's mark in its corner, or no blink in the video.
+  if (is(x, 'frame') && isRule(y, 'living')) return a.video.still || a.video.generated || !a.video.blinked ? 'living' : null;
   return null;
 }

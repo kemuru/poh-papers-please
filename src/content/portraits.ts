@@ -40,9 +40,11 @@ export const UNIT_FACES: readonly Portrait[] = [
 ];
 
 /**
- * Each day's unit's night lamp, and on day 2 the second blink that lights it twice. Nothing on day 4
- * or day 5: those are Likeness's current model, whose lamp waits out a blink (their papers and face
- * give them away). Day 7's is an older unit after Likeness's update: a lit slit, the week's smallest.
+ * Each day's unit's night lamp, and on day 2 the second blink that lights it twice. Day 1's, the
+ * brightest, breaks no rule: Rule 2 comes the next morning, because of it, and the paper reprints it.
+ * Nothing on day 4 or day 5: those are Likeness's current model, whose lamp waits out a blink (their
+ * papers and face give them away). Day 7's is an older unit after Likeness's update: a lit slit, the
+ * week's smallest.
  */
 export const UNIT_LAMPS: readonly ({ lamp: LampSize; nervous?: true } | null)[] = [
   { lamp: 'bloom' },
@@ -55,9 +57,9 @@ export const UNIT_LAMPS: readonly ({ lamp: LampSize; nervous?: true } | null)[] 
 ];
 
 /**
- * The face in the rulebook's Fig. 0: the Ministry's specimen, nobody in the queue, with no fake's hair
+ * The face in the rulebook's Fig. 2: the Ministry's specimen, nobody in the queue, with no fake's hair
  * either. It was short and dark brown until that turned out to be every week's day 2 unit
- * (src/ui/rule0Figure.test.tsx).
+ * (src/ui/faceFigure.test.tsx).
  */
 export const SPECIMEN: Portrait = {
   species: 'human',
@@ -71,9 +73,9 @@ export const SPECIMEN: Portrait = {
 };
 
 /**
- * Fig. 0-2's night lamp: the day's unit's, so the example is never bigger or smaller than the desk's; on a
+ * Fig. 2-2's night lamp: the day's unit's, so the example is never bigger or smaller than the desk's; on a
  * day without one, the smallest the week has shown so far (from day 4 the Gazette has reported the dimming).
- * On day 7, the slit.
+ * On day 7, the slit. Day 1's book has no Rule 2, so no figure.
  */
 export const figureLamp = (day: number): LampSize => UNIT_LAMPS[day - 1]?.lamp ?? 'small';
 
@@ -367,4 +369,19 @@ export const FIRST_APPLICANT_PORTRAIT: Portrait = {
   outfit: 'sweater',
   outfitColor: 'teal',
   accessories: ['glasses'],
+};
+
+/** Gordon Pim, day 1's first slip, in the coat he wore to feed the meter. Nobody else in any week has his face. */
+export const FIRST_SLIP_PORTRAIT: Portrait = {
+  species: 'human',
+  face: {
+    skin: 'tan', shape: 'square', eyes: 'narrow', eyeColor: 'brown', brows: 'thick',
+    nose: 'hooked', mouth: 'neutral', ears: 'big', age: 'adult', mark: 'none',
+  },
+  hair: 'receding',
+  hairColor: 'dark-brown',
+  facialHair: 'mustache',
+  outfit: 'trenchcoat',
+  outfitColor: 'beige',
+  accessories: ['flat-cap'],
 };
