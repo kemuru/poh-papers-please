@@ -29,6 +29,11 @@ export type Town = (typeof TOWNS)[number];
 
 type Lines = readonly string[];
 
+/** Said by someone who wrote their address out by hand: from day 3 they hold it up on paper, never on a phone. */
+const COPIED_IT_OUT = "I copied my wallet address out this morning. Forty-two characters. I've never concentrated so hard.";
+/** Remarks that say the sign is handwritten. Whoever says one holds their address up on paper. */
+export const ON_PAPER: readonly string[] = [COPIED_IT_OUT];
+
 /**
  * What applicants say at the window. Small talk: never part of the video, and no rule reads it.
  * Most remarks are about something the clerk can see (the coat, the mustache, the street on
@@ -95,7 +100,7 @@ export const REMARKS: {
     "If I'm challenged, do I get a lawyer or a jury? I'd prefer a lawyer. Juries have opinions.",
     "I don't know what a registry is, but I would like to be in one.",
     "My neighbour vouched for me, then I vouched for him. We've been doing it all week.",
-    "I copied my wallet address out this morning. Forty-two characters. I've never concentrated so hard.",
+    COPIED_IT_OUT,
     "Please don't say the word wallet too loudly. My mother doesn't know I have one.",
     "It says submissions are final and cannot be edited. I haven't slept since I read that.",
     'I was registered last year, but it expired in March. I was a bit less human for a fortnight.',

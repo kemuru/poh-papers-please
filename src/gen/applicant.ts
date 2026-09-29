@@ -32,7 +32,11 @@ export type LookAlikes = {
   human: 'costume';
   phrase: never;
   photo: 'new-look';
-  /** One character wrong; the address on a phone's screen. */
+  /**
+   * One character wrong; the address on a phone's screen. Since about half of everyone holds a phone
+   * up (day.ts papersForSign), `phone` looks like anyone and tests nothing; it stays so the week's
+   * random numbers do not move.
+   */
   sign: 'one-wrong' | 'phone';
   vouch: 'ethel' | 'week-registrant';
   duplicate: 'first-cousin' | 'twin';
