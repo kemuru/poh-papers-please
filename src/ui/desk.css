@@ -1021,6 +1021,25 @@ kbd {
   margin: 0;
 }
 
+/* A Rule 0 citation reprints the video as the desk showed it; the frame its evidence names is outlined. */
+.citation-film {
+  margin: 0 0 8px;
+}
+
+.frame.named .frame-picture {
+  outline: 3px solid var(--marker);
+  outline-offset: 1px;
+}
+
+/* Bold and white against the grey times. Not in capitals, and not spaced out: in Arial or Helvetica Neue
+   (no Arial Narrow) either one makes "Frame 1 · 00:01" wider than its 80px frame, into the next frame's time. */
+.frame.named figcaption {
+  color: #fff;
+  font-family: var(--official);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 mark {
   padding: 0 2px;
   background: var(--marker);
@@ -1517,6 +1536,85 @@ mark {
   padding-left: 18px;
   font-size: 13px;
   line-height: 1.35;
+}
+
+/* Rule 0's Fig. 0: the specimen face in a video frame, eyes shut, without and with a light. */
+.rule-figure {
+  display: flex;
+  gap: 10px;
+  margin: 4px 0 0;
+}
+
+.rule-plate {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  min-width: 0;
+}
+
+/* The film's own black, so each still reads as a frame of video. */
+.rule-still {
+  position: relative;
+  flex: none;
+  padding: 2px;
+  background: #1b1c1a;
+  line-height: 0;
+}
+
+.rule-still > svg:first-child {
+  display: block;
+}
+
+/* On the still's bottom-right corner, clear of the next line and of the face. */
+.rule-mark {
+  position: absolute;
+  right: -6px;
+  bottom: 0;
+}
+
+.rule-mark circle {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+.rule-mark path {
+  fill: none;
+  stroke-width: 1.8;
+}
+
+.rule-mark-ok circle {
+  fill: var(--paper-light);
+}
+
+.rule-mark-ok path {
+  stroke: var(--ink);
+  stroke-linecap: square;
+}
+
+.rule-mark-not circle {
+  fill: var(--ink);
+}
+
+.rule-mark-not path {
+  stroke: var(--paper-light);
+}
+
+/* One line each, never wrapped: without Arial Narrow a wrap would add a line and push the page down. */
+.rule-caption {
+  font-family: var(--official);
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--ink);
+}
+
+.rule-caption b,
+.rule-caption span {
+  display: block;
+}
+
+.rule-caption b {
+  letter-spacing: 0.04em;
 }
 
 /* The side of the desk holds the rulebook and, from day 4, the registry terminal. */

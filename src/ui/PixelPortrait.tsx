@@ -10,15 +10,18 @@ type Props = {
   scale?: number;
   background?: string;
   title?: string;
+  /** Only this part of the portrait, in portrait pixels: the rulebook's figure shows the face, not the shirt. */
+  crop?: { x: number; y: number; width: number; height: number };
 };
 
-export function PixelPortrait({ portrait, eyes = 'open', mouth = 'closed', scale = 3, background, title }: Props) {
+export function PixelPortrait({ portrait, eyes = 'open', mouth = 'closed', scale = 3, background, title, crop }: Props) {
   const paths = useMemo(() => pixelPaths(drawPortrait(portrait, { eyes, mouth })), [portrait, eyes, mouth]);
+  const { x, y, width, height } = crop ?? { x: 0, y: 0, width: PORTRAIT_WIDTH, height: PORTRAIT_HEIGHT };
   return (
     <svg
-      viewBox={`0 0 ${PORTRAIT_WIDTH} ${PORTRAIT_HEIGHT}`}
-      width={PORTRAIT_WIDTH * scale}
-      height={PORTRAIT_HEIGHT * scale}
+      viewBox={`${x} ${y} ${width} ${height}`}
+      width={width * scale}
+      height={height * scale}
       shapeRendering="crispEdges"
       role="img"
       aria-label={title}

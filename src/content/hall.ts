@@ -53,7 +53,7 @@ export const ANNOUNCEMENTS: readonly (readonly string[])[] = [
 
 /** The supervisor's sticky note on the desk each morning: the day's new rule, and the week. */
 export const SUPERVISOR_NOTES: readonly string[] = [
-  'NEXT calls someone. Check Rule 0 first. Challenges go to court at five.',
+  'NEXT calls someone. Check Rule 0 first, every frame. Court at five.',
   'New: the photo must be the face in the video. Hair does not count. The clock starts today.',
   'New: wallet on the form, wallet on the sign. Window 2 is voting. Window 3 is working.',
   'New: press Look up beside the voucher, or V. Do not look up at the ceiling.',
@@ -62,9 +62,13 @@ export const SUPERVISOR_NOTES: readonly string[] = [
   'It has been an honour. The ceiling says hello.',
 ];
 
-/** Posters on the waiting hall wall, two a day, in the pixel font: capitals, digits and . , ! ? ' - : only. */
+/**
+ * Posters on the waiting hall wall, two a day, in the pixel font: capitals, digits and . , ! ? ' - : only.
+ * They repeat, as posters do. CHECK EVERY FRAME goes up with Rule 0 on day 1, and back up on day 4, the
+ * morning the Gazette reports that the lamp has been dimmed.
+ */
 export const POSTERS: readonly (readonly [string, string])[] = [
-  ['BE YOURSELF. ONCE.', 'ONE HUMAN, ONE QUEUE'],
+  ['CHECK EVERY FRAME', 'ONE HUMAN, ONE QUEUE'],
   ['BE YOURSELF. ONCE.', 'VOUCH RESPONSIBLY'],
   ['HAVE YOUR HUMANITY READY', 'VOUCH RESPONSIBLY'],
   ['CHECK EVERY FRAME', 'ONE HUMAN, ONE VOTE'],

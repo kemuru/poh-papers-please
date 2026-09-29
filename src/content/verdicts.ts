@@ -52,13 +52,20 @@ export const CITATION_MEMOS: Record<RuleId, readonly string[]> = {
 
 /** A unit's citation, by day: the memo for the one thing that gave it away. */
 export const UNIT_MEMOS: readonly string[] = [
-  'Memo 0-L: The applicant shut its eyes and lit up. Humans do only one of those.',
+  'Memo 0-L: The applicant was a home robot. It shut its eyes and lit up. Humans do only one of those.',
   'Memo 0-M: The applicant shut its eyes twice in five seconds, and switched on both times. Its household has been informed.',
   'Memo 0-N: Two things were lit in frame 3: the phone, which was held up, and the forehead, which was not.',
   'Memo 4-L: A company is not a registered human, whatever its brochure says.',
   'Memo 5-L: The factory made this face twice. The registry takes each face once.',
   'Memo 0-P: Likeness Robotics has asked what the income is per unit. The Ministry has not replied.',
 ];
+
+/** A Rule 0 citation reprints the video. "{n}" is the frame its evidence names, "{time}" when it was taken. */
+export const CITATION_FILM = {
+  label: 'The video, as submitted.',
+  labelNamed: 'The video, as submitted, frame {n} marked.',
+  named: 'Frame {n} · {time}',
+};
 
 /** The bottom line of a citation. "{fine}" is the fine in PNK. */
 export const CITATION_TERMS = {

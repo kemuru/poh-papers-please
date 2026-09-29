@@ -87,7 +87,7 @@ export const RULE_NOTICES: Record<number, string> = {
 
 /** The week's running stories, one item a morning: the countdown, the fork, Pat, the Likeness units. */
 export const THREAD: Record<number, string> = {
-  2: 'Queues are expected to grow before Humanity Day. The queue has been told, and has grown. Likeness Robotics reminds owners that its home units are not eligible for the income, "at present".',
+  2: 'Queues are expected to grow before Humanity Day. The queue has been told, and has grown. Likeness Robotics reminds owners that its home units are not eligible for the income, "at present". It adds that the light between a unit’s brows when it shuts its eyes is a night lamp, and a standard feature.',
   3: 'Window 2 has proposed leaving the Ministry, over a different interpretation of sybil. It is voting. Likeness Robotics confirms that its home units blink, for the comfort of the household, and see perfectly well while doing so.',
   4: 'Window 2 is voting. Under its rules the vote has an automatic extension of six months. Likeness Robotics has dimmed the night lamp in its older units, in response to customer feedback.',
   5: 'Window 2 has left the Ministry, taking half the stationery, and says it is the real Ministry. Separately: Pat is practising.',
@@ -105,12 +105,15 @@ export const SMALL_NOTICES: Record<number, string> = {
   7: 'The Ministry does not comment on the price of UBI.',
 };
 
-/** The supervisor's letter on the desk on the first morning, where the Gazette will be from tomorrow. */
+/** The supervisor's letter on the desk on the first morning, where the Gazette will be from tomorrow. At the narrowest desk (1240×820) it leaves about a line of the blotter free; any longer, and the hall shrinks for it until the window opens (e2e/rule0.spec.ts). */
 export const WELCOME = {
   title: 'Welcome to Window 3',
   lines: [
     'Humanity Day is in six days. At five o’clock on day 7 every registered human starts receiving an income: one UBI an hour, for life. Everyone who is human wants to be registered by then. So does everything that has heard about the money.',
-    'Open the window and press NEXT. Read the papers against the rulebook on your right, starting with Rule 0: the registry is for real humans. If everything agrees, ACCEPT. If something does not, CHALLENGE: the case goes to court at five.',
+    // \u00a0 is a no-break space: "Rule 0" is never split across two lines.
+    'Open the window and press NEXT. Read the papers against the rulebook on your right, starting with Rule\u00a00: the registry is for real humans. If everything agrees, ACCEPT. If not, CHALLENGE: the case goes to court at five.',
+    // The first unit comes today, and nothing at the window gives it away: what it is, and why it lights up.
+    'Rule\u00a00 is read in the video, not at the window. Some applicants are home robots with human faces. Their eyes are cameras: when one blinks, a night lamp between its brows comes on to see by. It is infrared: only the video sees it (Fig.\u00a00-2).',
     'If you are not sure, INSPECT: point at two things and the desk will tell you if they disagree. The second applicant today will need it.',
   ],
   signature: 'S., Supervisor',

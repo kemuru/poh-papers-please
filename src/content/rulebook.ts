@@ -2,6 +2,9 @@
 import { KEY_WORDS, PHRASE } from '../rules/phrase';
 import type { RuleId } from '../rules/types';
 
+/** Fig. 0 under a rule's first check: one face in a video frame, eyes shut, twice, `ok` as the rule allows and `not` as it does not. Captions are printed a line at a time, three at most: a fourth makes the figure taller than its stills, and the page costs the hall (e2e/rule0.spec.ts). */
+export type Figure = { label: string; ok: readonly string[]; not: readonly string[] };
+
 type Entry = {
   number: number;
   title: string;
@@ -12,6 +15,8 @@ type Entry = {
   bold?: readonly boolean[];
   /** What to compare, as a short list. */
   checks?: readonly string[];
+  /** Printed under the first check. */
+  figure?: Figure;
   note: string;
 };
 
@@ -19,14 +24,19 @@ export const RULEBOOK: Record<RuleId, Entry> = {
   human: {
     number: 0,
     title: 'A real human',
-    text: 'The applicant must be a real human being. The registration policy, in its own words:',
+    text: 'The policy, in its own words:',
     quote: 'The submitter must be a real human and not a computer-generated person or avatar.',
     bold: [false, false, false, false, false, true, true, false, true, false, true, true, false, true],
     checks: [
       'In every frame, eyes open or shut: the same human face, giving off no light.',
-      'Three identical frames are a picture held up, not a person.',
+      'Three identical frames: a picture held up.',
       'A video generator leaves its mark ✦ in a corner.',
     ],
+    figure: {
+      label: 'Fig. 0-1: a face in a video frame, eyes shut, no light. Fig. 0-2: the same face, eyes shut, a light between the brows: a robot’s night lamp.',
+      ok: ['Fig. 0-1', 'Eyes shut.', 'No light.'],
+      not: ['Fig. 0-2', 'A light:', 'a robot.'],
+    },
     note: 'Anything worn, painted or carried does not count, for or against: a costume robot’s head is a costume, bulb and all.',
   },
   phrase: {
