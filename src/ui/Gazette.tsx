@@ -48,7 +48,7 @@ export function GazettePage({ gazette }: { gazette: Gazette }) {
         <p className="front-count">{gazette.countdown}</p>
       </header>
       <h3 className="front-headline" data-testid="headline">
-        {gazette.headline}
+        <Headline text={gazette.headline} />
       </h3>
       <figure className={gazette.robot ? 'front-photo front-reprint' : 'front-photo'}>
         {gazette.robot ? (
@@ -74,6 +74,11 @@ export function GazettePage({ gazette }: { gazette: Gazette }) {
       {gazette.small && <p className="front-notice">{gazette.small}</p>}
     </article>
   );
+}
+
+/** A headline set so that a number never wraps away from the word it counts: "WINDOW / 3" reads as two stories. */
+function Headline({ text }: { text: string }) {
+  return text.split(/((?:WINDOW|RULE|DAY) \d+)/).map((part, i) => (i % 2 === 1 ? <span key={i} className="headline-keep">{part}</span> : part));
 }
 
 /**

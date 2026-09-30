@@ -194,6 +194,34 @@ export const printer = () =>
 /** One syllable of an applicant's voice. */
 export const blip = (pitch: number) => withAudio((ctx, t) => tone(ctx, t, 'square', pitch, pitch * 0.94, 0.025, 0.05));
 
+/**
+ * Inspect finds two things that disagree: the clerk's pen rings them, and a low note under it, the day's one
+ * certainty. Where no rule in force covers it yet, the ring alone.
+ */
+export const mark = (underRule: boolean) =>
+  withAudio((ctx, t) => {
+    hiss(ctx, t, 'bandpass', 2200, 0.06, 0.07);
+    hiss(ctx, t + 0.07, 'bandpass', 2900, 0.05, 0.09);
+    if (underRule) tone(ctx, t + 0.02, 'triangle', 196, 185, 0.12, 0.3);
+  });
+
+/** A page of the rulebook turned, or the binder's side tab. */
+export const leaf = () =>
+  withAudio((ctx, t) => {
+    hiss(ctx, t, 'bandpass', 1800, 0.06, 0.05);
+    hiss(ctx, t + 0.04, 'bandpass', 3100, 0.04, 0.06);
+  });
+
+/** The magnifier taken up, or put down: a small click on the steel plate. */
+export const glass = (up: boolean) => withAudio((ctx, t) => tone(ctx, t, 'square', up ? 1400 : 1100, up ? 1000 : 800, 0.02, 0.03));
+
+/** The registry terminal answering: two quick beeps. */
+export const terminal = () =>
+  withAudio((ctx, t) => {
+    tone(ctx, t, 'square', 988, 988, 0.02, 0.05);
+    tone(ctx, t + 0.07, 'square', 1319, 1319, 0.02, 0.06);
+  });
+
 /** End of shift: the bell. */
 export const closing = () =>
   withAudio((ctx, t) => {

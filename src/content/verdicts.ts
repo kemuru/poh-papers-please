@@ -100,8 +100,8 @@ export const DISMISSED_NOTES = [
   'The applicant has asked for your name.',
   'The applicant would like it noted that they were right.',
   'The Ministry thanks you for your vigilance. The court found no use for it on this occasion.',
-  'The applicant has been registered and has filled in a comment card.',
-  'The applicant has been registered. A standard letter of apology has been sent in your name.',
+  'The applicant has filled in a comment card.',
+  'A standard letter of apology has been sent in your name.',
   'The court reminds clerks that the rulebook is the only judge. Suspicion is not in the rulebook.',
 ] as const;
 
@@ -167,7 +167,7 @@ export const CAST_RULINGS: Record<CastId, { upheld?: readonly string[]; dismisse
     dismissed: ['The court heard that the robots had been sold. It did not ask to whom.'],
   },
   clerk: {
-    upheld: ['The court asked the applicant what they were. The applicant said "a clerk" again, and stamped the ruling themselves.'],
+    upheld: ['The court asked the applicant what they were. The applicant said “a clerk” again, and stamped the ruling themselves.'],
     dismissed: ['The court found the applicant human, on balance. The applicant asked the court to look again.'],
   },
 };

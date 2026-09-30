@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type Dispatch } from 'react';
 import { EXITS } from '../content/applicants';
 import {
-  AGENT, CLONE, CUTOUT, DEEPFAKE, FIRST_APPLICANT, INFLUENCER, PAT, PAT_MOTHER, REGULARS, RENEWAL, SYBIL_FARM, TWINS, UNIT_EXITS, UNIT_OWNERS,
+  AGENT, CLONE, CUTOUT, DEEPFAKE, FIRST_APPLICANT, FIRST_SLIP, INFLUENCER, PAT, PAT_MOTHER, REGULARS, RENEWAL, SYBIL_FARM, TWINS, UNIT_EXITS, UNIT_OWNERS,
   type CastId,
 } from '../content/cast';
 import { COUNT_WORDS, INSPECT_LINES, NEW_TOOL_TIPS, OFFER_LETTER, SECOND_NOTES } from '../content/desk';
@@ -26,7 +26,7 @@ import { useSettings } from './settings';
 import { Hall } from './Hall';
 import type { Lookup } from './Registry';
 import { pick } from './Slips';
-import { blip, chime, closing, paper, printer, shutter, thunk, tick } from './sound';
+import { chime, closing, glass, leaf, mark, paper, printer, shutter, terminal, thunk, tick } from './sound';
 
 /** How long the printer stays silent after a stamp before a citation comes out. desk.css reads it as --citation-beat. */
 const CITATION_BEAT_MS = 900;
@@ -123,17 +123,23 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu, 
     // Two things that agree later on do not unsay the two that did not.
     if (finding?.inForce) setEvidence(evidenceOf(finding.rule, [picked, item], queue[at]));
     setPicked(null);
-    if (finding) blip(finding.inForce ? 180 : 320);
+    if (finding) mark(finding.inForce);
     else tick();
   };
   const turnTo = (rule: RuleId) => {
     if (!rulebook.includes(rule)) return;
+    if (rule !== page || tab !== 'rulebook') leaf();
     setPage(rule);
     setTab('rulebook');
+  };
+  const turnTab = (to: 'rulebook' | 'registry') => {
+    if (to !== tab) leaf();
+    setTab(to);
   };
   // Inspecting needs someone at the window: with nobody there, nothing on the desk could answer.
   const toggleInspect = () => {
     if (at === null && !inspecting) return;
+    glass(!inspecting);
     setInspecting((on) => !on);
     setPicked(null);
   };
@@ -149,6 +155,7 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu, 
   // A citation prints a beat after the stamp, and the next step waits for it: the lever pulled early
   // goes through once the slip has been out a moment, so no citation is cleared away unseen.
   const pending = useRef<number | null>(null);
+  const [held, setHeld] = useState(false);
   useEffect(
     () => () => {
       if (pending.current !== null) window.clearTimeout(pending.current);
@@ -159,8 +166,12 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu, 
     if (pending.current !== null) return;
     const wait = lastDecision?.citation ? stampedAt.current + CITATION_SEEN_MS - performance.now() : 0;
     if (wait <= 0) return step();
+    // Pulled now, answered now: the lever stays down with a click, and the call goes through once the slip is read.
+    setHeld(true);
+    tick();
     pending.current = window.setTimeout(() => {
       pending.current = null;
+      setHeld(false);
       step();
     }, wait);
   };
@@ -183,6 +194,7 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu, 
     setLookup(l);
     setToolsUsed((used) => (used.includes(l.by) ? used : [...used, l.by]));
     setTab('registry');
+    terminal();
   };
   const lookUp = (what: 'voucher' | 'face') => {
     const voucher = at === null ? null : queue[at].voucher;
@@ -195,8 +207,8 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu, 
   // With single-key shortcuts off (WCAG 2.1.4), only Escape is the desk's; every other key is the focused button's.
   const { settings } = useSettings();
   const shortcuts = settings.shortcuts;
-  const keys = useRef({ lever, decideNow, toggleInspect, escape, turnTo, rulebook, paused, lookUp, lookups: lookupsOpen, faceSearch: faceSearchOpen, shortcuts });
-  keys.current = { lever, decideNow, toggleInspect, escape, turnTo, rulebook, paused, lookUp, lookups: lookupsOpen, faceSearch: faceSearchOpen, shortcuts };
+  const keys = useRef({ lever, decideNow, toggleInspect, escape, turnTo, rulebook, paused, lookUp, lookups: lookupsOpen, faceSearch: faceSearchOpen, shortcuts, opened: state.opened });
+  keys.current = { lever, decideNow, toggleInspect, escape, turnTo, rulebook, paused, lookUp, lookups: lookupsOpen, faceSearch: faceSearchOpen, shortcuts, opened: state.opened };
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
@@ -208,6 +220,8 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu, 
       if (!keys.current.shortcuts && key !== 'escape') return;
       if (key === ' ' && !onButton) {
         e.preventDefault();
+        // A Space still being pressed from the evening does not open the window over an unread paper.
+        if (!keys.current.opened && carriedOver()) return;
         keys.current.lever();
       } else if (key === 'a') keys.current.decideNow('accept');
       else if (key === 'c') keys.current.decideNow('challenge');
@@ -266,6 +280,7 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu, 
           served={state.decided.length}
           total={queue.length}
           canCall={canCall}
+          held={held}
           onOpen={() => dispatch({ type: 'open' })}
           onCall={callNext}
           onEnd={endShift}
@@ -292,7 +307,7 @@ export function Shift({ state, queue, dispatch, clock, onClock, paused, onMenu, 
           lookup={lookup}
           onLookup={showLookup}
           tab={tab}
-          onTab={setTab}
+          onTab={turnTab}
           morning={morningPapers(state)}
           night={night}
           onOffer={(choice) => {
@@ -316,6 +331,24 @@ function morningPapers(s: GameState): MorningPapers {
     : units === REPLACED_AT - 1 ? SECOND_NOTES.twoUnits
     : null;
   return { letter: s.day === OFFER.day && s.offer === null, envelope: s.credits.find((c) => c.kind === 'fee') ?? null, note };
+}
+
+/**
+ * When a key last moved the evening on (the court, the accounts). A Space still being pressed from there is not the
+ * next screen's: the accounts, and the morning's lever, wait until the presses stop, or the roll, the paper, and on
+ * day 3 Likeness's letter, would go by unread. Each press swallowed keeps them waiting. A fresh page, or a click, is
+ * never held up.
+ */
+let keyedOnAt = -Infinity;
+const CARRIED_MS = 600;
+export const keyedOn = () => {
+  keyedOnAt = performance.now();
+};
+export function carriedOver() {
+  const now = performance.now();
+  if (now - keyedOnAt >= CARRIED_MS) return false;
+  keyedOnAt = now;
+  return true;
 }
 
 /** What is being said at the window. */
@@ -349,6 +382,7 @@ function exitLine(a: GeneratedApplicant, decision: Decision): string {
   if (a.cast && a.cast in REGULARS) return REGULARS[a.cast as keyof typeof REGULARS].exits[decision];
   if (a.cast) return CAST_EXITS[a.cast as keyof typeof CAST_EXITS][decision];
   if (a.name === FIRST_APPLICANT.name) return FIRST_APPLICANT.exits[decision];
+  if (a.name === FIRST_SLIP.name) return FIRST_SLIP.exits[decision];
   let hash = 0;
   for (const ch of a.name) hash = (Math.imul(hash, 31) + ch.charCodeAt(0)) >>> 0;
   return pick(EXITS[decision], hash);

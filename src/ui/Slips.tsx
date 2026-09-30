@@ -43,7 +43,9 @@ export function NightChallengeSlip({ decided, caseNo, name, night, video }: { de
       <Slip kind="citation" variant="fine" title={NIGHT.citation.replace('{n}', String(night))} number={`No. ${caseNo}`}>
         <p>Issued to: Clerk, Registry Window 3</p>
         <p>
-          {NIGHT.wronged} <strong>{name}</strong>.
+          {NIGHT.wronged.split('{name}')[0]}
+          <strong>{name}</strong>
+          {NIGHT.wronged.split('{name}')[1]}
         </p>
         <p className="terms">{NIGHT.terms}</p>
       </Slip>

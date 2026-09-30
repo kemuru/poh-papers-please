@@ -32,6 +32,9 @@ export const BUBBLES: Record<Reason, readonly string[]> = {
   refuses: ['I refuse to arbitrate.'],
 };
 
+/** Under an upheld ruling that took an appeal to win: what the appeal paid. "{bonus}" is in PNK. */
+export const APPEAL_WON = 'Won on appeal: the fees refunded, and {bonus} PNK.';
+
 /** How a case came to court, above its jurors. */
 export const HUNCH_LINE = 'No evidence filed. The jury looked for itself.';
 

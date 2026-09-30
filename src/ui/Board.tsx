@@ -38,9 +38,10 @@ const fill = (line: string, values: Record<string, string | number>) =>
   Object.entries(values).reduce((out, [key, value]) => out.replaceAll(`{${key}}`, String(value)), line);
 
 /**
- * The Ministry's notice board in the hall, where the game opens: its poster, the week under way or else the
- * vacancy, today's week, the night shift, the letters the clerk has found and the clerk's record, pinned to
- * cork, and the settings on a switch plate screwed to the frame.
+ * The Ministry's notice board in the hall, where the game opens: its poster, today's week, the night shift and
+ * the letters the clerk has found down the left of the cork, and down the right the week under way or else the
+ * vacancy, the clerk's record, and the settings on steel plates screwed to the board. The two sides are pinned
+ * independently, so the board is as tall as its taller side and no taller: it fits a laptop's window.
  */
 export function Board({ saved, setAside, record, today, onContinue, onNewWeek, onToday, onNight }: Props) {
   // Starting another week while one is under way asks first, as the menu does.
@@ -82,6 +83,13 @@ export function Board({ saved, setAside, record, today, onContinue, onNewWeek, o
   const vacancy = (
     <Vacancy primary={!saved} keyRef={saved ? undefined : first} onStart={() => ask('new', onNewWeek)} />
   );
+  // The volumes, on a plate of their own (the board plays the hall's music, and its rail is not here): screwed on
+  // under the night sign while its padlock keeps it small, and over the switches once it opens and needs the room.
+  const volumes = (
+    <section className="switch-plate volume-plate" aria-label={MENU.settings.volume}>
+      <VolumeFaders compact />
+    </section>
+  );
 
   return (
     <main className="board-screen">
@@ -89,25 +97,39 @@ export function Board({ saved, setAside, record, today, onContinue, onNewWeek, o
         <div className="board-cork">
           <Poster />
           <section className="board-notices" aria-label={BOARD.regions.notices}>
-            {/* The first notice hangs beside the poster: the week under way, or else the vacancy. */}
-            {saved ? (
-              // The clerk's time card for the week under way, where it stands typed on it.
-              <article className="board-notice notice-week" data-testid="board-continue">
-                <DeskSprite sprite={PIN_RED} className="board-pin" />
-                <h2>{BOARD.week.head}</h2>
-                <p className="notice-typed">{saved.where}</p>
-                <div className="board-notice-actions">
-                  <button ref={first} className="screen-button" onClick={onContinue}>
-                    {BOARD.week.continue}
-                  </button>
-                </div>
-              </article>
-            ) : (
-              vacancy
-            )}
+            {/*
+              Down the right of the board, pinned one under another from beside the poster to the foot of the cork:
+              the week under way or else the vacancy, the vacancy under it while a week is under way, the record,
+              and the settings on their steel plates.
+            */}
+            <div className="board-side">
+              {saved ? (
+                // The clerk's time card for the week under way, where it stands typed on it.
+                <article className="board-notice notice-week" data-testid="board-continue">
+                  <DeskSprite sprite={PIN_RED} className="board-pin" />
+                  <h2>{BOARD.week.head}</h2>
+                  <p className="notice-typed">{saved.where}</p>
+                  <div className="board-notice-actions">
+                    <button ref={first} className="screen-button" onClick={onContinue}>
+                      {BOARD.week.continue}
+                    </button>
+                  </div>
+                </article>
+              ) : (
+                vacancy
+              )}
+              {/* A save that could not be kept: the supervisor's note, stuck by the vacancy that begins the week again. */}
+              {setAside && <p className="board-note">{BOARD.setAside}</p>}
+              {saved && vacancy}
+              <Record record={record} />
+              {nightOpen && volumes}
+              {/* The settings: two switches on a steel plate screwed to the frame. */}
+              <div className="switch-plate">
+                <SettingsPanel volumes={false} />
+              </div>
+            </div>
             {/* The rest along the row under the poster, each on its own stock, pinned where it was put up. */}
             <div className="board-row">
-              {setAside && <p className="board-note">{BOARD.setAside}</p>}
               <TodayLeaf
                 label={today.label}
                 line={todayDone ? fill(BOARD.today.finished, { letter: todayDone.letter, savings: todayDone.savings }) : BOARD.today.line}
@@ -134,23 +156,11 @@ export function Board({ saved, setAside, record, today, onContinue, onNewWeek, o
                     </div>
                   )}
                 </article>
-                {/* The volumes, under it: the board plays the hall's music, and its rail is not here. */}
-                <section className="switch-plate volume-plate" aria-label={MENU.settings.volume}>
-                  <VolumeFaders compact />
-                </section>
+                {!nightOpen && volumes}
               </div>
             </div>
           </section>
           <Letters found={record.letters} />
-          {/* Down the right of the board: the vacancy, while a week is under way; the record; the settings. */}
-          <div className="board-side">
-            {saved && vacancy}
-            <Record record={record} />
-            {/* The settings: two switches on a steel plate screwed to the frame. */}
-            <div className="switch-plate">
-              <SettingsPanel volumes={false} />
-            </div>
-          </div>
         </div>
       </div>
       {asking && saved && (

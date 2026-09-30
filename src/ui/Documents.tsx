@@ -206,8 +206,12 @@ function SignFace({ sign }: { sign: Video['sign'] }) {
   );
 }
 
-/** The rulebook: a binder with a page per rule in force, today's open, and a numbered tab for each page. */
-export function RulebookCard({ rulebook, day, page, onPage }: { rulebook: Rulebook; day: number; page: RuleId; onPage: (rule: RuleId) => void }) {
+/**
+ * The rulebook: a binder with a page per rule in force, today's open, and a numbered tab for each page. On the night
+ * shift nothing in it is new: it is the day before Humanity Day, as it always is now.
+ */
+export function RulebookCard({ rulebook, day, page, onPage, night = false }: { rulebook: Rulebook; day: number; page: RuleId; onPage: (rule: RuleId) => void; night?: boolean }) {
+  const isNew = (id: RuleId) => !night && RULE_DAYS[id] === day;
   return (
     <div className="doc rulebook">
       <h2 className="sr-only">Rulebook</h2>
@@ -217,7 +221,7 @@ export function RulebookCard({ rulebook, day, page, onPage }: { rulebook: Rulebo
             key={id}
             role="tab"
             aria-selected={id === page}
-            className={RULE_DAYS[id] === day ? 'rule-tab new' : 'rule-tab'}
+            className={isNew(id) ? 'rule-tab new' : 'rule-tab'}
             title={`${RULEBOOK[id].title} (key ${RULEBOOK[id].number})`}
             onClick={() => onPage(id)}
             onMouseDown={(e) => e.preventDefault()}
@@ -228,7 +232,7 @@ export function RulebookCard({ rulebook, day, page, onPage }: { rulebook: Rulebo
       </div>
       {/* Every page is in the book; only the open one shows. */}
       {rulebook.map((id) => (
-        <RulePage key={id} id={id} open={id === page} isNew={RULE_DAYS[id] === day} day={day} />
+        <RulePage key={id} id={id} open={id === page} isNew={isNew(id)} day={day} />
       ))}
     </div>
   );

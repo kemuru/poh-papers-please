@@ -280,7 +280,7 @@ export const CLERK = { name: 'Robin Hale', address: '2 Inkwell Terrace, Greyford
 export const RENEWAL = {
   video: 'I certify that I am a real clerk and that I am not already registered in this registry.',
   /** In the speech box while your own papers are on the desk. */
-  remark: 'Nobody comes to the window. Your own papers come through the slot. Your registration ran out at nine.',
+  remark: 'Nobody comes to the window. Your own papers come through the slot.',
   exits: {
     accept: 'You stamp your own form. It makes the same noise as all the others.',
     challenge: 'You file a case against yourself. The printer does not hesitate.',

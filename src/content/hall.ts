@@ -59,8 +59,8 @@ export const SUPERVISOR_NOTES: readonly string[] = [
   'NEXT calls someone. Rule 1 is in the book. Court at five. You will be fine.',
   'New in the book: Rule 2. The clock starts today.',
   'New in the book: Rule 3. Window 2 is voting. Window 3 is working.',
-  'New: Rule 4. Look the voucher up with V. Do not look up at the ceiling.',
-  'New: Rule 5. Search the face with F. Window 2 has left the Ministry. You are not interested.',
+  'New: Rule 4. Look the voucher up. Do not look up at the ceiling.',
+  'New: Rule 5. Search the face. Window 2 has left the Ministry. You are not interested.',
   'New: Rule 6. Humanity Day tomorrow. Keep stamping.',
   'Your registration ran out at nine, so you are last in the queue. It has been an honour.',
 ];

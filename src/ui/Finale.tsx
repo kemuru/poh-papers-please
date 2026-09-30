@@ -80,7 +80,8 @@ function lasts(m: Moment, units: number, still: boolean): number | null {
     case 'flip':
       return 100;
     case 'paid':
-      return 900;
+      // The figure, alone on the board, before anyone moves: the week's punchline gets its beat.
+      return 2000;
     case 'leaving':
       return still ? 180 * units + 500 : 180 * Math.max(0, units - 1) + 1300 + 300;
     case 'pat':
@@ -271,10 +272,12 @@ export function Finale({ state, week, paused, onLetter }: Props) {
             <span className="lever-label">{pay ? SIX.lever.pay : SIX.lever.next}</span> <kbd>Space</kbd>
           </button>
         </div>
-        <button className="steel-key six-skip" onClick={toLetter}>
-          {SIX.skip} <kbd>Esc</kbd>
-        </button>
       </footer>
+      {/* The way out, small, in the hall's top left corner: not at the counter's right end, where the way on has been
+          all week, so a habit cannot skip the first hour. */}
+      <button className="steel-key six-skip" onClick={toLetter}>
+        {SIX.skip} <kbd>Esc</kbd>
+      </button>
     </main>
   );
 }

@@ -187,7 +187,7 @@ export function Desk(p: Props) {
             </div>
           )}
           <Paper label="Rulebook" className="paper-rulebook" hidden={p.tab !== 'rulebook'}>
-            <RulebookCard rulebook={p.rulebook} day={p.day} page={p.page} onPage={p.onPage} />
+            <RulebookCard rulebook={p.rulebook} day={p.day} page={p.page} onPage={p.onPage} night={!!p.night} />
           </Paper>
           {registryOpen && (
             <Paper label="Registry" className="paper-registry" hidden={p.tab !== 'registry'}>
@@ -271,7 +271,7 @@ export function Desk(p: Props) {
           )}
           <div className="sticky-spot">
             <aside className="sticky" aria-label="Note from your supervisor">
-              {SUPERVISOR_NOTES[p.day - 1]}
+              {p.night ? NIGHT.note : SUPERVISOR_NOTES[p.day - 1]}
               <span className="sticky-sign">S.</span>
             </aside>
             {/*
@@ -288,7 +288,7 @@ export function Desk(p: Props) {
             )}
           </div>
         </div>
-        {still !== null && p.papers && <Loupe applicant={p.papers} still={still} desk={desk} layout={`${p.tab} ${p.page} ${p.lookup?.by ?? ''}`} />}
+        {still !== null && p.papers && <Loupe applicant={p.papers} still={still} desk={desk} layout={`${p.tab} ${p.page} ${p.lookup?.by ?? ''} ${p.inspect.flagged.length} ${p.inspect.message ?? ''}`} />}
       </section>
     </InspectContext.Provider>
   );
@@ -369,8 +369,8 @@ type Box = { left: number; top: number; right: number; bottom: number };
 /**
  * Where the lens lies, in design pixels from the desk's corner: beside the film if the blotter has the room; else over
  * the form, right of its photo and clear above the film (rising over the hall if it must); else on the blotter's empty
- * foot. Never over the booth, and never over the photo, a still, Rule 2's figure or the registry's faces: failing
- * that on every spot, wherever it covers least of them.
+ * foot. Never over the booth, and never over the photo, a still, Rule 2's figure, the registry's faces, the sign or
+ * what Inspect just found: failing that on every spot, wherever it covers least of them.
  */
 function placeLens(desk: HTMLElement, lens: HTMLElement, scale: number) {
   const origin = desk.getBoundingClientRect();
@@ -379,7 +379,8 @@ function placeLens(desk: HTMLElement, lens: HTMLElement, scale: number) {
     if (!b || b.width === 0 || b.height === 0) return null;
     return { left: (b.left - origin.left) / scale, top: (b.top - origin.top) / scale, right: (b.right - origin.left) / scale, bottom: (b.bottom - origin.top) / scale };
   };
-  const kept = [...desk.querySelectorAll('.paper [data-inspect="photo"], .paper [data-inspect^="frame-"], .rule-figure, .record-face')]
+  // What the clerk just found stays in view too: the enlarged sign, the things framed as disagreeing, and the slip that says so.
+  const kept = [...desk.querySelectorAll('.paper [data-inspect="photo"], .paper [data-inspect^="frame-"], .rule-figure, .record-face, .sign-holder, .inspectable.flagged, .inspect-slip')]
     .map(box)
     .filter((b) => b !== null);
   const [width, height] = [lens.offsetWidth + LENS_SHADOW, lens.offsetHeight + LENS_SHADOW];

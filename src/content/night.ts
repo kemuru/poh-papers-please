@@ -16,7 +16,10 @@ export const NIGHT = {
   /** On the slip for a fake stamped in, or a human challenged. */
   citation: 'Citation {n} of 3',
   terms: 'Three citations and the night is over.',
-  wronged: 'Offence: challenged an applicant who broke no rule.',
+  /** "{name}" is theirs. */
+  wronged: 'Offence: challenged {name}, who broke no rule.',
+  /** The supervisor's standing note, every night: day 6's, without its news. */
+  note: 'Humanity Day tomorrow. Keep stamping.',
   /** On the slip for a fake challenged: the verdict, at once. */
   refused: 'Refused',
   window: 'The queue is done. Another is on its way.',

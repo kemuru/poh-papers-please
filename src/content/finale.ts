@@ -60,7 +60,7 @@ export const AGENT_LINES = {
 export const LIKENESS_LINES = {
   head: 'Likeness Robotics Ltd',
   signed: 'Enclosed: 40 PNK. Please pay our units’ first hour to Likeness Robotics. We made them.',
-  handedIn: 'We apologise again for our letter of day 3. Please pay our units’ first hour to Likeness Robotics. We made them.',
+  handedIn: 'We apologise again for our letter of day\u00a03. Please pay our units’ first hour to Likeness Robotics. We made them.',
   letter: 'Please pay our units’ first hour to Likeness Robotics. We made them.',
 };
 

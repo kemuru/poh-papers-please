@@ -98,11 +98,33 @@
   width: 216px;
 }
 
+/*
+ * The small steel key in the hall's top left corner, straight to the letter: a step quieter than the keys that move
+ * on, and away both from the counter's right end, where the way on has been all week, and from the rail's own Esc.
+ */
+.six-skip {
+  position: absolute;
+  z-index: 4;
+  top: 12px;
+  left: 16px;
+  padding: 0 8px 2px;
+  background: var(--steel);
+}
+
 .six-lever .lever {
   min-height: 56px;
 }
 
-/* Pulled: the lever stays down an art pixel, as it goes under a press, until the scene is over. */
+/* Pulled: the lever stays down an art pixel, as it goes under a press, until the scene is over; its word goes dark
+   and its key cap comes off, as nothing more is asked of it. */
+.lever.pulled .lever-label {
+  color: var(--brass-dark);
+}
+
+.lever.pulled kbd {
+  visibility: hidden;
+}
+
 .lever.pulled,
 .lever.pulled:hover {
   translate: 0 2px;

@@ -11,20 +11,20 @@ import { EMPTY_COURT, LETTER_HEAD } from '../content/verdicts';
 import type { EndingId } from '../economy/endings';
 import { writeSpecial, type Special } from '../gen/gazette';
 import { writeClip, writeLetter } from '../gen/letters';
-import { PAY, payLines, type DayEnd, type PayLine } from '../economy/economy';
+import { APPEALS, PAY, payLines, type DayEnd, type PayLine } from '../economy/economy';
 import { RULEBOOK } from '../content/rulebook';
 import type { GeneratedApplicant } from '../gen/applicant';
 import { drawPortrait } from '../gen/drawPortrait';
 import { generatePortrait, type Portrait } from '../gen/portrait';
 import { appealFee, JURY_SIZES, type Round } from './court';
-import { APPEAL_BUTTON, BUBBLES, COURT_SESSION, HUNCH_LINE, JURY_LABEL, JUROR_NAMES } from '../content/court';
+import { APPEAL_BUTTON, APPEAL_WON, BUBBLES, COURT_SESSION, HUNCH_LINE, JURY_LABEL, JUROR_NAMES } from '../content/court';
 import { asPointed, evidenceLine, evidenceWords } from './evidence';
 import { pick } from './Slips';
 import { weekEnd, type GameState, type Ruling } from './week';
 import { PixelPortrait, pixelPaths } from './PixelPortrait';
 import { CREST, DeskSprite, GAVEL, KNOB, LIKENESS_MARK, MASTHEAD, PAPERCLIP } from './DeskArt';
 import { ADDING_MACHINE, BILL_SPIKE, CREST_BRASS, EMPTY_SEAT, FOLDED_GAZETTE, OUT_TRAY } from './ScreenArt';
-import { caseNumber } from './Shift';
+import { carriedOver, caseNumber, keyedOn } from './Shift';
 import { thunk, tick } from './sound';
 
 // The evening: the court hears the day's challenges, the accounts are read out, and at the
@@ -51,6 +51,7 @@ export function useKeyToContinue(onContinue: () => void, only?: { enter: true; s
       if (guard.current && !guard.current.shown()) return;
       e.preventDefault();
       go.current();
+      keyedOn();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -60,12 +61,14 @@ export function useKeyToContinue(onContinue: () => void, only?: { enter: true; s
 /** Whether a way on that fades in has arrived: it is not there to be pressed until it can be seen. */
 export const arrived = (key: HTMLElement | null) => key !== null && getComputedStyle(key).visibility === 'visible';
 
-/** Plays `sound` once for each of `count` things as they appear, `gap` seconds apart. */
+/** Plays `sound` once for each of `count` things as they appear, `gap` seconds apart; returns a way to stop the rest. */
 function useRhythm(count: number, delay: number, gap: number, sound: () => void) {
+  const timers = useRef<number[]>([]);
   useEffect(() => {
-    const timers = Array.from({ length: count }, (_, n) => window.setTimeout(sound, (delay + n * gap) * 1000));
-    return () => timers.forEach((t) => window.clearTimeout(t));
+    timers.current = Array.from({ length: count }, (_, n) => window.setTimeout(sound, (delay + n * gap) * 1000));
+    return () => timers.current.forEach((t) => window.clearTimeout(t));
   }, [count, delay, gap, sound]);
+  return () => timers.current.forEach((t) => window.clearTimeout(t));
 }
 
 const HEARING_GAP = 0.9;
@@ -342,6 +345,8 @@ function Hearing({
               <strong>Challenge dismissed.</strong> No rule broken; registered. Deposit: −{PAY.deposit} PNK.
             </p>
           )}
+          {/* The court's best moment says what it paid: the statement tonight will list it too. */}
+          {r.upheld && court.rounds.length > 1 && <p className="hearing-appealed">{APPEAL_WON.replace('{bonus}', String(APPEALS.bonus))}</p>}
           {r.upheld &&
             court.violations.map((v) => (
               <p key={v.rule} className="hearing-evidence">
@@ -450,12 +455,23 @@ export function Statement({ day, end, unprocessed, onNext }: { day: number; end:
     { label: 'Savings carried forward', amount: end.after, kind: 'total' },
   ];
   const next = end.fired || end.promoted ? 'Continue' : `Begin day ${day + 1}`;
-  useKeyToContinue(onNext);
-  useRhythm(rows.length, 0.3, ROW_GAP, tick);
+  const stopTicking = useRhythm(rows.length, 0.3, ROW_GAP, tick);
+  // A Space still being mashed from the court is swallowed; a press once it has stopped prints the rest of the roll
+  // at once if it is still printing, as in court, and only a press after that moves on: the accounts are never
+  // skipped unseen.
+  const screen = useRef<HTMLElement>(null);
+  useKeyToContinue(() => {
+    if (carriedOver()) return;
+    const printing =
+      screen.current?.getAnimations?.({ subtree: true }).filter((a) => a.playState !== 'finished' && a.effect?.getTiming().iterations !== Infinity) ?? [];
+    if (printing.length === 0) return onNext();
+    printing.forEach((a) => a.finish());
+    stopTicking();
+  });
   // The roll feeds out of the machine a line at a time, as the lines print: the header, then each row.
   const printed = 0.3 + rows.length * ROW_GAP;
   return (
-    <main className="screen statement-screen">
+    <main ref={screen} className="screen statement-screen">
       <div className="till">
         {/* On the blotter either side of the machine: the day's forms in the out tray and the stamps put down in
             front of it; the day's bills on the spike, and the morning's Gazette folded in front of that. */}

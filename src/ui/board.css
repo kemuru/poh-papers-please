@@ -1,8 +1,12 @@
 /*
  * The notice board in the hall, where the Ministry opens (slice 6): cork in an oak frame on the hall's green
  * wall, the Ministry's poster and the week's notices pinned to it, the letters found under them and the
- * clerk's record beside, and the settings on a steel switch plate. Drawn to notes/art-direction.md, on the
+ * clerk's record beside, and the settings on steel plates. Drawn to notes/art-direction.md, on the
  * desk's grid (2 design pixels to an art pixel), in the Ministry's type, with the palette of desk.css.
+ *
+ * The whole board, frame and all, fits the shortest stage there is (760 design pixels, Stage.tsx) in its
+ * tallest state: letters found, a best night, today's week finished and a week under way. It is pinned close
+ * on a laptop's stage, and with more cork between the papers where the stage is tall (the last rule here).
  */
 
 .board-screen {
@@ -13,8 +17,10 @@
   align-items: safe center;
   height: 100%;
   min-height: 0;
-  padding: 16px;
+  padding: 12px;
   overflow: hidden;
+  /* The wall's height, in design pixels, says how close the board's papers are pinned. */
+  container: board-wall / size;
   /* The hall's wall, in panels, with a picture rail and the darker dado below it. */
   background:
     linear-gradient(var(--wood-deep) 0 0) 0 calc(100% - 118px) / 100% 2px no-repeat,
@@ -29,7 +35,7 @@
 /* The frame: oak, lit along its top and left, a hard shadow on the wall. */
 .board {
   width: min(1280px, 100%);
-  padding: 12px;
+  padding: 10px;
   border: 2px solid var(--wood-deep);
   background: var(--wood);
   box-shadow:
@@ -39,15 +45,17 @@
 }
 
 /*
- * The cork, in the frame's shadow along its top and left. Six tracks: the poster takes four and the first
- * notice two; the other notices share the next row; the letters take four and the record the last two.
+ * The cork, in the frame's shadow along its top and left. Two sides, pinned independently: down the left the
+ * poster, the row of notices under it and the letters; down the right, from the top, a column of its own
+ * (.board-side). Whatever the right needs past the left's rows goes to the last row, under the letters.
  */
 .board-cork {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) 404px;
+  grid-template-rows: auto auto 1fr;
   align-items: start;
-  gap: 16px 18px;
-  padding: 18px 18px 20px;
+  gap: 12px 16px;
+  padding: 14px 16px 16px;
   border: 2px solid var(--wood-deep);
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' shape-rendering='crispEdges'%3E%3Cpath fill='%238d6436' d='M2 4h2v2H2zM12 2h2v2h-2zM22 8h4v2h-4zM6 16h2v2H6zM16 22h2v2h-2zM26 26h2v2h-2zM0 28h2v2H0zM18 12h2v2h-2zM10 26h4v2h-4z'/%3E%3Cpath fill='%23c9a06a' d='M8 8h2v2H8zM20 2h2v2h-2zM14 16h2v2h-2zM26 18h2v2h-2zM4 22h2v2H4zM28 10h2v2h-2z'/%3E%3C/svg%3E")
@@ -65,7 +73,7 @@
   margin: 0;
 }
 
-/* The notices are the cork's: the first beside the poster, the rest along a row of their own under it. */
+/* The notices are the cork's: the first at the head of the right side, the rest along a row under the poster. */
 .board-notices {
   display: contents;
 }
@@ -86,11 +94,12 @@
  */
 .board-poster {
   position: relative;
-  grid-column: 1 / span 4;
+  grid-column: 1;
+  grid-row: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 20px 14px;
+  padding: 10px 20px 12px;
   border: 2px solid var(--black);
   background: var(--ministry);
   box-shadow:
@@ -113,7 +122,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   font-family: var(--stamp);
 }
 
@@ -130,7 +139,7 @@
 /* The banner: a red band, lit along its top, its ends cut in a notch. */
 .board-poster .poster-stamp {
   position: relative;
-  margin-top: 12px;
+  margin-top: 8px;
   padding: 2px 44px;
   border-top: 2px solid #4a120f;
   border-bottom: 2px solid #4a120f;
@@ -167,7 +176,7 @@
 .poster-window {
   position: absolute;
   right: 20px;
-  bottom: 14px;
+  bottom: 12px;
   color: #a9bc9f;
 }
 
@@ -185,7 +194,7 @@
   align-items: flex-start;
   gap: 4px;
   min-width: 0;
-  padding: 16px 16px 16px;
+  padding: 14px 16px;
   box-shadow: 4px 4px 0 var(--cork-shade);
 }
 
@@ -205,36 +214,49 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .board-notice-actions .screen-button {
   margin: 0;
 }
 
-/* The first notice, beside the poster. */
-.board-notices > .board-notice:first-child {
-  grid-column: 5 / span 2;
-  grid-row: 1;
-  align-self: start;
-}
-
 /* The row under the poster: the notices side by side, at the heights they were pinned. */
 .board-row {
-  grid-column: 1 / span 4;
+  grid-column: 1;
   grid-row: 2;
   display: flex;
   align-items: flex-start;
-  gap: 22px;
+  gap: 16px;
   min-width: 0;
 }
 
-/* Clerk wanted: Form 1's pale green-grey stock, printed in Ministry green, its title over a double rule and the
-   Ministry's seal in the corner. Pinned by its left corner. */
+/*
+ * Clerk wanted: Form 1's pale green-grey stock, printed in Ministry green, its title over a double rule and the
+ * Ministry's seal in the corner, and its key at the foot on the right, beside the last line where it fits.
+ * Pinned by its left corner.
+ */
 .notice-vacancy {
+  flex-flow: row wrap;
+  align-items: center;
+  column-gap: 12px;
+  padding: 14px 14px 12px;
   border: 2px solid var(--form-edge);
   background: var(--form);
   color: var(--ministry);
+}
+
+.notice-vacancy > * {
+  flex: 0 0 100%;
+}
+
+.notice-vacancy > p:last-of-type {
+  flex: 1 1 auto;
+}
+
+.notice-vacancy > .board-notice-actions {
+  flex: none;
+  margin: 0 0 0 auto;
 }
 
 .notice-vacancy .board-pin {
@@ -247,8 +269,8 @@
   justify-content: space-between;
   gap: 12px;
   align-self: stretch;
-  margin-bottom: 8px;
-  padding-bottom: 8px;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
   background:
     linear-gradient(var(--ministry) 0 0) 0 100% / 100% 2px no-repeat,
     linear-gradient(var(--ministry) 0 0) 0 calc(100% - 4px) / 100% 2px no-repeat;
@@ -263,14 +285,16 @@
   flex: none;
 }
 
-.board-side .notice-vacancy {
-  margin-left: 14px;
-}
-
-/* Your week: the clerk's buff time card, ruled in columns, the title stamped and where the week stands typed.
-   Pinned at its right. */
+/*
+ * Your week: the clerk's buff time card, ruled in columns, the title stamped with the key to carry on beside it,
+ * and where the week stands typed across the card under them. Pinned through its middle.
+ */
 .notice-week {
-  padding-top: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 12px;
+  padding-top: 16px;
   border: 2px solid var(--buff-edge);
   background:
     repeating-linear-gradient(90deg, transparent 0 58px, rgb(139 119 71 / 22%) 58px 60px),
@@ -278,20 +302,22 @@
   color: var(--ink);
 }
 
-.notice-week .board-pin {
-  left: auto;
-  right: 26px;
-}
-
 .notice-week h2 {
+  grid-area: 1 / 1;
+  justify-self: start;
   padding: 0 6px;
   border: 2px solid currentColor;
   color: var(--ministry);
   font-family: var(--stamp);
 }
 
+.notice-week .board-notice-actions {
+  grid-area: 1 / 2;
+  margin: 0;
+}
+
 .notice-typed {
-  margin-top: 6px;
+  grid-column: 1 / -1;
   font-family: var(--type);
 }
 
@@ -301,7 +327,7 @@
  */
 .notice-today {
   flex: 0 0 312px;
-  padding: 0 16px 14px;
+  padding: 0 14px 12px;
   border: 2px solid var(--letter-edge);
   border-top: 0;
   background: var(--letter);
@@ -320,8 +346,8 @@
 
 .notice-today h2 {
   align-self: stretch;
-  margin: 0 -16px 10px;
-  padding: 16px 16px 4px;
+  margin: 0 -14px 8px;
+  padding: 14px 14px 4px;
   background: var(--challenge);
   box-shadow: inset 0 -2px 0 #7f2a23;
   color: #fbe9e4;
@@ -337,7 +363,7 @@
     'day month';
   align-items: center;
   column-gap: 14px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   font-family: var(--type);
 }
 
@@ -360,30 +386,20 @@
   line-height: 48px;
 }
 
-/* The Ministry never closes: an enamel sign, black, lettered in cream, screwed to the board at its corners. */
-/* The night notice, and the volume plate screwed on under it. */
+/* The night sign, and while its padlock keeps it small, the volume plate screwed on under it. */
 .board-stack {
   flex: 1 1 380px;
   max-width: 520px;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  margin-top: 18px;
+  gap: 12px;
+  margin-top: 8px;
 }
 
-.volume-plate {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  color: var(--charcoal-deep);
-}
-
+/* The Ministry never closes: an enamel sign, black, lettered in cream, screwed to the board at its corners. */
 .notice-night {
-  flex: 1 1 380px;
-  max-width: 520px;
-  margin-top: 18px;
-  padding: 14px 20px 16px;
+  padding: 12px 18px 14px;
   border: 2px solid var(--black);
   background:
     linear-gradient(var(--steel-light) 0 0) 6px 6px / 4px 4px no-repeat,
@@ -404,7 +420,7 @@
   justify-content: space-between;
   gap: 12px;
   align-self: stretch;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   color: #f3ead0;
   font-family: var(--stamp);
 }
@@ -413,18 +429,11 @@
   color: var(--steel-light);
 }
 
-.board-stack > .notice-night {
-  flex: none;
-  max-width: none;
-  margin-top: 0;
-}
-
-/* The set-aside save: a note stuck to the cork, in the supervisor's pen. */
+/* The set-aside save: a note stuck to the cork under the vacancy, a little askew of it, in the supervisor's pen. */
 .board-note {
   position: relative;
-  flex: 0 0 240px;
-  margin-top: 22px;
-  padding: 10px 12px 12px;
+  margin: 0 0 0 24px;
+  padding: 8px 12px 10px;
   border: 2px solid var(--sticky-edge);
   background: var(--sticky);
   box-shadow: 4px 4px 0 var(--cork-shade);
@@ -432,7 +441,11 @@
   font-family: var(--hand);
 }
 
-/* "Copied.", typed in after the key, where it was pressed. */
+/* "Copied.", typed in after the key, where it was pressed: on the key's own line, so the leaf does not grow. */
+.notice-today .board-notice-actions {
+  column-gap: 8px;
+}
+
 .board-copied {
   font-family: var(--type);
 }
@@ -440,7 +453,7 @@
 /* ------------------------------------------------------------ the letters found */
 
 .board-letters {
-  grid-column: 1 / span 4;
+  grid-column: 1;
   grid-row: 3;
 }
 
@@ -448,7 +461,7 @@
 .board-letters > h2 {
   display: inline-flex;
   gap: 14px;
-  margin: 0 0 16px;
+  margin: 0 0 10px;
   padding: 2px 10px;
   border: 2px solid var(--buff-edge);
   background: var(--buff-light);
@@ -466,7 +479,7 @@
 .board-letters ul {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px 14px;
+  gap: 12px 14px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -479,8 +492,8 @@
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 4px 10px;
-  min-height: 92px;
-  padding: 10px 10px 10px 12px;
+  min-height: 80px;
+  padding: 8px 10px 8px 12px;
   border: 2px solid var(--buff-edge);
   background: var(--buff-light);
   box-shadow: 4px 4px 0 var(--cork-shade);
@@ -502,21 +515,30 @@
   font-family: var(--hand);
 }
 
-/* A letter found: the Ministry's letterhead, its seal and title, and its stamp as it came down. */
+/*
+ * A letter found: the Ministry's letterhead, its seal in the corner and its stamp across from it as it came
+ * down, and its title typed under them the width of the card, on one line.
+ */
 .board-slip.found {
   grid-template-rows: auto auto;
-  align-items: start;
+  align-content: start;
+  /* Room for the pin's head over the stamp. */
+  padding-top: 12px;
   border-color: var(--letter-edge);
   background: var(--letter);
 }
 
 .slip-seal {
   display: block;
-  grid-row: 1;
+  grid-area: 1 / 1;
+}
+
+.board-slip.found strong {
+  grid-column: 1 / -1;
 }
 
 .board-slip-stamp {
-  grid-column: 1 / -1;
+  grid-area: 1 / 2;
   justify-self: end;
   padding: 0 6px;
   border: 4px solid currentColor;
@@ -545,22 +567,23 @@
   color: var(--coral);
 }
 
-/* ------------------------------------------------------------ the record and the switch plate */
+/* ------------------------------------------------------------ the right side: the record and the plates */
 
-/* Down the right, under the first notice, beside the row and the letters. */
+/* Down the right, from beside the poster: the first notice, the record and the plates, one under another. */
 .board-side {
-  grid-column: 5 / span 2;
-  grid-row: 2 / span 2;
+  grid-column: 2;
+  grid-row: 1 / -1;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
+  min-width: 0;
 }
 
 /* The clerk's record: a ruled index card, a red rule under its title and a blue one under every line, the
    figures typed in against them. Pinned by its left corner. */
 .board-record {
   position: relative;
-  padding: 14px 16px 12px;
+  padding: 12px 16px 10px;
   border: 2px solid var(--letter-edge);
   background: #f4f5ef;
   box-shadow: 4px 4px 0 var(--cork-shade);
@@ -572,7 +595,7 @@
 }
 
 .board-record h2 {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   padding: 0 0 4px 30px;
   background: linear-gradient(var(--challenge) 0 0) left bottom / 100% 2px no-repeat;
   color: var(--pen);
@@ -608,7 +631,7 @@
 
 /* The switch plate: brushed steel, a screw in each corner, a key and a lamp for each setting. */
 .switch-plate {
-  padding: 10px 12px;
+  padding: 8px 12px;
   border: 2px solid var(--steel-deep);
   background:
     linear-gradient(var(--steel-dark) 0 0) 4px 4px / 4px 4px no-repeat,
@@ -625,7 +648,19 @@
 .switch-plate .settings {
   flex-direction: column;
   align-items: stretch;
-  gap: 10px;
+  gap: 8px;
+}
+
+/* The volumes on a plate of their own, a fader to a line: under the night sign, or just over the switches. */
+.volume-plate {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--charcoal-deep);
+}
+
+.volume-plate + .switch-plate {
+  margin-top: -4px;
 }
 
 /* ------------------------------------------------------------ the board's question */
@@ -643,4 +678,119 @@
 
 .board-clipboard {
   position: relative;
+}
+
+/* ------------------------------------------------------------ a tall wall */
+
+/*
+ * Where the stage is tall (a 1440×900 window or more, 860 design pixels of wall inside its margin), the papers
+ * are pinned with more cork between them, as the board was first put up: its tallest state is still well inside.
+ */
+@container board-wall (min-height: 860px) {
+  .board {
+    padding: 12px;
+  }
+
+  .board-cork {
+    gap: 16px 18px;
+    padding: 18px 18px 20px;
+  }
+
+  .board-poster {
+    padding: 12px 20px 14px;
+  }
+
+  .board-poster .poster-ministry {
+    margin-bottom: 10px;
+  }
+
+  .board-poster .poster-stamp {
+    margin-top: 12px;
+  }
+
+  .poster-window {
+    bottom: 14px;
+  }
+
+  .board-notice {
+    padding: 16px;
+  }
+
+  .board-notice-actions {
+    margin-top: 10px;
+  }
+
+  .notice-vacancy {
+    padding: 16px 16px 14px;
+  }
+
+  .notice-week {
+    padding-top: 18px;
+  }
+
+  .notice-today {
+    padding: 0 14px 14px;
+  }
+
+  .notice-today h2 {
+    margin-bottom: 10px;
+    padding-top: 16px;
+  }
+
+  .leaf-date {
+    margin-bottom: 6px;
+  }
+
+  .board-row {
+    gap: 22px;
+  }
+
+  .board-stack {
+    gap: 18px;
+    margin-top: 18px;
+  }
+
+  .notice-night {
+    padding: 14px 20px 16px;
+  }
+
+  .notice-night h2 {
+    margin-bottom: 6px;
+  }
+
+  .board-letters > h2 {
+    margin-bottom: 16px;
+  }
+
+  .board-letters ul {
+    gap: 16px 14px;
+  }
+
+  .board-slip {
+    min-height: 88px;
+  }
+
+  .board-side {
+    gap: 16px;
+  }
+
+  .board-record {
+    padding: 14px 16px 12px;
+  }
+
+  .board-record h2 {
+    margin-bottom: 6px;
+  }
+
+  .switch-plate {
+    padding: 10px 12px;
+  }
+
+  .switch-plate .settings {
+    gap: 10px;
+  }
+
+  .volume-plate {
+    gap: 8px;
+  }
 }

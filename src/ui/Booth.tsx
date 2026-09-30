@@ -25,6 +25,8 @@ type Props = {
   served: number;
   total: number;
   canCall: boolean;
+  /** The lever pulled while a citation is still printing: held down until the call goes through. */
+  held?: boolean;
   onOpen: () => void;
   onCall: () => void;
   onEnd: () => void;
@@ -90,7 +92,7 @@ export function Booth(p: Props) {
             <span className="lever-label">End shift</span> <kbd>Space</kbd>
           </button>
         ) : (
-          <button className="lever call" onClick={p.onCall} disabled={!p.canCall} aria-label="Call next applicant">
+          <button className={p.held ? 'lever call held' : 'lever call'} onClick={p.onCall} disabled={!p.canCall} aria-label="Call next applicant">
             <span className="lever-label">Next</span> <kbd>Space</kbd>
           </button>
         )}

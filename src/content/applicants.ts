@@ -386,7 +386,7 @@ export const PHRASE_MISTAKES: Record<PhraseMistake, Lines> = {
 export const EXITS: Record<'accept' | 'challenge', Lines> = {
   accept: [
     'Thank you.', 'Is that it?', 'Lovely.', 'That was easier than the bank.', 'Right. Thanks.',
-    "I'll tell my mother.", 'Brilliant. Bye.', 'Do I get a sticker? No? Fine.', 'Do I start dripping now?',
+    "I'll tell my mother.", 'Brilliant. Bye.', 'Do I get a sticker? No? Fine.', "I don't feel any different.",
   ],
   challenge: [
     'Right.', 'Fine.', "I'll see you in court, then.", "I'll wait outside.", 'Is there a café?',

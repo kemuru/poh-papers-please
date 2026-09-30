@@ -828,6 +828,33 @@
   }
 }
 
+/*
+ * Four cases in a room of ordinary height: three jurors in tiers, their words beside them, made every bay as tall as
+ * theirs and pushed the slips under the table's edge, the clerk's own ruling on Humanity Day among them. The three
+ * sit in a row over the rail, as a busy court seats them; what each said is on their seat's hover, as it is there.
+ * A tall room keeps the tiers and the words.
+ */
+@container court (height < 1000px) {
+  .court .docket.four .jury-3 .jurors {
+    flex-direction: row;
+    align-self: stretch;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0 12px;
+  }
+
+  .court .docket.four .jury-3 .juror {
+    flex: 1 1 0;
+    flex-direction: column-reverse;
+    gap: 8px;
+    max-width: 280px;
+  }
+
+  .court .docket.four .jury-3 .bubble {
+    display: none;
+  }
+}
+
 /* ---------------------------------------------- the slips on the table */
 
 /*
@@ -1042,6 +1069,13 @@
   margin-top: 10px;
 }
 
+/* Where a slip has the room, the key hangs on a line of its own under the ruling, not run on after the court's
+   line mid-sentence. */
+.docket:is(.one, .two, .three):not(.stacked) .hearing-outcome > .appeal-key {
+  display: flex;
+  width: fit-content;
+}
+
 /* The key's word in the stamp face, the jury it goes to printed after it. */
 .appeal-face {
   position: relative;
@@ -1094,6 +1128,25 @@
   .appeal-fee::before {
     left: -14px;
     width: 20px;
+  }
+}
+
+/* A slip narrower still (a crowded court on a small window): the tag hangs under the key on a short string, inside
+   the slip, rather than out past its edge. */
+@container (width < 248px) {
+  .appeal-key {
+    flex-wrap: wrap;
+  }
+
+  .appeal-fee {
+    margin: 8px 0 0 20px;
+  }
+
+  .appeal-fee::before {
+    top: -10px;
+    left: 8px;
+    width: 2px;
+    height: 10px;
   }
 }
 
@@ -1461,7 +1514,9 @@
 }
 
 .docket.stacked .hearing-ruling strong,
-.docket.stacked .court-note {
+.docket.stacked .court-note,
+.docket.stacked .hearing-appealed,
+.docket.crowded .hearing-appealed {
   display: none;
 }
 
@@ -1471,7 +1526,8 @@
 
 /* A short room: four across keeps its slips to the ruling. */
 @container court (height < 840px) {
-  .docket.four .court-note {
+  .docket.four .court-note,
+  .docket.four .hearing-appealed {
     display: none;
   }
 }
@@ -1480,6 +1536,7 @@
    the bay says so). */
 @container court (width < 1400px) {
   .docket.four .court-note,
+  .docket.four .hearing-appealed,
   .docket.three .hearing-heard:not([data-testid='evidence-line']) {
     display: none;
   }

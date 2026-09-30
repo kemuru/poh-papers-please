@@ -501,9 +501,8 @@ function Clock({ minutes, x = 384 }: { minutes: number; x?: number }) {
   );
 }
 
-function Poster({ x, text }: { x: number; text: string }) {
+function Poster({ x, text, y = 8 }: { x: number; text: string; y?: number }) {
   const lines = wrapWords(text, 9).slice(0, 4);
-  const y = 8;
   return (
     <g>
       <rect x={x} y={y} width={44} height={34} fill="#e7dfc6" />
@@ -802,7 +801,8 @@ export function HallAtSix({ layout, board, paid, tubesOut, lamps, leaving, still
         ))}
         <Door x={332} />
         <Clock minutes={AT_SIX} x={SIX_CLOCK_X} />
-        <Poster x={160} text={POSTERS[LAST_DAY - 1][0]} />
+        {/* Clear of the back bench's heads, on the one evening it is about: never nearer the ceiling than its tubes. */}
+        <Poster x={160} text={POSTERS[LAST_DAY - 1][0]} y={Math.max(-17, 6 - drop)} />
         <WindowTwo day={LAST_DAY} x={262} />
         <PlantStand day={LAST_DAY} x={-4} />
       </g>
