@@ -136,6 +136,10 @@ export function Game({ run, today, onRestart, onFinished, onBoard }: Props) {
     });
   });
 
+  // The accounts are settled on the statement: from its first line the rail's tally, and the menu, show what
+  // the roll carries forward, not the morning's figure it was brought forward from.
+  const savings = state.phase === 'statement' && state.end ? state.end.after : state.savings;
+
   return (
     <div className={`game phase-${state.phase}`}>
       {/* The desk rail: the window's nameplate, the savings on a tally, and the switches. */}
@@ -148,7 +152,7 @@ export function Game({ run, today, onRestart, onFinished, onBoard }: Props) {
           </span>
         </p>
         <p className="topbar-savings">
-          Savings <strong data-testid="topbar-savings">{state.savings}</strong> PNK
+          Savings <strong data-testid="topbar-savings">{savings}</strong> PNK
         </p>
         <AudioSwitches onMenu={openMenu} />
       </header>
@@ -191,7 +195,7 @@ export function Game({ run, today, onRestart, onFinished, onBoard }: Props) {
           where={whereNow(state, clockToday)}
           day={state.day}
           days={state.day - run.startDay + 1}
-          savings={state.savings}
+          savings={savings}
           dayBegun={dayBegun(steps, state)}
           earlier={earlier}
           backDay={backDay}

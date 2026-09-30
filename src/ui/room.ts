@@ -9,8 +9,6 @@ const BORDER = 2;
 /** The fewest hall rows, on the shortest stages (the strip without its railing), and the most. */
 const MIN_ROWS = 48;
 const MAX_ROWS = 112;
-/** The desk's bottom padding (6 design pixels) holds nothing: the hall may have it when the desk's tallest papers are out. */
-const SLACK = 3;
 /** The desk rail across the top of the stage, in design pixels: .topbar's height in desk.css. */
 export const RAIL = 40;
 
@@ -35,10 +33,14 @@ export const DESK_NEEDS: readonly (readonly [width: number, height: number])[] =
 
 export const deskNeeds = (width: number) => DESK_NEEDS.reduce((need, [w, h]) => (width >= w ? h : need), DESK_NEEDS[0][1]);
 
-/** The hall's rows on a shift this size (below the desk rail, design pixels): whatever the desk leaves, within limits. */
+/**
+ * The hall's rows on a shift this size (below the desk rail, design pixels): whatever the desk leaves, within limits.
+ * All of it: the desk's foot is the blotter's edge and the lever's shadow, and until 30 Sep 2026 a hall that took
+ * those 6 pixels too pushed them out of the window whenever the tallest papers were out.
+ */
 export function hallRows(width: number, height: number): number {
-  return Math.max(MIN_ROWS, Math.min(MAX_ROWS, Math.floor((height - BORDER - deskNeeds(width)) / PX) + SLACK));
+  return Math.max(MIN_ROWS, Math.min(MAX_ROWS, Math.floor((height - BORDER - deskNeeds(width)) / PX)));
 }
 
 /** The least height a stage this wide needs for the shift: the rail, the shortest hall, and the desk in its tallest state. */
-export const shiftFloor = (width: number) => RAIL + BORDER + (MIN_ROWS - SLACK) * PX + deskNeeds(width);
+export const shiftFloor = (width: number) => RAIL + BORDER + MIN_ROWS * PX + deskNeeds(width);
