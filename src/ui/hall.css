@@ -148,21 +148,19 @@
     opacity 2s;
 }
 
-/* The PA's words, in a bubble from the loudspeaker on the ceiling, while it speaks. */
-.pa-text {
-  margin: 0;
-  color: #1d1f1a;
-  font-family: var(--official);
-  font-size: 5.2px;
-  line-height: 7px;
-}
-
+/* The PA's words, in a bubble from the loudspeaker on the ceiling, while it speaks: they appear, stepped. */
 .pa-bubble {
-  animation: pa-in 0.25s steps(3) both;
+  animation: pa-in 0.24s steps(2) both;
 }
 
 @keyframes pa-in {
   from {
     opacity: 0;
   }
+}
+
+/* What the PA said, for a screen reader: the bubble's lettering is pixels. */
+.pa text.sr-only {
+  font-size: 1px;
+  fill: transparent;
 }

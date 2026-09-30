@@ -359,13 +359,15 @@ function Railing() {
 const ANNOUNCEMENT_MS = 9000;
 /** The loudspeaker, on the ceiling between the clock and the banner. */
 const SPEAKER = { x: 290, y: 1 };
-/** Characters that fit one line of the PA's bubble. */
-const BUBBLE_LINE = 62;
+/** Characters that fit one line of the PA's bubble, in the hall's own lettering. */
+const BUBBLE_LINE = 52;
+const PA_INK = '#1d1f1a';
 
 /**
  * The hall's PA: a loudspeaker on the ceiling. It reads each of the day's announcements once, at a quiet
  * moment (the first as the window opens, the rest spread over the day's stamps), and its words hang in
- * a bubble while it speaks. Otherwise it says nothing, and nothing funny sits on screen all shift.
+ * a bubble while it speaks, in the hall's own lettering, as the posters are. Otherwise it says nothing,
+ * and nothing funny sits on screen all shift.
  */
 function PublicAddress({ day, opened, decided, total, over }: { day: number; opened: boolean; decided: number; total: number; over: boolean }) {
   const lines = ANNOUNCEMENTS[day - 1];
@@ -389,7 +391,9 @@ function PublicAddress({ day, opened, decided, total, over }: { day: number; ope
     if (over && day === LAST_DAY) pa();
   }, [over, day]);
   const text = over ? (day === LAST_DAY ? CLOSING.open : CLOSING.closed) : showing !== null ? lines[showing] : null;
-  const rows = text ? Math.ceil(text.length / BUBBLE_LINE) : 0;
+  const rows = useMemo(() => (text ? wrapWords(text, BUBBLE_LINE).map((line) => textImage(line, PA_INK)) : []), [text]);
+  const width = Math.max(0, ...rows.map((r) => r.width)) + 6;
+  const height = rows.length * 7 + 4;
   const { x, y } = SPEAKER;
   return (
     <g className="pa" role="status" aria-label="Announcements" aria-live="polite">
@@ -399,12 +403,13 @@ function PublicAddress({ day, opened, decided, total, over }: { day: number; ope
       <path d={`M${x + 10} ${y + 4}h2v7h-2z`} fill="#2d2f29" />
       {text && (
         <g key={text} className="pa-bubble">
-          <path d={`M${x + 12} ${y + 7}l6 -2v4z`} fill="#1d1f1a" />
-          <rect x={x + 17} y={y + 2} width={230} height={rows * 7 + 5} fill="#1d1f1a" />
-          <rect x={x + 18} y={y + 3} width={228} height={rows * 7 + 3} fill="#f1ead5" />
-          <foreignObject x={x + 20} y={y + 3.5} width={225} height={rows * 7 + 2}>
-            <p className="pa-text">{text}</p>
-          </foreignObject>
+          <path d={`M${x + 12} ${y + 7}l6 -2v4z`} fill={PA_INK} />
+          <rect x={x + 17} y={y + 2} width={width + 2} height={height + 2} fill={PA_INK} />
+          <rect x={x + 18} y={y + 3} width={width} height={height} fill="#f1ead5" />
+          {rows.map((image, i) => (
+            <Pixels key={i} image={image} x={x + 21} y={y + 5 + i * 7} />
+          ))}
+          <text className="sr-only">{text}</text>
         </g>
       )}
     </g>

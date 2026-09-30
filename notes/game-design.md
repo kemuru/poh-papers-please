@@ -14,7 +14,7 @@ The premise is the real one, one step on. Proof of Humanity really did pay 1 UBI
 
 ## Tone: deadpan, affectionate satire
 The comedy treats a real and strange thing with total seriousness: proving you are a human, on camera, holding your wallet address on a piece of paper, to strangers who are paid when they agree with each other, while everything that can pass for a human tries to, because there is money in it. Papers, Please treats a border this way.
-- The UI is grey, stamped and official. The game never winks.
+- The UI is grey, stamped and official, drawn on one pixel grid with the Ministry's own pixel type: `notes/art-direction.md` is the look's style sheet. The game never winks.
 - The Ministry's memos should pass for real registry notices. Parody works when it plausibly mimics the original, and the real policy is already funny read aloud: "the chin is not considered part of the internal facial features".
 - Affectionate: aim at the procedure, the incentives and the Ministry, never at the sincere people in the queue. The target reader is someone who built or used the real registry and would pass the joke around.
 

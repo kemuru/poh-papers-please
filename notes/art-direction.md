@@ -1,0 +1,43 @@
+# Art direction
+
+The desk should look like a crafted pixel-art game, of a piece with the hall and the portraits, and nothing like a web page. The research behind these rules is `reports/Day one rules and robot tells.md` (part 4) and its notes. In short: Papers, Please gets its look from one pixel grid, a few shades per object and type drawn for the game. The tells of a generated page are all-caps micro-labels, middle-dot meta strings, system fonts, cream cards with soft grey shadows and rounded pills, which is what this desk had until 30 Sep 2026.
+
+## One grid
+- An art pixel is 2 design pixels, as the portraits are drawn (`PixelPortrait` at scale 2). Every border, shadow offset, gap, icon and glyph lands on it: widths, paddings and offsets in even design pixels where they can be.
+- The stage snaps to a crisp scale, so a design pixel is a whole number of screen pixels (`Stage.tsx`). Nothing inside it may undo that: no `rotate`, `skew`, `blur()` or fractional `scale` on anything carrying text or pixel art. A stamp's impression is printed straight, as Papers, Please prints it.
+- No `border-radius` anywhere. A corner that must be soft is cut as a pixel step, never curved.
+- Shadows are hard: a solid offset of 1 or 2 art pixels (`2px` or `4px`) in a dark palette colour, lit from the top left, never blurred. Papers on the desk cast `4px 4px 0` on the blotter; a slip in the printer `0 4px 0`; a button `0 4px 0`, pressed to `0 2px 0` as it moves 2px down.
+- Borders are `2px solid`, in the object's darkest shade.
+
+## Type: four faces, each owned by something on the desk
+The fonts are self-made pixel faces (`scripts/fonts`, CC0), set up in `src/ui/type.css`.
+- `--print` (Ministry Print): what the Ministry printed. Form labels, the rulebook, letters, the Gazette's text, the speech box and the booth's signs.
+- `--type` (Ministry Type, mono): whatever was typed in or came out of a machine. The values filled in on a form (name, address, year, wallet, voucher), the transcript, the printer's slips (citations, case slips, the statement), timestamps and the registry's answers.
+- `--stamp` (Ministry Stamp, bold capitals): rubber stamps, headings, buttons, the counters and the Gazette's headline.
+- `--print` italic: memos, a page's footnote, captions, and the supervisor's handwriting (in pen blue).
+
+Sizes are `20px`, one font pixel to one art pixel; display text (a headline, a title, a big stamp) may be `30px` or `40px`, and nothing is smaller than `20px` on the desk (the hall's own 3×5 lettering aside). Line heights are whole art pixels: `24px` for 20px text (`22px` where tight), `36px` for 30px. `letter-spacing` stays 0, and there is no `text-transform: uppercase`: the stamp face prints capitals by itself, and running text is in sentence case.
+
+## Words: fewer, and in the object's own voice
+- No eyebrow labels: a heading is not a tracked-out caps label above content. "FORM 1 · APPLICATION FOR REGISTRATION AS A HUMAN" is the form's printed title, with its form number small in a corner. "VIDEO SUBMISSION · PRINTOUT" is the printer's own header line. The rulebook needs no "RULEBOOK · DAY 1": it is a book, and its tabs are numbered.
+- No middle-dot meta strings. "Jury of 3 · 0 of 3 uphold" is "Jury of 3: 0 uphold". A time is a clock, not "TIME · NO LIMIT".
+- Key caps belong on the thing they work: a small pixel key on the stamp's handle, the lever, the Inspect glass.
+
+## Palette: the world's colours, a few shades each
+Every object gets at most three or four shades, picked from one master list, and its stock is a real one, not a generic cream:
+- The desk: dark green-grey baize and its shadow; the booth: charcoal and steel.
+- Form 1: pale Ministry green-grey paper with dark green print. The video printout: continuous printer paper, white with pale green bands, sprocket holes down the sides. The rulebook: buff pages, black print, red rule numbers. The Gazette: grey newsprint, black ink. The letters: cool white Ministry letterhead. The citation: pink carbon. The case slip: pale blue. The statement: a till roll. The sticky note: yellow.
+- Inks: black, Ministry green, pen blue, stamp green (Accept, Registered) and stamp red (Challenge, Refused, citations).
+- The unit's lamp keeps its violet, the only saturated colour on a face; nothing else on the desk may use violet.
+- Colour never tells the answer: nothing on the papers changes colour by whether the applicant is valid, until the clerk points at it with Inspect.
+
+## Chrome: none that is not in the room
+- The top bar is the Ministry's desk rail: a nameplate (Window 3, the clerk's name), the savings as a tally, and three small pixel-drawn switches (sound, music, menu), with no tracked caps. Their accessible names stay.
+- The hall's announcements come from a loudspeaker in the hall, in a bubble, only while it speaks.
+- Buttons are pixel objects: a flat fill, a 2px outline in its darkest shade, a hard 4px shadow, pressed 2px down. No gradients.
+
+## Motion: only in answer to the clerk
+A stamp comes down on the press, papers slide in stepped (`steps()`), a slip prints from the printer, the tray takes a slip. Nothing moves on its own except the hall's people and pigeons, and no panel fades in for the sake of it.
+
+## Every screen
+The notice board (title), the morning desk (welcome letter, Gazette, Likeness's letter and envelope), the shift (booth, papers, rulebook, registry, stamps, Inspect, tray, sticky note, slips), the court, the accounts, the letters at the end with the special edition, the menu and the night shift all follow this sheet. Check a change against it before merging; it is the look's one reviewer.
