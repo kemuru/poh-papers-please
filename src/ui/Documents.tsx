@@ -17,10 +17,10 @@ export const FRAME_TIMES = ['00:01', '00:03', '00:05'];
 // A click leaves the focus where it was, so Space still pulls the lever.
 const keepFocus = (e: { preventDefault: () => void }) => e.preventDefault();
 
-/** A lookup beside the thing it looks up: one click, or its key, and the registry answers. */
+/** A lookup beside the thing it looks up, a small steel key: one click, or its key, and the registry answers. */
 function LookupChip({ label, keyName, onClick }: { label: string; keyName: string; onClick: () => void }) {
   return (
-    <button type="button" className="lookup-chip" onClick={onClick} onMouseDown={keepFocus} title={`${label} (${keyName})`}>
+    <button type="button" className="steel-key lookup-chip" onClick={onClick} onMouseDown={keepFocus} title={`${label} (${keyName})`}>
       {label} <kbd>{keyName}</kbd>
     </button>
   );
@@ -105,13 +105,19 @@ export function ProfileCard({
 
 const boardOf = (video: Video) => (!video.sign ? undefined : video.sign.kind === 'qr' ? ('qr' as const) : video.sign.phone ? ('phone' as const) : ('writing' as const));
 
+/** The face in one frame of the video, and how it is posed: what FramePicture draws, and the Gazette reprints. */
+export function frameShot(video: Video, frame: number) {
+  const pose = framePoses(video)[frame - 1];
+  const portrait = { ...frameFaces(video)[frame - 1], board: boardOf(video), ...(video.generated ? { mark: true as const } : {}), ...(video.lamp ? { lamp: video.lamp } : {}) };
+  return { portrait, pose };
+}
+
 /**
  * One frame of the video as the camera took it: posed as Rules 2 and 6 read it, a unit's lamp drawn where its eyes
  * are shut (the twin never has one). `title` names it on the desk; the citation's reprint is not named.
  */
 export function FramePicture({ video, frame, title }: { video: Video; frame: number; title?: string }) {
-  const pose = framePoses(video)[frame - 1];
-  const portrait = { ...frameFaces(video)[frame - 1], board: boardOf(video), ...(video.generated ? { mark: true as const } : {}), ...(video.lamp ? { lamp: video.lamp } : {}) };
+  const { portrait, pose } = frameShot(video, frame);
   return (
     <span className="frame-picture">
       <PixelPortrait portrait={portrait} {...pose} scale={2} background={VIDEO_BG} title={title} />
@@ -211,7 +217,6 @@ function RulePage({ id, open, isNew, day }: { id: RuleId; open: boolean; isNew: 
       <Inspectable item={{ kind: 'rule', rule: id }} label={`Rule ${rule.number}`} className="rule-holder">
         <h3>
           <span className="rule-no">Rule {rule.number}:</span> {rule.title}
-          {isNew && <span className="rule-new">New</span>}
         </h3>
         <p>{rule.text}</p>
         {rule.quote && (
@@ -239,6 +244,8 @@ function RulePage({ id, open, isNew, day }: { id: RuleId; open: boolean; isNew: 
           {rule.cause}
         </p>
       </Inspectable>
+      {/* Today's page is flagged: a red page flag stuck on its top corner, clear of the heading. */}
+      {isNew && <span className="rule-flag">New</span>}
     </article>
   );
 }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { TERMINAL_KEYS } from '../content/desk';
 import type { Portrait } from '../gen/portrait';
 import { findFace, findName } from '../rules/registry';
 import type { Registrant, Registry } from '../rules/types';
@@ -52,7 +53,7 @@ export function RegistryLookup({
     <div className="doc registry" aria-label="Registry lookup">
       <h2 className="doc-title">Registry lookup</h2>
       <form className="lookup-form" onSubmit={search}>
-        {/* The terminal's input line: its prompt, and the name typed after it. */}
+        {/* The terminal's input line, the width of its screen: its prompt, and the name typed after it. */}
         <span className="lookup-line">
           <span className="lookup-prompt" aria-hidden="true">
             &gt;
@@ -73,18 +74,19 @@ export function RegistryLookup({
             autoComplete="off"
           />
         </span>
-        {/* The terminal's key for it, the return arrow printed after its name. */}
-        <button type="submit" disabled={!typed.trim()}>
-          Search<span className="lookup-return" aria-hidden="true" />
+        {/* The terminal's return key: the arrow printed on it is all it says. */}
+        <button type="submit" className="steel-key lookup-enter" aria-label={TERMINAL_KEYS.search} title={TERMINAL_KEYS.searchTitle} disabled={!typed.trim()}>
+          <span className="lookup-return" aria-hidden="true" />
         </button>
       </form>
+      {/* The terminal's two keys for whoever is at the window. */}
       <div className="lookup-quick">
-        <button disabled={!voucher} onClick={() => voucher && onLookup({ by: 'name', name: voucher })} onMouseDown={keepFocus}>
-          Look up the voucher <kbd>V</kbd>
+        <button className="steel-key" disabled={!voucher} onClick={() => voucher && onLookup({ by: 'name', name: voucher })} onMouseDown={keepFocus}>
+          {TERMINAL_KEYS.voucher} <kbd>V</kbd>
         </button>
         {faceSearch && (
-          <button disabled={!face} onClick={() => onLookup({ by: 'face' })} onMouseDown={keepFocus}>
-            Search the face in the video <kbd>F</kbd>
+          <button className="steel-key" disabled={!face} onClick={() => onLookup({ by: 'face' })} onMouseDown={keepFocus} title={TERMINAL_KEYS.faceTitle}>
+            {TERMINAL_KEYS.face} <kbd>F</kbd>
           </button>
         )}
       </div>
@@ -127,11 +129,12 @@ function NameResult({ name, found }: { name: string; found: Registrant | null })
 function FaceResult({ face, found }: { face: Portrait; found: Registrant[] }) {
   return (
     <>
+      {/* The answer runs round the face searched, and on under it. */}
       <p className={found.length === 0 ? 'record-none searched' : 'record-count searched'}>
         <span className="record-face">
           <PixelPortrait portrait={face} scale={2} background="#cfd8dc" title="The face searched" />
         </span>
-        <span>Searched the face in the video. On file with this face: {found.length === 0 ? 'nobody' : found.length}.</span>
+        Searched the face in the video. On file with this face: {found.length === 0 ? 'nobody' : found.length}.
       </p>
       {found.map((r) => (
         <Record key={r.name} r={r} />

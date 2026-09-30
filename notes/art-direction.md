@@ -8,6 +8,7 @@ The desk should look like a crafted pixel-art game, of a piece with the hall and
 - No `border-radius` anywhere. A corner that must be soft is cut as a pixel step, never curved.
 - Shadows are hard: a solid offset of 1 or 2 art pixels (`2px` or `4px`) in a dark palette colour, lit from the top left, never blurred. Papers on the desk cast `4px 4px 0` on the blotter; a slip in the printer `0 4px 0`; a button `0 4px 0`, pressed to `0 2px 0` as it moves 2px down.
 - Borders are `2px solid`, in the object's darkest shade.
+- The hall is drawn at one hall pixel to one art pixel, like the portraits, whatever the stage's size. Its height is set by the stage alone, from what the desk's tallest state leaves (`hallRows` and `DESK_NEEDS`): it never changes when an applicant arrives or a page turns, and a wider stage shows more of the room, never a bigger one. Anything that moves there moves a whole hall pixel at a time.
 
 ## Type: four faces, each owned by something on the desk
 The fonts are self-made pixel faces (`scripts/fonts`, CC0), set up in `src/ui/type.css`.
@@ -28,16 +29,17 @@ Every object gets at most three or four shades, picked from one master list, and
 - The desk: dark green-grey baize and its shadow; the booth: charcoal and steel.
 - Form 1: pale Ministry green-grey paper with dark green print. The video printout: continuous printer paper, white with pale green bands, sprocket holes down the sides. The rulebook: buff pages, black print, red rule numbers. The Gazette: grey newsprint, black ink. The letters: cool white Ministry letterhead. The citation: pink carbon. The case slip: pale blue. The statement: a till roll. The sticky note: yellow.
 - Inks: black, Ministry green, pen blue, stamp green (Accept, Registered) and stamp red (Challenge, Refused, citations).
-- The unit's lamp keeps its violet, the only saturated colour on a face; nothing else on the desk may use violet.
+- The unit's lamp keeps its violet, the only saturated colour on a face; nothing else in the game may use violet (`src/violet.test.ts`: until 30 Sep 2026 a valid regular's sleep mask was lilac, worn across the brow where the lamp shows).
 - Colour never tells the answer: nothing on the papers changes colour by whether the applicant is valid, until the clerk points at it with Inspect. Once the court has ruled it may: UPHELD is printed in stamp green (the court agreed with the clerk) and DISMISSED in stamp red.
 
 ## Chrome: none that is not in the room
 - The top bar is the Ministry's desk rail: a nameplate (Window 3, the clerk's name), the savings as a tally, and three small pixel-drawn switches (sound, music, menu), with no tracked caps. Their accessible names stay.
 - The hall's announcements come from a loudspeaker in the hall, in a bubble, only while it speaks.
-- Buttons are pixel objects: a flat fill, a 2px outline in its darkest shade, a hard 4px shadow, pressed 2px down. No gradients.
+- Buttons are pixel objects: a flat fill, a 2px outline in its darkest shade, a hard 4px shadow, pressed 2px down. No gradients. There are two: the brass key (`.screen-button`), for the one thing a screen is for, and the steel key (`.steel-key`), for everything else. A screen has one brass key at most.
+- The way on is always in the same place. On the desk it is the booth's lever (Open the window, then Next). On every screen after the shift (the court, the accounts, the letters, the night's end) it is the brass key with its key cap at the bottom right (`.screen-button.way-on`). The letters and the night's end answer Enter only once their key shows, so a Space held through the evening cannot throw a letter away.
 
 ## Motion: only in answer to the clerk
-A stamp comes down on the press, papers slide in stepped (`steps()`), a slip prints from the printer, the tray takes a slip. Nothing moves on its own except the hall's people and pigeons, and no panel fades in for the sake of it.
+A stamp comes down on the press, papers slide in stepped (`steps()`), a slip prints from the printer, the tray takes a slip. Nothing moves on its own except the hall's people and pigeons, and no panel fades in for the sake of it. Nothing turns by a fraction of a turn: a pigeon pecks with a second frame, the banner is drawn sagging, and the crooked sign is drawn crooked.
 
 ## Every screen
-The notice board (title), the morning desk (welcome letter, Gazette, Likeness's letter and envelope), the shift (booth, papers, rulebook, registry, stamps, Inspect, tray, sticky note, slips), the court, the accounts, the letters at the end with the special edition, the menu and the night shift all follow this sheet. Check a change against it before merging; it is the look's one reviewer.
+The notice board (title), the morning desk (welcome letter, Gazette, Likeness's letter and envelope), the shift (booth, papers, rulebook, registry, stamps, Inspect, tray, sticky note, slips), the court, the accounts, the letters at the end with the special edition, the menu and the night shift all follow this sheet. Check a change against it before merging; it is the look's one reviewer. What a stylesheet can hold of it is tested: `src/ui/look.test.ts` reads every stylesheet for the Ministry's faces, the three sizes, even line heights and none of the generated page's tells, and `src/violet.test.ts` keeps violet to the lamp.

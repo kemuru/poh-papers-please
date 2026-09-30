@@ -29,11 +29,12 @@ export function OfferLetter({ onSign, onHandIn }: { onSign: () => void; onHandIn
         <p key={line}>{line}</p>
       ))}
       <p className="offer-sign">{OFFER_LETTER.sign}</p>
+      {/* Two steel keys at its foot: the letter asks for one, and the Ministry would want the other. */}
       <div className="offer-actions">
-        <button className="offer-button offer-sign-it" onClick={onSign} onMouseDown={keepFocus}>
+        <button className="steel-key offer-sign-it" onClick={onSign} onMouseDown={keepFocus}>
           {OFFER_LETTER.signIt}
         </button>
-        <button className="offer-button offer-hand-in" onClick={onHandIn} onMouseDown={keepFocus}>
+        <button className="steel-key offer-hand-in" onClick={onHandIn} onMouseDown={keepFocus}>
           {OFFER_LETTER.handIn}
         </button>
       </div>

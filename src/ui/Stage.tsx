@@ -1,4 +1,5 @@
-import { createContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { RAIL, shiftFloor } from './room';
 
 // Like any game, the Ministry is laid out once and scaled to fit the window: nothing ever scrolls.
 // Wider windows get a wider hall and desk; very wide ones get dark bars. The desk is drawn on one
@@ -8,7 +9,10 @@ import { createContext, useEffect, useState, type ReactNode } from 'react';
 // takes the room that frees: a little taller or wider, never scrolled. Only a window too small for
 // any crisp step gets the plain fractional fit, and softer pixels.
 const DESIGN = { height: 820, minWidth: 1240, maxWidth: 1760, maxScale: 2 };
-/** The shortest the desk may be laid out at to reach the next crisp step: the hall gives way, the papers do not. */
+/**
+ * The shortest any screen may be laid out at to reach the next crisp step: the hall gives way, the papers do
+ * not. The shift asks for more on a narrow stage, where its papers are tallest (shiftFloor, room.ts).
+ */
 const CRISP_MIN_HEIGHT = 760;
 /** A crisp step below the fit is taken only if it keeps this much of the fit's size. */
 const CRISP_KEEP = 0.75;
@@ -24,8 +28,11 @@ export function fit(w: number, h: number, dpr: number): Fit {
   const step = 1 / (2 * dpr);
   const below = Math.floor(fitted / step + 1e-9) * step;
   const above = below + step;
+  // A step above the fit lays the stage out shorter than designed: taken only where every screen still fits,
+  // the shift's desk in its tallest state under the shortest hall included, at the width that step gives.
+  const fits = (scale: number) => h / scale >= Math.max(CRISP_MIN_HEIGHT, shiftFloor(Math.min(w / scale, DESIGN.maxWidth)));
   const scale =
-    above <= DESIGN.maxScale && h / above >= CRISP_MIN_HEIGHT && w / above >= DESIGN.minWidth
+    above <= DESIGN.maxScale && w / above >= DESIGN.minWidth && fits(above)
       ? above
       : below > 0 && below >= fitted * CRISP_KEEP
         ? below
@@ -55,7 +62,8 @@ export function Stage({ children }: { children: ReactNode }) {
     <div className="stage-frame">
       <div
         className="stage"
-        style={{ width: box.width, height: box.height, transform: `translate(${box.left}px, 0) scale(${box.scale})` }}
+        // The desk rail's height is the one the stage allows for (room.ts): desk.css draws .topbar with it.
+        style={{ width: box.width, height: box.height, transform: `translate(${box.left}px, 0) scale(${box.scale})`, '--rail': `${RAIL}px` } as CSSProperties}
       >
         <StageScale.Provider value={box.scale}>{children}</StageScale.Provider>
       </div>

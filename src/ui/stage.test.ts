@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { shiftFloor } from './room';
 import { fit } from './Stage';
 
 // The stage snaps to a crisp scale, one art pixel (2 design pixels) to a whole number of device pixels,
@@ -22,6 +23,21 @@ describe('the stage', () => {
     expect(box.height).toBeGreaterThanOrEqual(760);
     expect(box.width).toBeGreaterThanOrEqual(1240);
     expect((box.left * dpr) % 1).toBe(0);
+  });
+
+  // A small laptop's window, narrow and short: a crisp step that lays the stage out shorter than designed is
+  // taken only if the desk's tallest state (a voucher's form over a phone, Rule 2's page under the registry's
+  // tab) still fits under the shortest hall. Until 30 Sep 2026 these took scale 1 and lost up to 58px of it.
+  it.each([
+    [1240, 760, 1],
+    [1240, 760, 2],
+    [1280, 768, 1],
+    [1280, 768, 2],
+  ])('lays %i×%i at %f× out tall enough for the desk in its tallest state', (w, h, dpr) => {
+    const box = fit(w, h, dpr);
+    expect(box.height).toBeGreaterThanOrEqual(shiftFloor(box.width));
+    expect(box.width * box.scale).toBeLessThanOrEqual(w + 0.001);
+    expect(box.height * box.scale).toBeCloseTo(h);
   });
 
   it('keeps the fractional fit where no crisp step fits: a short window at 1×', () => {

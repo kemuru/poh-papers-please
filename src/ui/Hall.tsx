@@ -8,6 +8,8 @@ import { generatePortrait } from '../gen/portrait';
 import { pixelPaths } from './PixelPortrait';
 import { pa } from './sound';
 import { BUCKET, card, CLOCK, FLAG, PIGEON, PIGEON_PECK, PLANTS, sheared, spriteImage, textImage, turned, WET_FLOOR, wrapWords } from './sprites';
+// The hall's height on each stage, and one hall pixel: shared with the stage's scale (room.ts).
+import { hallRows, PX } from './room';
 
 // The waiting hall, seen from Window 3: the day's queue behind the railing, and a ministry that
 // comes apart a little more each day. Pure decoration; nothing here is evidence.
@@ -19,48 +21,16 @@ import { BUCKET, card, CLOCK, FLAG, PIGEON, PIGEON_PECK, PLANTS, sheared, sprite
 // clock and the PA, the posters, Window 2 and whoever waits for it) and a room with a floor and a
 // ceiling. A wider stage shows more of the room at either end, never a bigger one.
 
-/** One hall pixel, in design pixels: the portraits' art pixel. */
-const PX = 2;
-/** The hall's bottom edge, in design pixels. */
-const BORDER = 2;
 /** Hall pixels every stage shows: the narrowest stage, 1240 design pixels, is exactly this wide. */
 const CORE = 620;
 /** The strip as drawn: the story, the queue's railing along its foot, and no floor. */
 const STRIP = 52;
-/** The fewest rows, on the shortest stages (the strip without its railing), and the most. */
-const MIN_ROWS = 48;
-const MAX_ROWS = 112;
-/** The desk's bottom padding (6 design pixels) holds nothing: the hall may have it when the desk's tallest papers are out. */
-const SLACK = 3;
 /** Rows past the fewest go first to headroom (the banner clear of the heads), then to the floor, then to a higher ceiling. */
 const HEADROOM = 8;
 const FLOOR = 28;
 /** How far the ceiling, the walls and the floor run: past anything a stage shows. */
 const LEFT = -200;
 const RIGHT = 820;
-
-/**
- * The most the booth and the desk ever need below the hall, by stage width (design pixels): the tallest
- * of every applicant's papers, rulebook page and registry answer of the week, measured for seeds 1 to 4,
- * which agree. The tallest is Rule 2's page once the registry's tab sits over it (day 4 on), or a
- * voucher's form with a phone held up in the video. Between two widths, the narrower one's.
- */
-const DESK_NEEDS: readonly (readonly [width: number, height: number])[] = [
-  [1240, 680],
-  [1280, 666],
-  [1366, 642],
-  [1400, 636],
-  [1440, 618],
-  [1540, 594],
-  [1640, 576],
-];
-
-const deskNeeds = (width: number) => DESK_NEEDS.reduce((need, [w, h]) => (width >= w ? h : need), DESK_NEEDS[0][1]);
-
-/** The hall's rows on a shift this size (below the desk rail, design pixels): whatever the desk leaves, within limits. */
-function hallRows(width: number, height: number): number {
-  return Math.max(MIN_ROWS, Math.min(MAX_ROWS, Math.floor((height - BORDER - deskNeeds(width)) / PX) + SLACK));
-}
 
 // Heights in the room, in hall pixels. The ceiling and what hangs from it are measured from the top; the
 // people, the wall's fittings and the floor from the queue's railing, which moves down as the hall grows.

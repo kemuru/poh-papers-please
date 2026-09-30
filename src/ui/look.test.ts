@@ -14,8 +14,10 @@ const declarations = (property: string) =>
   );
 
 describe('the look', () => {
-  it('reads every stylesheet', () => {
+  it('reads every stylesheet, whole', () => {
     expect(sheets.map(({ file }) => file)).toEqual(expect.arrayContaining(['desk.css', 'hall.css', 'screens.css', 'board.css', 'type.css']));
+    // A stylesheet read as nothing would pass every rule below.
+    for (const { file, css } of sheets) expect(css, file).toMatch(/\{[^}]*:[^}]*\}/);
   });
 
   it('is set in the Ministry’s own faces only: no system font anywhere', () => {

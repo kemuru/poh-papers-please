@@ -354,7 +354,7 @@ function exitLine(a: GeneratedApplicant, decision: Decision): string {
   return pick(EXITS[decision], hash);
 }
 
-/** What the strip along the bottom of the blotter says about inspecting. */
+/** What the desk has to say about inspecting, and who says it (InspectView's tone). */
 function inspectView(
   state: GameState,
   at: number | null,
@@ -365,7 +365,7 @@ function inspectView(
   toolsUsed: Lookup['by'][],
 ): InspectView {
   const flagged = last?.finding ? last.items : [];
-  const view = (message: string | null, tone: InspectView['tone'] = 'idle'): InspectView => ({ on, picked, flagged, message, tone });
+  const view = (message: string | null, tone: InspectView['tone'] = 'point'): InspectView => ({ on, picked, flagged, message, tone });
   const tutorial = guided(state.day, at);
   if (last?.finding) {
     const { rule, inForce } = last.finding;
@@ -377,7 +377,7 @@ function inspectView(
     const detail = broke ? ` ${evidenceLine(broke).replace(/^./, (c) => c.toUpperCase())}` : '';
     return view(`${INSPECT_LINES.found.replace('{rule}', ruleName(rule))}${detail}${tutorial ? ` ${INSPECT_LINES.guidedFound}` : ''}`, 'found');
   }
-  if (last) return view(INSPECT_LINES.agree, 'idle');
+  if (last) return view(INSPECT_LINES.agree, 'agree');
   if (on && picked) return view(INSPECT_LINES.second);
   if (on) return view(tutorial ? INSPECT_LINES.guidedPoint : INSPECT_LINES.point);
   if (tutorial) return view(INSPECT_LINES.guidedHint, 'hint');
@@ -387,8 +387,8 @@ function inspectView(
   if (at === 0 && tip && !toolsUsed.includes(tip.tool)) return view(tip.text, 'tip');
   // Likeness's letter, however the morning left it, until the first applicant is called.
   if (state.day === OFFER.day && state.called === 0) {
-    if (state.offer === 'signed' && !state.opened) return view(OFFER_LETTER.signed, 'tip');
-    if (state.offer === null && state.opened) return view(OFFER_LETTER.drawer, 'tip');
+    if (state.offer === 'signed' && !state.opened) return view(OFFER_LETTER.signed, 'drawer');
+    if (state.offer === null && state.opened) return view(OFFER_LETTER.drawer, 'drawer');
   }
   return view(null);
 }

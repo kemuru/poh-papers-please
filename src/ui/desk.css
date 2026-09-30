@@ -126,6 +126,7 @@
 
   /* ---------------------------------------------- pixel textures, each step one art pixel */
   --px-baize: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' shape-rendering='crispEdges'%3E%3Cpath fill='%233d4c42' d='M0 0h2v2H0zM6 6h2v2H6z'/%3E%3Cpath fill='%232f3c33' d='M8 2h2v2H8zM2 8h2v2H2z'/%3E%3C/svg%3E");
+  --px-baize-dim: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' shape-rendering='crispEdges'%3E%3Cpath fill='%232f3b33' d='M0 0h2v2H0zM6 6h2v2H6z'/%3E%3Cpath fill='%23222b25' d='M8 2h2v2H8zM2 8h2v2H2z'/%3E%3C/svg%3E");
   --px-pocket-tl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' shape-rendering='crispEdges'%3E%3Cpath fill='%234a3626' d='M0 0h36v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2z'/%3E%3Cpath fill='%236b4e36' d='M34 0h2v2h-2zM32 2h2v2h-2zM30 4h2v2h-2zM28 6h2v2h-2zM26 8h2v2h-2zM24 10h2v2h-2zM22 12h2v2h-2zM20 14h2v2h-2zM18 16h2v2h-2zM16 18h2v2h-2zM14 20h2v2h-2zM12 22h2v2h-2zM10 24h2v2h-2zM8 26h2v2h-2zM6 28h2v2h-2zM4 30h2v2h-2zM2 32h2v2h-2zM0 34h2v2h-2z'/%3E%3C/svg%3E");
   --px-pocket-tr: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' shape-rendering='crispEdges'%3E%3Cg transform='scale(-1 1) translate(-36 0)'%3E%3Cpath fill='%234a3626' d='M0 0h36v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2z'/%3E%3Cpath fill='%236b4e36' d='M34 0h2v2h-2zM32 2h2v2h-2zM30 4h2v2h-2zM28 6h2v2h-2zM26 8h2v2h-2zM24 10h2v2h-2zM22 12h2v2h-2zM20 14h2v2h-2zM18 16h2v2h-2zM16 18h2v2h-2zM14 20h2v2h-2zM12 22h2v2h-2zM10 24h2v2h-2zM8 26h2v2h-2zM6 28h2v2h-2zM4 30h2v2h-2zM2 32h2v2h-2zM0 34h2v2h-2z'/%3E%3C/g%3E%3C/svg%3E");
   --px-pocket-bl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' shape-rendering='crispEdges'%3E%3Cg transform='scale(1 -1) translate(0 -36)'%3E%3Cpath fill='%234a3626' d='M0 0h36v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2z'/%3E%3Cpath fill='%236b4e36' d='M34 0h2v2h-2zM32 2h2v2h-2zM30 4h2v2h-2zM28 6h2v2h-2zM26 8h2v2h-2zM24 10h2v2h-2zM22 12h2v2h-2zM20 14h2v2h-2zM18 16h2v2h-2zM16 18h2v2h-2zM14 20h2v2h-2zM12 22h2v2h-2zM10 24h2v2h-2zM8 26h2v2h-2zM6 28h2v2h-2zM4 30h2v2h-2zM2 32h2v2h-2zM0 34h2v2h-2z'/%3E%3C/g%3E%3C/svg%3E");
@@ -210,7 +211,8 @@ kbd {
   flex: none;
   align-items: center;
   gap: 16px;
-  height: 40px;
+  /* Set by the stage (RAIL, room.ts), which lays the shift out below it. */
+  height: var(--rail);
   padding: 0 14px;
   background: var(--steel-dark);
   border-bottom: 2px solid var(--black);
@@ -707,10 +709,7 @@ kbd {
 .switch:focus-visible,
 .inspect-tool:focus-visible,
 .rule-tab:focus-visible,
-.side-tabs button:focus-visible,
-.lookup-chip:focus-visible,
-.lookup-form button:focus-visible,
-.lookup-quick button:focus-visible {
+.side-tab:focus-visible {
   outline: 2px solid var(--marker);
   outline-offset: 2px;
 }
@@ -755,7 +754,7 @@ kbd {
 .desk-papers {
   position: relative;
   align-self: stretch;
-  gap: 8px;
+  gap: 6px;
   /* The top clears the printer and its shadow. */
   padding: 16px 10px 68px;
   border: 2px solid var(--baize-deep);
@@ -891,10 +890,11 @@ kbd {
   /* Ink only lands on the paper, however hard the stamp comes down. */
   overflow: hidden;
   padding-top: 0;
+  padding-bottom: 10px;
 }
 
 .card .doc-title {
-  margin: 0 -12px 6px;
+  margin: 0 -12px 4px;
   padding: 2px 10px;
   background: var(--ministry);
   box-shadow: inset 0 -2px 0 #1b3021;
@@ -1015,7 +1015,7 @@ kbd {
 .video {
   --doc-bg: var(--printout);
   --doc-edge: var(--printout-edge);
-  padding: 4px 22px 12px;
+  padding: 4px 20px 10px;
   background:
     var(--px-sprockets) left 2px top 0 / 10px 24px repeat-y,
     var(--px-sprockets) right 2px top 0 / 10px 24px repeat-y,
@@ -1042,7 +1042,7 @@ kbd {
 
 .video-row {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: stretch;
 }
 
@@ -1271,14 +1271,23 @@ kbd {
   color: var(--rule-red);
 }
 
-.rule-new {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 0 4px;
-  border: 2px solid var(--challenge);
-  color: var(--challenge);
+/*
+ * Today's page is flagged: a red page flag stuck on its top corner, standing up into the margin above it,
+ * clear of the heading, which stays on one line.
+ */
+.rule-flag {
+  position: absolute;
+  z-index: 1;
+  top: -14px;
+  right: 10px;
+  padding: 0 6px;
+  border: 2px solid #4a120f;
+  background: var(--challenge);
+  box-shadow: 2px 2px 0 var(--baize-deep);
+  color: #fff1ee;
+  font-family: var(--stamp);
   line-height: 18px;
-  vertical-align: top;
+  pointer-events: none;
 }
 
 .rule p {
@@ -1430,32 +1439,45 @@ kbd {
 
 /* ------------------------------------------------------------ the rulebook's and the registry's tabs */
 
-/* From day 4 the side of the desk holds the registry terminal too: a folder tab for each. */
+/*
+ * From day 4 the side of the desk holds the registry terminal too, under the book. Each has a paper tab on its
+ * top edge, in its own stock, standing up into the desk's top margin: the one in front joined to it, the one
+ * behind a pixel lower and a shade darker. They take no row of their own.
+ */
 .side-tabs {
+  position: relative;
+  z-index: 1;
   display: flex;
   gap: 4px;
-  padding: 0 30px 0 8px;
+  height: 24px;
+  margin: -12px 0 0;
+  padding: 0 30px 0 22px;
 }
 
-/* A folder tab, its top corners cut a pixel in; the one behind sits a pixel lower. */
-.side-tabs button {
-  flex: 1;
-  height: 32px;
+/* A tab, its top corners cut a pixel in (a pixel of the baize at each). */
+.side-tab {
+  position: relative;
+  height: 22px;
   margin-top: 2px;
-  padding: 0;
-  border: 2px solid var(--baize-deep);
+  padding: 0 10px;
+  border: 2px solid var(--buff-edge);
   border-bottom: 0;
-  background: var(--baize-dark);
-  color: var(--steel-light);
+  background: var(--buff-dark);
+  color: #5a4b2c;
   font: inherit;
   font-family: var(--print);
+  line-height: 20px;
   cursor: pointer;
-  position: relative;
 }
 
-/* The corners, cut: a pixel of the baize at each. */
-.side-tabs button::before,
-.side-tabs button::after {
+.side-tab-registry {
+  border-color: var(--terminal-edge);
+  background: #a3a298;
+  color: #4a4940;
+}
+
+.side-tab::before,
+.side-tab::after {
   content: '';
   position: absolute;
   top: -2px;
@@ -1465,25 +1487,29 @@ kbd {
   background: var(--baize);
 }
 
-.side-tabs button::after {
+.side-tab::after {
   right: -2px;
   left: auto;
 }
 
-.side-tabs button:hover:not([aria-selected='true']) {
-  color: var(--steel-shine);
+.side-tab:hover:not([aria-selected='true']) {
+  background: var(--buff);
 }
 
-.side-tabs button[aria-selected='true'] {
-  height: 34px;
-  margin-top: 0;
-  border-color: var(--buff-edge);
+.side-tab-registry:hover:not([aria-selected='true']) {
+  background: var(--terminal);
+}
+
+/* In front: its paper's own stock, and joined to it across the paper's top edge. */
+.side-tab[aria-selected='true'] {
+  z-index: 1;
+  height: 26px;
+  margin: 0 0 -2px;
   background: var(--buff);
   color: var(--ink);
 }
 
-.side-tabs button:last-child[aria-selected='true'] {
-  border-color: var(--terminal-edge);
+.side-tab-registry[aria-selected='true'] {
   background: var(--terminal);
 }
 
@@ -1491,11 +1517,11 @@ kbd {
   display: none;
 }
 
-/* The registry terminal: grey plastic, keys, and a green screen that answers what it is asked. */
+/* The registry terminal: grey plastic, keys, and a green screen that answers what it is asked. No tabs of the book's to clear. */
 .registry {
   --doc-bg: var(--terminal);
   --doc-edge: var(--terminal-edge);
-  margin: 0 30px 8px 8px;
+  margin: 0 8px 8px 0;
   padding-top: 6px;
 }
 
@@ -1507,7 +1533,7 @@ kbd {
 .lookup-form {
   display: flex;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 /* The input line, part of the terminal's green screen: its prompt, and the name typed after it. */
@@ -1517,7 +1543,7 @@ kbd {
   align-items: center;
   gap: 6px;
   min-width: 0;
-  height: 32px;
+  height: 38px;
   padding: 0 6px;
   border: 2px solid var(--black);
   background: var(--screen);
@@ -1549,27 +1575,17 @@ kbd {
   color: var(--phosphor-dim);
 }
 
-/* The terminal's keys, and the lookups on the papers: pixel buttons that go down when pressed. */
-.lookup-form button,
-.lookup-quick button,
-.lookup-chip {
-  border: 2px solid var(--terminal-edge);
-  background: var(--terminal-light);
-  box-shadow:
-    inset 0 2px 0 #eeede6,
-    0 4px 0 var(--terminal-edge);
-  color: var(--ink);
-  font: inherit;
-  font-family: var(--print);
-  cursor: pointer;
-}
-
-.lookup-form button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 8px;
+/*
+ * The terminal's keys, and the lookups on the papers, are the steel key every screen's other keys are
+ * (.steel-key, screens.css). The terminal's return key has its arrow printed on it, and nothing else.
+ */
+.steel-key.lookup-enter {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 42px;
+  height: 38px;
+  padding: 0 0 2px;
 }
 
 /* The return arrow printed on the key, in the key's own ink. */
@@ -1580,64 +1596,61 @@ kbd {
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='10' shape-rendering='crispEdges'%3E%3Cpath d='M12 0h2v8H2V6h10zM4 4h2v6H4z'/%3E%3C/svg%3E");
 }
 
-.lookup-form button:active:not(:disabled),
-.lookup-quick button:active:not(:disabled),
-.lookup-chip:active {
+/* A steel key with nothing to do yet sits down in its well, its word gone dim. */
+.desk .steel-key:disabled {
   translate: 0 2px;
+  background: var(--steel);
   box-shadow:
-    inset 0 2px 0 #eeede6,
-    0 2px 0 var(--terminal-edge);
-}
-
-.lookup-form button:disabled,
-.lookup-quick button:disabled {
-  translate: 0 2px;
-  box-shadow: 0 2px 0 var(--terminal-edge);
-  color: #8d8c82;
+    inset 0 2px 0 var(--steel-light),
+    0 2px 0 var(--steel-deep);
+  color: var(--steel-dark);
   cursor: default;
 }
 
+.desk .steel-key:disabled kbd {
+  background: var(--steel-light);
+  box-shadow: none;
+  color: var(--steel-dark);
+}
+
+/* The terminal's two keys for whoever is at the window, each as wide as its word, side by side if there is room. */
 .lookup-quick {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
-.lookup-quick button {
+.lookup-quick .steel-key {
   display: flex;
-  min-height: 32px;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
-  padding: 2px 4px 2px 8px;
-  text-align: left;
+  padding-right: 8px;
 }
 
-.lookup-quick button:disabled kbd {
-  color: #8d8c82;
-}
-
-/* A lookup beside what it looks up, on the papers: small, labelled, with its key. */
-.lookup-chip {
+/* A lookup beside what it looks up, on the papers: a small steel key, in the form's own print, with its key cap. */
+.steel-key.lookup-chip {
   display: inline-flex;
-  height: 24px;
   align-items: center;
   gap: 6px;
+  height: 24px;
   margin-left: 8px;
   padding: 0 2px 0 6px;
-  border-color: var(--form-edge);
-  background: var(--form-light);
   box-shadow:
-    inset 0 2px 0 #f3f6ef,
-    0 2px 0 var(--form-edge);
-  color: var(--ministry);
+    inset 0 2px 0 var(--steel-shine),
+    inset 0 -2px 0 var(--steel),
+    0 2px 0 var(--steel-deep);
+  font-family: var(--print);
   line-height: 20px;
   vertical-align: top;
 }
 
-.lookup-chip:active {
-  box-shadow: inset 0 2px 0 #f3f6ef;
+.steel-key.lookup-chip:active {
+  translate: 0 2px;
+  box-shadow:
+    inset 0 2px 0 var(--steel-shine),
+    inset 0 -2px 0 var(--steel);
 }
 
 .lookup-chip kbd,
@@ -1667,10 +1680,14 @@ kbd {
   margin: 0 0 6px;
 }
 
+/* What was searched: its face, the answer running round it and on under it. */
 .lookup-result .searched {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  display: flow-root;
+}
+
+.searched > .record-face {
+  float: left;
+  margin: 2px 8px 4px 0;
 }
 
 /* A record, as the terminal prints it: the face on file, and the lines running round it and on under it. */
@@ -2104,28 +2121,57 @@ mark {
   filter: brightness(0.6);
 }
 
-/* A wire tray for the day's cases, the slips dropped in it, and the count. */
+/* A wire tray for the day's cases: its brass plate on the front, the basket's bars behind the slips dropped in it, and the count in a window. */
 .tray {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 2px 8px;
-  padding: 4px 8px 6px;
+  display: flex;
+  flex-direction: column;
   border: 2px solid var(--steel-deep);
-  background:
-    repeating-linear-gradient(90deg, var(--steel-dark) 0 2px, transparent 2px 10px),
-    var(--baize-dark);
+  background: var(--baize-dark);
   box-shadow: 4px 4px 0 var(--baize-deep);
 }
 
-.tray-label {
-  grid-column: 1 / -1;
-  color: var(--steel-shine);
+/* Engraved brass, screwed on at each end, as the window's nameplate is. */
+.tray-plate {
+  position: relative;
+  height: 24px;
+  border-bottom: 2px solid var(--brass-deep);
+  background: var(--brass);
+  box-shadow: inset 0 2px 0 var(--brass-light);
+  color: var(--brass-deep);
+  line-height: 22px;
+  text-align: center;
 }
 
+.tray-plate::before,
+.tray-plate::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 2px;
+  width: 2px;
+  height: 2px;
+  background: var(--brass-dark);
+}
+
+.tray-plate::after {
+  right: 2px;
+  left: auto;
+}
+
+.tray-basket {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 4px 4px 4px 0;
+}
+
+/* The basket: its wires stand behind the slips, and nowhere else. */
 .tray-slips {
   position: relative;
+  flex: 1;
   height: 26px;
+  background: repeating-linear-gradient(90deg, transparent 0 6px, var(--steel-dark) 6px 8px);
+  box-shadow: inset 0 -2px 0 var(--steel-dark);
 }
 
 .tray-slip {
@@ -2138,13 +2184,21 @@ mark {
   background: var(--blue);
 }
 
+/* The count, on a wheel in its own window, as the savings are. */
 .tray-count {
+  min-width: 26px;
+  height: 26px;
+  border: 2px solid var(--black);
+  background: var(--charcoal-deep);
   color: var(--amber);
   font-family: var(--stamp);
+  line-height: 22px;
+  text-align: center;
 }
 
 /* The supervisor's note, in pen, on a yellow sticky note with a curling corner, written close to its edges. */
-.sticky {
+.sticky,
+.sticky-tip {
   position: relative;
   padding: 4px 8px 8px;
   border: 2px solid var(--sticky-edge);
@@ -2159,7 +2213,8 @@ mark {
   line-height: 22px;
 }
 
-.sticky::after {
+.sticky::after,
+.sticky-tip::after {
   content: '';
   position: absolute;
   right: -2px;
@@ -2222,37 +2277,161 @@ mark {
   cursor: default;
 }
 
-/* What Inspect says, on a strip along the foot of the blotter. Above every sheet, however often one is picked up (topPaper in Desk.tsx counts up from 100). */
-.inspector {
+/*
+ * Inspecting, the desk goes a shade darker round the papers, as a room does with the lamp on the work, and
+ * whatever can be pointed at is marked out; the magnifier is down and lit, and has its tag.
+ */
+.desk.inspecting {
+  background: var(--px-baize-dim) 0 0 / 12px 12px, var(--baize-dark);
+}
+
+.desk.inspecting .desk-papers {
+  background-color: var(--blotter-dark);
+  box-shadow:
+    inset 0 0 0 2px #18211b,
+    4px 4px 0 var(--baize-deep);
+}
+
+/* The tabs' cut corners are the baize's, dimmed with it. */
+.desk.inspecting .side-tab::before,
+.desk.inspecting .side-tab::after {
+  background: var(--baize-dark);
+}
+
+/* ------------------------------------------------------------ what the desk says */
+
+/*
+ * The Inspect slip: what two things pointed at came to, on a slip of the Ministry's paper at the foot of the
+ * blotter, where no sheet lies (its foot is kept for it). A discrepancy is printed in the citation's red, its
+ * first word stamped: the clerk has found it. Anything else is in plain black, never an all-clear green. Above
+ * every sheet, however often one is picked up (topPaper in Desk.tsx counts up from 100), and never in the way
+ * of a click.
+ */
+.inspect-slip {
+  --slip-edge: var(--letter-edge);
   position: absolute;
   z-index: 100000;
-  right: 10px;
-  bottom: 6px;
-  left: 10px;
+  bottom: 4px;
+  left: 18px;
+  max-width: min(468px, 100% - 36px);
   margin: 0;
-  padding: 4px 10px 6px;
-  border: 2px solid var(--black);
-  background: var(--charcoal-deep);
-  box-shadow: 0 4px 0 var(--baize-deep);
-  color: #ece6d2;
+  padding: 6px 10px 6px;
+  border: 2px solid var(--slip-edge);
+  border-top: 0;
+  /* Torn off a pad along its perforation. */
+  background:
+    repeating-linear-gradient(90deg, var(--slip-edge) 0 4px, transparent 4px 8px) 0 0 / 100% 2px no-repeat,
+    var(--letter);
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--ink);
+  font-family: var(--print);
+  line-height: 22px;
+  pointer-events: none;
+  animation: print 0.3s steps(4) both;
+}
+
+.inspect-slip-found {
+  --slip-edge: var(--pink-edge);
+  color: var(--challenge);
+}
+
+/* Its first word, stamped in a frame of the same red. */
+.inspect-slip-stamp {
+  display: inline-block;
+  padding: 0 4px;
+  border: 2px solid currentColor;
+  font-family: var(--stamp);
+  font-weight: normal;
+  line-height: 18px;
+  vertical-align: top;
+}
+
+/* While Inspect is on, the glass has a manila tag on a string: what it wants pointed at. It hangs over the tray, which has nothing to say while the clerk looks. */
+.inspect-spot {
+  position: relative;
+}
+
+.inspect-tag {
+  position: absolute;
+  z-index: 3;
+  top: calc(100% + 16px);
+  right: 2px;
+  left: 6px;
+  margin: 0;
+  padding: 12px 8px 6px;
+  border: 2px solid var(--manila-edge);
+  background: var(--manila);
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--ink);
+  font-family: var(--print);
+  line-height: 22px;
   pointer-events: none;
 }
 
-.inspector-found {
-  border-color: #4a100d;
-  background: var(--challenge);
-  color: #fff3ef;
+/* Its string, down from the glass's handle to the eyelet. */
+.inspect-tag::before {
+  content: '';
+  position: absolute;
+  top: -16px;
+  left: 26px;
+  width: 2px;
+  height: 20px;
+  background: var(--ink);
 }
 
-.inspector-none {
-  color: var(--amber);
+/* The eyelet: a steel ring round the punched hole. */
+.inspect-tag::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 24px;
+  width: 6px;
+  height: 6px;
+  background: var(--baize-dark);
+  box-shadow: 0 0 0 2px var(--steel-light);
 }
 
-.inspector-hint,
-.inspector-tip {
-  border-color: #6b520f;
-  background: var(--marker);
-  color: var(--ink);
+/* A second note from the supervisor, stuck on the first a line down: the day's guided look, or a new tool. */
+.sticky-spot {
+  position: relative;
+}
+
+.sticky-tip {
+  position: absolute;
+  z-index: 3;
+  top: 26px;
+  right: 6px;
+  left: -6px;
+  pointer-events: none;
+  animation: stick 0.16s steps(2) both;
+}
+
+.sticky-tip p {
+  margin: 0;
+}
+
+@keyframes stick {
+  from {
+    translate: 0 -6px;
+  }
+}
+
+/* The clerk's own note, where Likeness's letter lay: in the clerk's hand, on a scrap of the Ministry's paper. */
+.own-note {
+  position: absolute;
+  z-index: 100000;
+  right: 18px;
+  bottom: 14px;
+  max-width: calc(100% - 36px);
+  margin: 0;
+  padding: 4px 12px 6px;
+  border: 2px solid var(--letter-edge);
+  background: var(--letter);
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--ink-soft);
+  font-family: var(--hand);
+  line-height: 22px;
+  pointer-events: none;
 }
 
 /* ------------------------------------------------------------ motion and keys, as the clerk has them set */
@@ -2492,6 +2671,7 @@ mark {
  * story beside it. Each block beside the photo keeps to its own column.
  */
 .front-still {
+  position: relative;
   float: left;
   margin: 2px 12px 4px 0;
   padding: 4px;
@@ -2503,6 +2683,19 @@ mark {
 .front-still svg {
   width: 160px;
   height: 192px;
+}
+
+/* Printed as newsprint prints every face, the wall's included: muted, and a little warm. */
+.front-still .frame-picture svg {
+  filter: saturate(0.4) sepia(0.2) brightness(1.05);
+}
+
+/* The light the story is about, printed over it in its own colour: the lamp's pixels and nothing else. */
+.front-lamp {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  pointer-events: none;
 }
 
 .front-page .front-reprint .front-caption {
@@ -2629,57 +2822,10 @@ mark {
   gap: 10px;
 }
 
-/* Two pixel buttons at the foot of the letter: the company's own, and the Ministry's. */
-.offer-button {
+/* Two steel keys at the foot of the letter, side by side. */
+.offer-actions .steel-key {
   flex: 1;
-  height: 38px;
-  padding: 0 6px 2px;
-  border: 2px solid var(--steel-deep);
-  background: var(--terminal-light);
-  box-shadow:
-    inset 0 2px 0 #eeede6,
-    0 4px 0 var(--steel-deep);
-  color: var(--ink);
-  font: inherit;
-  font-family: var(--stamp);
-  line-height: 20px;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.offer-sign-it {
-  border-color: var(--coral-deep);
-  background: var(--coral);
-  box-shadow:
-    inset 0 2px 0 var(--coral-light),
-    0 4px 0 var(--coral-deep);
-  color: #fdf1ea;
-}
-
-.offer-button:hover {
-  background: #e6e5dd;
-}
-
-.offer-sign-it:hover {
-  background: #c46244;
-}
-
-.offer-button:active {
-  translate: 0 2px;
-  box-shadow:
-    inset 0 2px 0 #eeede6,
-    0 2px 0 var(--steel-deep);
-}
-
-.offer-sign-it:active {
-  box-shadow:
-    inset 0 2px 0 var(--coral-light),
-    0 2px 0 var(--coral-deep);
-}
-
-.offer-button:focus-visible {
-  outline: 2px solid var(--marker);
-  outline-offset: 2px;
+  padding-inline: 6px;
 }
 
 /* A manila envelope, its flap folded down and sealed with the company's mark. */

@@ -1,15 +1,29 @@
 import { UNITS } from '../content/cast';
 import { GAZETTE_TITLE, WALL_STAMPS, WELCOME } from '../content/gazette';
 import { UNIT_FACES, UNIT_LAMPS } from '../content/portraits';
+import { drawPortrait, PORTRAIT_HEIGHT, PORTRAIT_WIDTH } from '../gen/drawPortrait';
 import type { Gazette, WallEntry } from '../gen/gazette';
 import { PHRASE } from '../rules/phrase';
 import type { Video } from '../rules/types';
 import { CREST, DeskSprite, MASTHEAD, PHOTO_RING } from './DeskArt';
-import { FramePicture } from './Documents';
-import { PixelPortrait } from './PixelPortrait';
+import { FramePicture, frameShot } from './Documents';
+import { PixelPortrait, pixelPaths } from './PixelPortrait';
 
 /** Day 1's unit, as its video filmed it: the frame its night lamp came on in, which the day 2 paper reprints. */
 const FIRST_UNIT_VIDEO: Video = { face: UNIT_FACES[0], transcript: PHRASE, blinked: true, ...(UNIT_LAMPS[0] ?? {}) };
+const REPRINTED_FRAME = 3;
+
+/**
+ * The lamp's own pixels in the reprinted frame: whatever drawing it lit changes. The paper prints the frame in
+ * its own muted tones, as it prints every face, and the light it is about in its colour, over them.
+ */
+const REPRINTED_LAMP = (() => {
+  const { portrait, pose } = frameShot(FIRST_UNIT_VIDEO, REPRINTED_FRAME);
+  const { lamp: _lamp, ...unlit } = portrait;
+  const lit = drawPortrait(portrait, pose);
+  const bare = drawPortrait(unlit, pose);
+  return pixelPaths({ ...lit, pixels: lit.pixels.map((c, i) => (c !== bare.pixels[i] ? c : null)) });
+})();
 
 /** How the photo sorts yesterday's faces: everyone registered, then everyone refused and whoever went with them, then whoever the clock sent home. */
 const STAMP_ORDER: readonly WallEntry['stamp'][] = ['registered', 'court', 'refused', 'removed', 'home'];
@@ -38,9 +52,14 @@ export function GazettePage({ gazette }: { gazette: Gazette }) {
       </h3>
       <figure className={gazette.robot ? 'front-photo front-reprint' : 'front-photo'}>
         {gazette.robot ? (
-          // The frame the clerk saw, reprinted large; the story runs round it.
+          // The frame the clerk saw, reprinted large in newsprint's tones, and its light in colour; the story runs round it.
           <span className="front-still" data-testid="gazette-still">
-            <FramePicture video={FIRST_UNIT_VIDEO} frame={3} title={`${UNITS[0].name}, frame 3`} />
+            <FramePicture video={FIRST_UNIT_VIDEO} frame={REPRINTED_FRAME} title={`${UNITS[0].name}, frame ${REPRINTED_FRAME}`} />
+            <svg className="front-lamp" viewBox={`0 0 ${PORTRAIT_WIDTH} ${PORTRAIT_HEIGHT}`} shapeRendering="crispEdges" aria-hidden="true">
+              {REPRINTED_LAMP.map(({ color, d }) => (
+                <path key={color} fill={color} d={d} />
+              ))}
+            </svg>
           </span>
         ) : (
           <Wall entries={gazette.wall} subject={gazette.subject} />
