@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { GeneratedApplicant } from '../gen/applicant';
-import { DeskSprite, PERSON } from './DeskArt';
+import { CALENDAR, DeskSprite, PERSON } from './DeskArt';
 import { PixelPortrait } from './PixelPortrait';
 import { blip } from './sound';
 
@@ -61,7 +61,9 @@ export function Booth(p: Props) {
       {/* The counters under the glass: the day, the Ministry's clock (lit while the shift is on the clock), those seen. */}
       <div className="hud">
         <div className="hud-cell hud-day">
-          <span className="hud-label">Day</span> <span className="hud-value">{p.day}</span>
+          <DeskSprite sprite={CALENDAR} />
+          <span className="sr-only">Day</span>
+          <span className="hud-value">{p.day}</span>
         </div>
         <div className={['hud-cell', 'hud-clock', p.timed ? 'timed' : '', p.secondsLeft !== null && p.secondsLeft <= 60 && !p.over ? 'hurry' : ''].filter(Boolean).join(' ')}>
           <span className="sr-only">{p.timed ? 'Time' : 'Time, no limit today'}</span>

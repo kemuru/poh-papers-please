@@ -78,13 +78,22 @@ export function Desk(p: Props) {
     <InspectContext.Provider value={{ on: p.inspect.on, picked: p.inspect.picked, flagged: p.inspect.flagged, pick: p.onPick }}>
       <section className={`desk${p.decided ? ' thunked' : ''}${p.inspect.on ? ' inspecting' : ''}`} aria-label="Desk">
         <div
-          className={
-            p.papers && p.decided?.citation ? 'desk-papers printing citing' : p.papers && p.decided?.decision === 'challenge' ? 'desk-papers printing' : 'desk-papers'
-          }
+          className={[
+            'desk-papers',
+            p.papers && p.decided?.citation ? 'printing citing' : p.papers && p.decided?.decision === 'challenge' ? 'printing' : '',
+            // Before the window opens the blotter holds the morning's papers, and its foot is theirs too.
+            p.opened ? '' : 'morning',
+          ]
+            .filter(Boolean)
+            .join(' ')}
         >
           {!p.opened && (p.night ? <NightCard night={p.night} /> : p.gazette ? <GazettePage gazette={p.gazette} /> : <WelcomeLetter />)}
-          {!p.opened && !p.night && p.morning.note && <SecondNote text={p.morning.note} />}
-          {/* On the paper, and like any paper on the desk, they can be moved off it. */}
+          {/* Stuck to the paper, and like any paper on the desk, they can be moved off it. */}
+          {!p.opened && !p.night && p.morning.note && (
+            <Paper label="Second note" className="morning-extra at-note">
+              <SecondNote text={p.morning.note} />
+            </Paper>
+          )}
           {!p.opened && !p.night && p.morning.envelope && (
             <Paper label="Envelope" className="morning-extra at-envelope">
               <Envelope credit={p.morning.envelope} />
@@ -226,17 +235,24 @@ export function Desk(p: Props) {
 }
 
 
-/** The night shift's card on the blotter, where the morning paper would be. */
+/** The night shift's clock card on the blotter, where the morning paper would be: the Ministry never closes. */
 function NightCard({ night }: { night: NightView }) {
   const fill = (line: string) => line.replace('{n}', String(night.shift)).replace('{right}', String(night.right)).replace('{citations}', String(night.citations));
   return (
-    <article className="welcome night-card" aria-label={NIGHT.title} data-testid="night-card">
-      <h2>{NIGHT.title}</h2>
-      <p className="night-shift">{fill(NIGHT.card.shift)}</p>
+    <article className="clock-card" aria-label={NIGHT.title} data-testid="night-card">
+      <h2 className="clock-card-title">{NIGHT.title}</h2>
+      <p className="clock-card-shift">{fill(NIGHT.card.shift)}</p>
       {NIGHT.card.lines.map((line) => (
         <p key={line}>{line}</p>
       ))}
-      <p className="night-tally">{fill(NIGHT.card.tally)}</p>
+      {/* The time clock's own figures, printed at the foot, a line each. */}
+      <p className="clock-card-tally">
+        {fill(NIGHT.card.tally)
+          .split(/(?<=\.) /)
+          .map((figure) => (
+            <span key={figure}>{figure}</span>
+          ))}
+      </p>
     </article>
   );
 }

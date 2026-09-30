@@ -24,7 +24,9 @@ export const NEW_TOOL_TIPS = {
 
 /** Likeness Robotics' letter on the morning of day 3 (notes/game-design.md, The offer): the week's one temptation. */
 export const OFFER_LETTER = {
-  head: 'Likeness Robotics Ltd · Partner programme',
+  /** The letterhead: the company, and the department writing. */
+  head: 'Likeness Robotics Ltd',
+  dept: 'Partner programme',
   lines: [
     'Dear Clerk,',
     'Some households would like their Likeness units registered before Humanity Day. So would we.',

@@ -1,6 +1,7 @@
 import { ENVELOPE, OFFER_LETTER } from '../content/desk';
 import type { Credit } from '../economy/economy';
 import { listOf } from '../gen/letters';
+import { DeskSprite, ENVELOPE_FLAP, LIKENESS_MARK } from './DeskArt';
 
 /** What else is on the blotter with the morning paper: Likeness's letter, its envelope, a second note from the supervisor. */
 export type MorningPapers = {
@@ -15,11 +16,15 @@ export type MorningPapers = {
 // A click leaves the focus where it was, so Space still opens the window.
 const keepFocus = (e: { preventDefault: () => void }) => e.preventDefault();
 
-/** Likeness Robotics' letter, on top of the paper: SIGN IT, or HAND IT IN. Left on the desk, it goes in the drawer unsigned. */
+/** Likeness Robotics' letter, on its own letterhead, on top of the paper: SIGN IT, or HAND IT IN. Left on the desk, it goes in the drawer unsigned. */
 export function OfferLetter({ onSign, onHandIn }: { onSign: () => void; onHandIn: () => void }) {
   return (
     <article className="offer-letter" aria-label="Letter from Likeness Robotics" data-testid="offer-letter">
-      <p className="offer-head">{OFFER_LETTER.head}</p>
+      <header className="likeness-head">
+        <DeskSprite sprite={LIKENESS_MARK} />
+        <span className="likeness-name">{OFFER_LETTER.head}</span>
+        <span className="likeness-dept">{OFFER_LETTER.dept}</span>
+      </header>
       {OFFER_LETTER.lines.map((line) => (
         <p key={line}>{line}</p>
       ))}
@@ -36,12 +41,18 @@ export function OfferLetter({ onSign, onHandIn }: { onSign: () => void; onHandIn
   );
 }
 
-/** Likeness's envelope: its fee for yesterday's units, counted on tonight's statement. */
+/** Likeness's envelope, manila, sealed with its mark: its fee for yesterday's units, counted on tonight's statement. */
 export function Envelope({ credit }: { credit: Credit }) {
   const fill = (line: string) => line.replace('{amount}', String(credit.count * credit.each)).replace('{names}', listOf(credit.for ?? []));
   return (
     <aside className="envelope" aria-label="Envelope from Likeness Robotics" data-testid="envelope">
-      <p className="offer-head">{ENVELOPE.head}</p>
+      <span className="envelope-flap" aria-hidden="true">
+        <DeskSprite sprite={ENVELOPE_FLAP} />
+        <span className="envelope-seal">
+          <DeskSprite sprite={LIKENESS_MARK} />
+        </span>
+      </span>
+      <p className="envelope-from">{ENVELOPE.head}</p>
       {ENVELOPE.lines.map((line) => (
         <p key={line}>{fill(line)}</p>
       ))}

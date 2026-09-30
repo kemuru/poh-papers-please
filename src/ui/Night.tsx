@@ -114,12 +114,18 @@ function NightShift({ seed, best, onDone, onBoard, onAgain }: { seed: number; be
   const bestNow = Math.max(best ?? 0, closed ? n.right : 0);
   return (
     <div className="game phase-shift night">
+      {/* The desk rail at night: the window's nameplate with the shift on it, and the night's two tallies. */}
       <header className="topbar">
-        <h1>{NIGHT.title}</h1>
-        <p>{NIGHT.card.shift.replace('{n}', String(n.shift))}</p>
+        <h1 className="sr-only">{NIGHT.title}</h1>
+        <p className="nameplate">
+          <span className="nameplate-window">Window 3</span>
+          <span className="nameplate-clerk">{NIGHT.card.shift.replace('{n}', String(n.shift))}</span>
+        </p>
         <p className="topbar-savings">
-          {NIGHT.topbar.right} <strong data-testid="night-right">{n.right}</strong> · {NIGHT.topbar.citations}{' '}
-          <strong data-testid="night-citations">{NIGHT.topbar.count.replace('{n}', String(n.citations)).replace('{all}', String(CITATIONS))}</strong>
+          {NIGHT.topbar.right} <strong data-testid="night-right">{n.right}</strong>
+        </p>
+        <p className="topbar-tally">
+          {NIGHT.topbar.citations} <strong data-testid="night-citations">{NIGHT.topbar.count.replace('{n}', String(n.citations)).replace('{all}', String(CITATIONS))}</strong>
         </p>
         <AudioSwitches onMenu={() => setPaused(true)} />
       </header>

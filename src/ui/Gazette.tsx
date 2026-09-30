@@ -4,11 +4,18 @@ import { UNIT_FACES, UNIT_LAMPS } from '../content/portraits';
 import type { Gazette, WallEntry } from '../gen/gazette';
 import { PHRASE } from '../rules/phrase';
 import type { Video } from '../rules/types';
+import { CREST, DeskSprite, MASTHEAD, PHOTO_RING } from './DeskArt';
 import { FramePicture } from './Documents';
 import { PixelPortrait } from './PixelPortrait';
 
 /** Day 1's unit, as its video filmed it: the frame its night lamp came on in, which the day 2 paper reprints. */
 const FIRST_UNIT_VIDEO: Video = { face: UNIT_FACES[0], transcript: PHRASE, blinked: true, ...(UNIT_LAMPS[0] ?? {}) };
+
+/** How the photo sorts yesterday's faces: everyone registered, then everyone refused and whoever went with them, then whoever the clock sent home. */
+const STAMP_ORDER: readonly WallEntry['stamp'][] = ['registered', 'court', 'refused', 'removed', 'home'];
+
+/** A face on the photo, as a press photo crops it, crown to chin: 22 by 24 portrait pixels, at one art pixel each. */
+const PHOTO_CROP = { x: 9, y: 7, width: 22, height: 24 };
 
 /**
  * The morning paper's front page, on the blotter until the window opens: a headline about yesterday at
@@ -17,59 +24,80 @@ const FIRST_UNIT_VIDEO: Video = { face: UNIT_FACES[0], transcript: PHRASE, blink
  */
 export function GazettePage({ gazette }: { gazette: Gazette }) {
   return (
-    <article className="gazette" aria-label="The Registry Gazette" data-testid="gazette">
-      <header className="gazette-mast">
-        <span>Day {gazette.day}</span>
-        <h2>{GAZETTE_TITLE}</h2>
-        <span>{gazette.countdown}</span>
+    <article className="front-page" aria-label="The Registry Gazette" data-testid="gazette">
+      <header className="front-mast">
+        <h2 className="front-title">
+          <DeskSprite sprite={MASTHEAD} />
+          <span className="sr-only">{GAZETTE_TITLE}</span>
+        </h2>
+        <p className="front-day">Day {gazette.day}</p>
+        <p className="front-count">{gazette.countdown}</p>
       </header>
-      <h3 className="gazette-headline" data-testid="headline">
+      <h3 className="front-headline" data-testid="headline">
         {gazette.headline}
       </h3>
-      <figure className="gazette-photo">
+      <figure className={gazette.robot ? 'front-photo front-reprint' : 'front-photo'}>
         {gazette.robot ? (
-          <span className="gazette-still" data-testid="gazette-still">
+          // The frame the clerk saw, reprinted large; the story runs round it.
+          <span className="front-still" data-testid="gazette-still">
             <FramePicture video={FIRST_UNIT_VIDEO} frame={3} title={`${UNITS[0].name}, frame 3`} />
           </span>
         ) : (
           <Wall entries={gazette.wall} subject={gazette.subject} />
         )}
-        <figcaption data-testid="report">{gazette.caption}</figcaption>
+        <figcaption className="front-caption" data-testid="report">
+          {gazette.caption}
+        </figcaption>
       </figure>
-      <p className="gazette-thread" data-testid="thread">
+      <p className="front-thread" data-testid="thread">
         {gazette.thread}
       </p>
-      {gazette.small && <p className="gazette-small">{gazette.small}</p>}
+      {gazette.small && <p className="front-notice">{gazette.small}</p>}
     </article>
   );
 }
 
-/** Yesterday's faces, each stamped as it left the window; the one the headline is about, ringed. */
+/**
+ * Yesterday's faces, each stamped as it left the window, printed as the paper prints a line-up: a row for
+ * each stamp, the stamp at its head. The one the headline is about is ringed.
+ */
 function Wall({ entries, subject }: { entries: WallEntry[]; subject: string | null }) {
   if (entries.length === 0) return null;
+  const rows = STAMP_ORDER.map((stamp) => ({ stamp, faces: entries.filter((e) => e.stamp === stamp) })).filter((row) => row.faces.length > 0);
   return (
-    <ol className="gazette-wall" data-testid="wall">
-      {entries.map((e, i) => (
-        <li key={`${e.name}-${i}`} className={`wall-face wall-${e.stamp}${e.name === subject ? ' ringed' : ''}`} aria-label={`${e.name}: ${WALL_STAMPS[e.stamp]}`}>
-          <PixelPortrait portrait={e.face} scale={1} crop={{ x: 4, y: 2, width: 32, height: 34 }} />
+    <ul className="front-wall" data-testid="wall">
+      {rows.map(({ stamp, faces }) => (
+        <li key={stamp} className="wall-row">
           <span className="wall-stamp" aria-hidden="true">
-            {WALL_STAMPS[e.stamp]}
+            {WALL_STAMPS[stamp]}
           </span>
+          <ul className="wall-faces">
+            {faces.map((e, i) => (
+              <li key={`${e.name}-${i}`} className="wall-face" aria-label={`${e.name}: ${WALL_STAMPS[e.stamp]}`}>
+                <PixelPortrait portrait={e.face} scale={2} crop={PHOTO_CROP} />
+                {e.name === subject && <DeskSprite sprite={PHOTO_RING} className="wall-ring" />}
+              </li>
+            ))}
+          </ul>
         </li>
       ))}
-    </ol>
+    </ul>
   );
 }
 
-/** Day 1: the supervisor's letter, where the Gazette will be from tomorrow. */
+/** Day 1: the supervisor's letter, on the Ministry's letterhead, where the Gazette will be from tomorrow. */
 export function WelcomeLetter() {
   return (
-    <article className="welcome" aria-label="Welcome letter" data-testid="welcome">
-      <h2>{WELCOME.title}</h2>
+    <article className="letterhead welcome" aria-label="Welcome letter" data-testid="welcome">
+      <header className="letterhead-top">
+        <DeskSprite sprite={CREST} />
+        <span className="letterhead-name">{WELCOME.head}</span>
+      </header>
+      <h2 className="letter-subject">{WELCOME.title}</h2>
       {WELCOME.lines.map((line) => (
         <p key={line}>{line}</p>
       ))}
-      <p className="welcome-sign">{WELCOME.signature}</p>
+      <p className="letter-sign">{WELCOME.signature}</p>
     </article>
   );
 }

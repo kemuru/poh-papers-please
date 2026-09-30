@@ -131,6 +131,11 @@ function FaceResult({ face, found }: { face: Portrait; found: Registrant[] }) {
   );
 }
 
+/** "Window 7" and "day 4" are one thing each: the terminal never breaks one across two lines. */
+function unbroken(text: string): ReactNode[] {
+  return text.split(/((?:Window|day) \d+)/).map((part, i) => (i % 2 ? <span key={i} className="unbroken">{part}</span> : part));
+}
+
 function Record({ r, children }: { r: Registrant; children?: ReactNode }) {
   return (
     <div className="record" data-testid="record">
@@ -146,7 +151,7 @@ function Record({ r, children }: { r: Registrant; children?: ReactNode }) {
           <dt>Born</dt> <dd>{formatYear(r.birthYear)}</dd>
         </div>
         <div>
-          <dt>Registered</dt> <dd>{registeredWhere(r)}</dd>
+          <dt>Registered</dt> <dd>{unbroken(registeredWhere(r))}</dd>
         </div>
         {children}
       </dl>

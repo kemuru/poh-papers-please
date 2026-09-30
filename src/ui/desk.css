@@ -90,6 +90,20 @@
   --phosphor-dim: #5f9a52;
   --letter: #e9edee;
   --letter-edge: #a9b0b3;
+  /* The Gazette: grey newsprint, black ink, and its photos' halftone grey. */
+  --news-edge: #7d7c73;
+  --news-dark: #a3a197;
+  --news: #c8c6bb;
+  --news-light: #d8d6cc;
+  --news-ink: #161512;
+  /* Likeness Robotics' paper: bright bond, and the company's coral. Its envelope: manila. */
+  --bond-edge: #aba89f;
+  --bond: #f5f4ef;
+  --coral-deep: #6b2e1e;
+  --coral: #b9573a;
+  --coral-light: #d98a6c;
+  --manila-edge: #8c6f3c;
+  --manila: #d6ba80;
 
   /* ---------------------------------------------- the old names, which later screens still use */
   --desk: var(--baize);
@@ -114,6 +128,8 @@
   --px-speckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' shape-rendering='crispEdges'%3E%3Cpath fill-rule='evenodd' d='M0 0h24v24H0z M4 2h2v2H4z M14 6h2v2h-2z M20 12h2v2h-2z M8 16h2v2H8z M2 20h2v2H2z M16 20h2v2h-2z M10 10h2v2h-2z'/%3E%3C/svg%3E");
   --px-glint: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' shape-rendering='crispEdges'%3E%3Cpath fill='%23ffffff' fill-opacity='.35' d='M2 16h2v2h-2zM4 14h2v2h-2zM6 12h2v2h-2zM8 10h2v2h-2zM10 8h2v2h-2zM12 6h2v2h-2zM14 4h2v2h-2zM2 24h2v2h-2zM4 22h2v2h-2zM6 20h2v2h-2zM8 18h2v2h-2z'/%3E%3C/svg%3E");
   --px-ring: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='16' shape-rendering='crispEdges'%3E%3Cpath fill='%23c4ccce' d='M6 0h2v2h-2zM8 0h2v2h-2zM10 0h2v2h-2zM12 0h2v2h-2zM14 0h2v2h-2zM16 0h2v2h-2zM18 0h2v2h-2zM2 2h2v2h-2zM4 2h2v2h-2zM20 2h2v2h-2zM22 2h2v2h-2zM0 4h2v2h-2zM0 6h2v2h-2z'/%3E%3Cpath fill='%239ba5a8' d='M6 2h2v2h-2zM8 2h2v2h-2zM10 2h2v2h-2zM12 2h2v2h-2zM14 2h2v2h-2zM16 2h2v2h-2zM18 2h2v2h-2zM2 4h2v2h-2zM4 4h2v2h-2zM20 4h2v2h-2zM22 4h2v2h-2zM2 6h2v2h-2zM22 6h2v2h-2zM2 8h2v2h-2zM22 8h2v2h-2zM2 10h2v2h-2zM4 10h2v2h-2zM20 10h2v2h-2zM22 10h2v2h-2zM6 12h2v2h-2zM8 12h2v2h-2zM10 12h2v2h-2zM12 12h2v2h-2zM14 12h2v2h-2zM16 12h2v2h-2zM18 12h2v2h-2z'/%3E%3Cpath fill='%234c555a' d='M0 8h2v2h-2zM0 10h2v2h-2zM2 12h2v2h-2zM4 12h2v2h-2zM20 12h2v2h-2zM22 12h2v2h-2zM6 14h2v2h-2zM8 14h2v2h-2zM10 14h2v2h-2zM12 14h2v2h-2zM14 14h2v2h-2zM16 14h2v2h-2zM18 14h2v2h-2z'/%3E%3Cpath fill='%232e3438' d='M24 4h2v2h-2zM24 6h2v2h-2zM24 8h2v2h-2zM24 10h2v2h-2z'/%3E%3Cpath fill='%236b5a36' d='M20 6h2v2h-2zM20 8h2v2h-2z'/%3E%3C/svg%3E");
+  --px-newsprint: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Cpath fill='%23bdbbb0' d='M2 2h2v2H2zM10 6h2v2h-2zM6 12h2v2H6zM14 14h2v2h-2z'/%3E%3Cpath fill='%23d0cec4' d='M12 0h2v2h-2zM0 10h2v2H0z'/%3E%3C/svg%3E");
+  --px-halftone: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Cpath fill='%23a3a197' d='M0 0h4v4H0z'/%3E%3Cpath fill='%23b3b1a6' d='M0 0h2v2H0zM2 2h2v2H2z'/%3E%3C/svg%3E");
   --px-curl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' shape-rendering='crispEdges'%3E%3Cpath fill='%23c9aa3c' d='M12 0h2v14H0v-2h2v-2h2V8h2V6h2V4h2V2h2z'/%3E%3Cpath fill='%231c231e' fill-opacity='.35' d='M12 0h2v2h-2z'/%3E%3C/svg%3E");
 }
 
@@ -553,22 +569,22 @@ kbd {
   visibility: hidden;
 }
 
-/* The counters under the glass: the day, the Ministry's clock, and how many have been seen. */
+/* The counters under the glass, in one row however narrow the booth: the day, the Ministry's clock, and how many have been seen. */
 .hud {
   display: flex;
   flex: none;
-  flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
 }
 
 .hud-cell {
   display: flex;
-  flex: 1 0 auto;
+  flex: 1 1 auto;
   align-items: center;
   justify-content: center;
   gap: 6px;
+  min-width: 0;
   height: 36px;
-  padding: 0 6px;
+  padding: 0 4px;
   border: 2px solid var(--black);
   background: #0d0f0d;
   box-shadow: inset 0 2px 0 #000;
@@ -577,10 +593,6 @@ kbd {
 
 .hud-cell svg {
   display: block;
-}
-
-.hud-label {
-  color: var(--amber-dim);
 }
 
 .hud-value {
@@ -717,6 +729,11 @@ kbd {
   min-width: 0;
 }
 
+/* The rulebook's sheet is the container its page is set for: a size container is its own stacking context, and the sheet moves as one anyway. */
+.paper-rulebook {
+  container: book / inline-size;
+}
+
 .desk.thunked .desk-papers {
   animation: thunk 0.24s steps(3);
 }
@@ -763,6 +780,17 @@ kbd {
 
 .paper.lifted > .doc {
   box-shadow: 8px 8px 0 var(--baize-deep);
+}
+
+.paper.lifted > .offer-letter,
+.paper.lifted > .envelope {
+  box-shadow: 8px 8px 0 var(--baize-deep);
+}
+
+.paper.lifted > .sticky {
+  box-shadow:
+    inset 0 4px 0 var(--sticky-light),
+    8px 8px 0 var(--baize-deep);
 }
 
 .paper.lifted > .rulebook {
@@ -1184,14 +1212,19 @@ kbd {
   gap: 4px;
 }
 
+/*
+ * Each page's index tab, cut into a divider card: it comes out from behind the page, so it has no left
+ * edge, and its outer corners are cut a pixel in. Its shadow falls on the baize.
+ */
 .rule-tab {
   position: relative;
   width: 30px;
   height: 36px;
   padding: 0 2px 0 0;
-  border: 2px solid var(--buff-edge);
-  background: var(--buff-dark);
-  box-shadow: 2px 2px 0 var(--baize-deep);
+  border: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='36' shape-rendering='crispEdges'%3E%3Cpath fill='%23c4ae78' d='M0 2h26v2h2v28h-2v2H0z'/%3E%3Cpath fill='%23d3c08f' d='M0 2h26v2H0z'/%3E%3Cpath fill='%238b7747' d='M0 0h26v2H0zM26 2h2v2h-2zM28 4h2v28h-2zM26 32h2v2h-2zM0 34h26v2H0z'/%3E%3C/svg%3E")
+    0 0 / 30px 36px no-repeat;
+  filter: drop-shadow(2px 2px 0 var(--baize-deep));
   color: var(--rule-red);
   font: inherit;
   font-family: var(--stamp);
@@ -1199,21 +1232,24 @@ kbd {
 }
 
 .rule-tab:hover {
-  background: #d0bb86;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='36' shape-rendering='crispEdges'%3E%3Cpath fill='%23d0bb86' d='M0 2h26v2h2v28h-2v2H0z'/%3E%3Cpath fill='%23dccb9c' d='M0 2h26v2H0z'/%3E%3Cpath fill='%238b7747' d='M0 0h26v2H0zM26 2h2v2h-2zM28 4h2v28h-2zM26 32h2v2h-2zM0 34h26v2H0z'/%3E%3C/svg%3E");
 }
 
-/* The open page's tab is the page's own paper, joined to it. */
+/* The open page's tab is the page's own paper, joined to it across the page's edge. */
 .rule-tab[aria-selected='true'] {
-  border-left-color: var(--buff);
-  background: var(--buff);
+  width: 32px;
+  margin-left: -2px;
+  padding-left: 2px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='36' shape-rendering='crispEdges'%3E%3Cpath fill='%23dccb9c' d='M0 2h28v2h2v28h-2v2H0z'/%3E%3Cpath fill='%238b7747' d='M0 0h28v2H0zM28 2h2v2h-2zM30 4h2v28h-2zM28 32h2v2h-2zM0 34h28v2H0z'/%3E%3C/svg%3E")
+    0 0 / 32px 36px no-repeat;
 }
 
 /* Today's new page: a red corner on its tab. */
 .rule-tab.new::after {
   content: '';
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: 4px;
+  right: 6px;
   width: 6px;
   height: 6px;
   background: var(--challenge);
@@ -1347,6 +1383,46 @@ kbd {
   font-weight: normal;
 }
 
+/*
+ * In the narrowest book (a 1240-wide desk) Rule 2's page would push the hall out of the room: the page is
+ * set close, and Fig. 2's two stills stand side by side with their captions under them.
+ */
+@container book (max-width: 360px) {
+  .rulebook {
+    padding-right: 10px;
+    padding-left: 24px;
+    line-height: 22px;
+  }
+
+  .rule-checks {
+    padding-left: 14px;
+  }
+
+  .rule p {
+    margin-bottom: 6px;
+  }
+
+  .rule h3 {
+    margin-bottom: 4px;
+  }
+
+  .rule-cause {
+    margin-top: 8px;
+    padding-top: 6px;
+  }
+
+  .rule-figure {
+    flex-wrap: nowrap;
+    gap: 20px;
+    margin: 4px 0 2px;
+  }
+
+  .rule-plate {
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
 /* ------------------------------------------------------------ the rulebook's and the registry's tabs */
 
 /* From day 4 the side of the desk holds the registry terminal too: a folder tab for each. */
@@ -1356,9 +1432,11 @@ kbd {
   padding: 0 30px 0 8px;
 }
 
+/* A folder tab, its top corners cut a pixel in; the one behind sits a pixel lower. */
 .side-tabs button {
   flex: 1;
   height: 32px;
+  margin-top: 2px;
   padding: 0;
   border: 2px solid var(--baize-deep);
   border-bottom: 0;
@@ -1367,9 +1445,33 @@ kbd {
   font: inherit;
   font-family: var(--print);
   cursor: pointer;
+  position: relative;
+}
+
+/* The corners, cut: a pixel of the baize at each. */
+.side-tabs button::before,
+.side-tabs button::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 2px;
+  height: 2px;
+  background: var(--baize);
+}
+
+.side-tabs button::after {
+  right: -2px;
+  left: auto;
+}
+
+.side-tabs button:hover:not([aria-selected='true']) {
+  color: var(--steel-shine);
 }
 
 .side-tabs button[aria-selected='true'] {
+  height: 34px;
+  margin-top: 0;
   border-color: var(--buff-edge);
   background: var(--buff);
   color: var(--ink);
@@ -1538,9 +1640,9 @@ kbd {
   gap: 8px;
 }
 
+/* A record, as the terminal prints it: the face on file, and the lines running round it and on under it. */
 .record {
-  display: flex;
-  gap: 8px;
+  display: flow-root;
   margin-top: 6px;
 }
 
@@ -1550,13 +1652,21 @@ kbd {
   line-height: 0;
 }
 
+.record > .record-face {
+  float: left;
+  margin: 0 8px 4px 0;
+}
+
 .record-face svg {
   display: block;
 }
 
 .record dl {
-  min-width: 0;
   margin: 0;
+}
+
+.unbroken {
+  white-space: nowrap;
 }
 
 .record dt {
@@ -2000,10 +2110,10 @@ mark {
   font-family: var(--stamp);
 }
 
-/* The supervisor's note, in pen, on a yellow sticky note with a curling corner. */
+/* The supervisor's note, in pen, on a yellow sticky note with a curling corner, written close to its edges. */
 .sticky {
   position: relative;
-  padding: 6px 10px 10px;
+  padding: 4px 8px 8px;
   border: 2px solid var(--sticky-edge);
   background: var(--sticky);
   box-shadow:
@@ -2013,7 +2123,7 @@ mark {
   font-family: var(--print);
   font-size: 20px;
   font-style: italic;
-  line-height: 24px;
+  line-height: 22px;
 }
 
 .sticky::after {
@@ -2142,133 +2252,521 @@ mark {
   transition-delay: 0s !important;
 }
 
-/* ------------------------------------------------------------ the morning's papers (restyled in a later stage) */
+/* ------------------------------------------------------------ the morning's papers */
+
+/* Until the window opens the blotter holds the morning's papers and no Inspect strip: its foot is theirs. */
+.desk-papers.morning {
+  padding-bottom: 10px;
+}
 
 /* What else lies on the morning paper: Likeness's letter and its envelope, papers that can be moved like any other. */
 .paper.morning-extra {
   position: absolute;
   z-index: 5;
-  animation: land 0.5s 0.45s both;
+  animation: land 0.32s 0.4s steps(8) both;
 }
 
 .at-letter {
   right: 18px;
-  bottom: 12px;
+  bottom: 14px;
 }
 
 .at-envelope {
-  right: 32px;
-  bottom: 28px;
+  right: 26px;
+  bottom: 22px;
 }
 
-/* Another company's paper, in another company's colours, over the foot of the paper and clear of the day's notice. */
+.paper.at-note {
+  z-index: 6;
+  bottom: 18px;
+  left: 22px;
+}
+
+/* ---------------------------------------------- the Registry Gazette's front page */
+
+/*
+ * Grey newsprint, black ink, a masthead in the paper's own textura, set close as papers are (22px leading):
+ * read at a glance, before the window opens, and never taller than the blotter.
+ */
+.front-page {
+  container: front / inline-size;
+  flex: none;
+  width: 100%;
+  max-width: 660px;
+  margin: 0 auto;
+  padding: 4px 12px 10px;
+  border: 2px solid var(--news-edge);
+  background: var(--px-newsprint) 0 0 / 16px 16px, var(--news);
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--news-ink);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 22px;
+  animation: land 0.32s steps(8) both;
+}
+
+.front-page p {
+  margin: 0;
+}
+
+/*
+ * The masthead, the dateline under it (the day at one end, the countdown at the other), and the paper's
+ * rule, a thick line and a thin one. A page wide enough prints the dateline as the masthead's ears.
+ */
+.front-mast {
+  display: grid;
+  grid-template-areas:
+    'title title'
+    'day count';
+  justify-content: space-between;
+  margin: 0 0 8px;
+  padding: 0 2px 10px;
+  background:
+    linear-gradient(var(--news-ink) 0 0) 0 calc(100% - 4px) / 100% 4px no-repeat,
+    linear-gradient(var(--news-ink) 0 0) 0 100% / 100% 2px no-repeat;
+  white-space: nowrap;
+}
+
+.front-title {
+  grid-area: title;
+  margin: 0;
+  line-height: 0;
+}
+
+.front-title svg {
+  display: block;
+  margin: 0 auto;
+}
+
+.front-day {
+  grid-area: day;
+}
+
+.front-count {
+  grid-area: count;
+  text-align: right;
+}
+
+@container front (min-width: 626px) {
+  .front-mast {
+    grid-template-areas: 'day title count';
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 8px;
+    padding: 0 0 10px;
+    white-space: normal;
+  }
+}
+
+/* The headline, in the Ministry's big print, set tight: capitals need no room for descenders. */
+.front-headline {
+  margin: 0 0 4px;
+  font-family: var(--stamp);
+  font-size: 30px;
+  font-weight: normal;
+  line-height: 30px;
+  text-align: center;
+}
+
+.front-photo {
+  margin: 0;
+}
+
+/* Yesterday at Window 3, as a line-up: a row of faces for each stamp, the stamp at its head, on the halftone. */
+.front-wall {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 16px;
+  margin: 0;
+  padding: 4px 8px;
+  border: 2px solid var(--news-ink);
+  background: var(--px-halftone) 0 0 / 4px 4px;
+  list-style: none;
+}
+
+.wall-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* The stamp, as it came down: its word in a frame, on the paper's white, over any ring. */
+.wall-stamp {
+  position: relative;
+  z-index: 2;
+  padding: 0 6px;
+  border: 2px solid var(--news-ink);
+  background: var(--news-light);
+  font-family: var(--stamp);
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.wall-faces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wall-face {
+  position: relative;
+  border: 2px solid var(--news-ink);
+  background: var(--news-light);
+  line-height: 0;
+}
+
+/* Printed as newsprint prints a colour photo: muted, and a little warm. */
+.wall-face > svg {
+  display: block;
+  filter: saturate(0.4) sepia(0.2) brightness(1.05);
+}
+
+/* The one the headline is about, ringed. */
+.wall-ring {
+  position: absolute;
+  z-index: 1;
+  top: -10px;
+  left: -10px;
+  pointer-events: none;
+}
+
+.front-page .front-caption {
+  margin: 2px 0 0;
+  font-style: italic;
+}
+
+.front-page .front-thread {
+  margin: 4px 0 0;
+  padding-top: 6px;
+  background: linear-gradient(var(--news-ink) 0 0) 0 0 / 100% 2px no-repeat;
+}
+
+/* The small notice, boxed. */
+.front-page .front-notice {
+  margin: 4px 0 0;
+  padding: 0 8px 2px;
+  border: 2px solid var(--news-ink);
+}
+
+/*
+ * Day 2: the frame day 1's unit lit up in, reprinted large, two art pixels to a portrait pixel, and the
+ * story beside it. Each block beside the photo keeps to its own column.
+ */
+.front-still {
+  float: left;
+  margin: 2px 12px 4px 0;
+  padding: 4px;
+  border: 2px solid var(--news-ink);
+  background: var(--px-halftone) 0 0 / 4px 4px;
+  line-height: 0;
+}
+
+.front-still svg {
+  width: 160px;
+  height: 192px;
+}
+
+.front-page .front-reprint .front-caption {
+  margin: 0;
+}
+
+.front-reprint .front-caption,
+.front-reprint ~ .front-thread,
+.front-reprint ~ .front-notice {
+  display: flow-root;
+}
+
+/* ---------------------------------------------- the Ministry's letterhead: the welcome letter */
+
+/* Cool white, the Ministry's seal and name in its green over a green rule; the supervisor signs in pen. */
+.letterhead {
+  flex: none;
+  width: 100%;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 10px 18px 12px;
+  border: 2px solid var(--letter-edge);
+  background: var(--letter);
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--ink);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 24px;
+  animation: land 0.32s steps(8) both;
+}
+
+.letterhead p {
+  margin: 0 0 8px;
+}
+
+.letterhead-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  background:
+    linear-gradient(var(--ministry) 0 0) 0 100% / 100% 2px no-repeat,
+    linear-gradient(var(--ministry) 0 0) 0 calc(100% - 4px) / 100% 2px no-repeat;
+  color: var(--ministry);
+  font-family: var(--stamp);
+}
+
+.letterhead-top svg {
+  display: block;
+  flex: none;
+}
+
+.letter-subject {
+  margin: 0 0 8px;
+  font-family: var(--stamp);
+  font-size: 20px;
+  font-weight: normal;
+  line-height: 24px;
+}
+
+.letterhead .letter-sign {
+  margin: 0;
+  color: var(--pen);
+  font-family: var(--hand);
+  font-size: 30px;
+  line-height: 36px;
+  text-align: right;
+}
+
+/* ---------------------------------------------- Likeness Robotics' letter and envelope */
+
+/* Another company's paper, in the company's own coral: bright bond, its mark and name at the head. */
 .offer-letter {
-  box-shadow: 0 12px 26px rgb(0 0 0 / 50%);
-  width: 340px;
-  padding: 9px 14px 10px;
-  background: #f4f1fb;
-  border-top: 5px solid #5b3fa6;
-  font-size: 12.5px;
-  line-height: 1.33;
-  rotate: 1.4deg;
+  width: 344px;
+  padding: 10px 14px 14px;
+  border: 2px solid var(--bond-edge);
+  background: var(--bond);
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--ink);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 24px;
 }
 
 .offer-letter p {
-  margin: 0 0 4px;
-}
-
-.envelope p {
   margin: 0 0 6px;
 }
 
-.offer-head {
-  color: #5b3fa6;
-  font-family: var(--official);
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+.likeness-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0 8px;
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--coral);
 }
 
-.offer-sign {
+.likeness-head svg {
+  display: block;
+  grid-row: span 2;
+}
+
+.likeness-name {
+  color: var(--coral);
+  font-family: var(--stamp);
+  white-space: nowrap;
+}
+
+.likeness-dept {
+  color: var(--ink-soft);
+}
+
+.offer-letter .offer-sign {
+  margin: 0 0 12px;
+  color: var(--coral-deep);
   font-family: var(--hand);
-  font-size: 15px;
   text-align: right;
 }
 
 .offer-actions {
   display: flex;
   gap: 10px;
-  margin-top: 6px;
 }
 
+/* Two pixel buttons at the foot of the letter: the company's own, and the Ministry's. */
 .offer-button {
   flex: 1;
-  padding: 5px 8px;
-  border: 2px solid var(--ink);
-  border-radius: 4px;
-  background: var(--paper-light);
+  height: 38px;
+  padding: 0 6px 2px;
+  border: 2px solid var(--steel-deep);
+  background: var(--terminal-light);
+  box-shadow:
+    inset 0 2px 0 #eeede6,
+    0 4px 0 var(--steel-deep);
   color: var(--ink);
-  font-family: var(--official);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font: inherit;
+  font-family: var(--stamp);
+  line-height: 20px;
+  white-space: nowrap;
   cursor: pointer;
 }
 
 .offer-sign-it {
-  border-color: #5b3fa6;
-  color: #5b3fa6;
+  border-color: var(--coral-deep);
+  background: var(--coral);
+  box-shadow:
+    inset 0 2px 0 var(--coral-light),
+    0 4px 0 var(--coral-deep);
+  color: #fdf1ea;
 }
 
 .offer-button:hover {
-  background: #fff;
+  background: #e6e5dd;
+}
+
+.offer-sign-it:hover {
+  background: #c46244;
+}
+
+.offer-button:active {
+  translate: 0 2px;
+  box-shadow:
+    inset 0 2px 0 #eeede6,
+    0 2px 0 var(--steel-deep);
+}
+
+.offer-sign-it:active {
+  box-shadow:
+    inset 0 2px 0 var(--coral-light),
+    0 2px 0 var(--coral-deep);
 }
 
 .offer-button:focus-visible {
-  outline: 3px solid var(--marker);
+  outline: 2px solid var(--marker);
   outline-offset: 2px;
 }
 
-/* A manila envelope, flap and all. */
+/* A manila envelope, its flap folded down and sealed with the company's mark. */
 .envelope {
-  box-shadow: 0 12px 26px rgb(0 0 0 / 50%);
-  width: 250px;
-  padding: 26px 16px 10px;
-  background:
-    linear-gradient(160deg, rgb(0 0 0 / 7%) 0 50%, transparent 50%) top left / 50% 22px no-repeat,
-    linear-gradient(200deg, rgb(0 0 0 / 7%) 0 50%, transparent 50%) top right / 50% 22px no-repeat,
-    #d7bd84;
-  font-size: 13px;
-  line-height: 1.4;
-  rotate: -2deg;
+  position: relative;
+  width: 312px;
+  padding: 54px 14px 10px;
+  border: 2px solid var(--manila-edge);
+  background: var(--manila);
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--ink);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 24px;
 }
 
-.second-note {
+.envelope p {
+  margin: 0 0 4px;
+}
+
+.envelope-flap {
   position: absolute;
-  z-index: 6;
-  left: 22px;
-  bottom: 22px;
-  width: 160px;
-  rotate: -4deg;
-  animation: land 0.45s 0.6s both;
+  top: 0;
+  left: 0;
+  line-height: 0;
 }
 
-/* The morning paper, on the blotter until the window opens. */
-.gazette,
-.welcome {
-  margin: 14px 8px auto;
+/* On the flap's point. */
+.envelope-seal {
+  position: absolute;
+  top: 18px;
+  left: 139px;
+  padding: 2px;
+  border: 2px solid var(--coral-deep);
+  background: var(--bond);
+  line-height: 0;
+}
+
+.envelope .envelope-from {
+  color: var(--coral);
+  font-family: var(--stamp);
+}
+
+/* The supervisor's second note, stuck to the paper's foot. */
+.second-note {
+  width: 176px;
+}
+
+/* ---------------------------------------------- the night shift's clock card */
+
+/* A clock card: buff card, its title in the Ministry's band, the shift stamped big, the time clock's figures at its foot. */
+.clock-card {
+  flex: none;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0 16px 12px;
+  border: 2px solid var(--buff-edge);
+  background: var(--buff-light);
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--ink);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 24px;
+  animation: land 0.32s steps(8) both;
+}
+
+.clock-card p {
+  margin: 0 0 8px;
+}
+
+.clock-card-title {
+  margin: 0 -16px 10px;
+  padding: 2px 16px;
+  background: var(--ministry);
+  box-shadow: inset 0 -2px 0 #1b3021;
+  color: var(--form-light);
+  font-family: var(--print);
+  font-size: 20px;
+  font-weight: normal;
+  line-height: 24px;
+}
+
+.clock-card .clock-card-shift {
+  width: fit-content;
+  margin: 0 0 10px;
+  padding: 0 8px;
+  border: 4px solid currentColor;
+  background: var(--buff-light);
+  font-family: var(--stamp);
+  font-size: 30px;
+  line-height: 36px;
+}
+
+.clock-card .clock-card-tally {
+  margin: 12px 0 0;
+  padding: 4px 8px;
+  border: 2px solid var(--buff-edge);
+  background: #f3ead0;
+  font-family: var(--type);
+}
+
+.clock-card-tally span {
+  display: block;
+}
+
+/*
+ * The Humanity Day special (Screens.tsx) was set in the old morning paper's classes, and keeps their look
+ * until the endings are redrawn: the morning's front page above no longer uses them. Delete this block
+ * when the special gets its own.
+ */
+.gazette.special {
   padding: 14px 18px 16px;
   background:
     radial-gradient(ellipse at 20% 0%, rgb(255 255 255 / 30%), transparent 60%),
     #e8e2cf;
   box-shadow: 0 2px 0 #b9b19a, 0 10px 22px rgb(0 0 0 / 45%);
-  rotate: -0.6deg;
-  animation: land 0.45s both;
 }
 
-.gazette-mast {
+.special .gazette-mast {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -2281,7 +2779,7 @@ mark {
   text-transform: uppercase;
 }
 
-.gazette-mast h2 {
+.special .gazette-mast h2 {
   margin: 0;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 26px;
@@ -2289,7 +2787,7 @@ mark {
   text-transform: none;
 }
 
-.gazette-headline {
+.special .gazette-headline {
   margin: 10px 0 10px;
   font-family: var(--official);
   font-size: 22px;
@@ -2297,95 +2795,7 @@ mark {
   letter-spacing: 0.01em;
 }
 
-.gazette-photo {
-  margin: 0;
-}
-
-/* Yesterday at Window 3: the faces in a row, each stamped as it left the window. */
-.gazette-wall {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0;
-  padding: 8px;
-  list-style: none;
-  background: #d9d2bd;
-}
-
-.wall-face {
-  position: relative;
-  display: grid;
-  justify-items: center;
-  gap: 2px;
-  padding: 2px 2px 3px;
-  background: #b8ae94;
-  filter: grayscale(1) contrast(1.1);
-}
-
-.wall-face svg {
-  display: block;
-  width: 44px;
-  height: auto;
-  image-rendering: pixelated;
-}
-
-.wall-stamp {
-  font-family: var(--official);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.wall-registered .wall-stamp,
-.wall-court .wall-stamp {
-  color: #2f5a36;
-}
-
-.wall-refused .wall-stamp,
-.wall-removed .wall-stamp {
-  color: #8e2f28;
-}
-
-.wall-home .wall-stamp {
-  color: var(--ink-soft);
-}
-
-/* The one the headline is about, ringed in the paper's ink. */
-.wall-face.ringed {
-  outline: 2px solid #8e2f28;
-  outline-offset: 1px;
-}
-
-/* Day 2: the frame the unit lit up in, reprinted large. */
-.gazette-still {
-  display: block;
-  width: fit-content;
-  margin: 0 auto;
-  padding: 6px;
-  background: #1d1f1a;
-}
-
-.gazette-still svg {
-  width: 160px;
-  height: auto;
-}
-
-.gazette-photo figcaption {
-  margin-top: 5px;
-  font-size: 12.5px;
-  line-height: 1.35;
-}
-
-.gazette-thread {
-  margin: 9px 0 3px;
-  padding-top: 7px;
-  border-top: 1px solid var(--ink);
-  font-size: 12.5px;
-  line-height: 1.35;
-}
-
-.gazette-foot {
+.special .gazette-foot {
   margin-top: 8px;
   padding-top: 7px;
   border-top: 1px solid var(--ink);
@@ -2393,60 +2803,33 @@ mark {
   line-height: 1.35;
 }
 
-.gazette-foot p {
+.special .gazette-foot p {
   margin: 0 0 4px;
 }
 
-.gazette-small {
+.special .gazette-small {
   color: var(--ink-soft);
   font-style: italic;
 }
 
-.welcome {
-  background: var(--paper-light);
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-.welcome h2 {
-  margin: 0 0 10px;
-  font-family: var(--official);
-  font-size: 18px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.welcome p {
-  margin: 0 0 9px;
-}
-
-.welcome-sign {
-  color: var(--pen);
-  font-family: var(--hand);
-  font-size: 16px;
-  text-align: right;
-}
-
-/* The night shift's card, where the morning paper would be: the Ministry never closes. */
-.night-card {
-  background:
-    radial-gradient(ellipse at 20% 0%, rgb(255 255 255 / 20%), transparent 60%),
-    #dcd5c0;
-}
-
-.night-shift {
-  font-family: var(--official);
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.night-tally {
-  font-weight: 700;
-}
-
-/* The night's topbar: two counts where the savings would be. */
+/* The night's rail: two tallies where the savings would be, the citations on a red wheel. */
 .night .topbar-savings strong {
   margin: 0 2px;
+}
+
+.topbar-tally {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar-tally strong {
+  height: 28px;
+  padding: 0 4px;
+  border: 2px solid var(--black);
+  background: var(--charcoal-deep);
+  box-shadow: 0 2px 0 var(--steel-deep);
+  color: var(--led);
+  font-family: var(--type);
+  font-weight: normal;
 }

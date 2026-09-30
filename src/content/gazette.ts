@@ -160,6 +160,8 @@ export const SMALL_NOTICES: Record<number, string> = {
 
 /** The supervisor's letter on the desk on the first morning, where the Gazette will be from tomorrow. */
 export const WELCOME = {
+  /** The letterhead. */
+  head: 'Ministry of Humanity',
   title: 'Welcome to Window 3',
   lines: [
     'Humanity Day is in six days. At five o’clock on day 7, every registered human starts receiving an income. Everyone human wants to be registered by then. So does everything that has heard about the money.',
