@@ -66,11 +66,12 @@ export const FIRST_UNIT_DISMISSED = 'No rule in force reads a face. The court ha
 /** The memo on the week's last citation, if the clerk registers their own renewal. */
 export const CLERK_MEMO = 'Memo 1-Z: You registered a clerk.';
 
-/** A citation for a fault in the video reprints it. "{n}" is the frame its evidence names, "{time}" when it was taken. */
+/** A citation for a fault in the video reprints it. "{n}" is the frame its evidence names. */
 export const CITATION_FILM = {
   label: 'The video, as submitted.',
   labelNamed: 'The video, as submitted, frame {n} marked.',
-  named: 'Frame {n} · {time}',
+  /** The caption of the frame the evidence names, in place of its time: it is outlined, and named. */
+  named: 'Frame {n}',
 };
 
 /** The bottom line of a citation. "{fine}" is the fine in PNK. */

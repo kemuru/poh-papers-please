@@ -2,7 +2,8 @@
 // the one guided inspection of day 1, and how to use each registry tool the day it arrives.
 
 export const INSPECT_LINES = {
-  found: 'Discrepancy',
+  /** "{rule}" is the rule's name: "Rule 1: The phrase". */
+  found: 'Discrepancy under {rule}.',
   notInForce: 'These disagree, but no rule in force covers it. Yet.',
   agree: 'No discrepancy.',
   second: 'And the second thing?',

@@ -375,7 +375,7 @@ function inspectView(
     const found = judge(a, rulebookForDay(state.day), state.registry).violations.find((v) => v.rule === rule);
     const broke = found && asPointed(found, { rule, items: last.items }, a.video);
     const detail = broke ? ` ${evidenceLine(broke).replace(/^./, (c) => c.toUpperCase())}` : '';
-    return view(`${INSPECT_LINES.found} · ${ruleName(rule)}.${detail}${tutorial ? ` ${INSPECT_LINES.guidedFound}` : ''}`, 'found');
+    return view(`${INSPECT_LINES.found.replace('{rule}', ruleName(rule))}${detail}${tutorial ? ` ${INSPECT_LINES.guidedFound}` : ''}`, 'found');
   }
   if (last) return view(INSPECT_LINES.agree, 'idle');
   if (on && picked) return view(INSPECT_LINES.second);

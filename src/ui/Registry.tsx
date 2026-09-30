@@ -107,8 +107,9 @@ function NameResult({ name, found }: { name: string; found: Registrant | null })
     );
   return (
     <Record r={found}>
-      <dt>Vouching today for</dt>
-      <dd data-testid="vouching">{found.vouching ?? 'nobody'}</dd>
+      <div>
+        <dt>Vouching today for</dt> <dd data-testid="vouching">{found.vouching ?? 'nobody'}</dd>
+      </div>
     </Record>
   );
 }
@@ -119,9 +120,9 @@ function FaceResult({ face, found }: { face: Portrait; found: Registrant[] }) {
     <>
       <p className={found.length === 0 ? 'record-none searched' : 'record-count searched'}>
         <span className="record-face">
-          <PixelPortrait portrait={face} scale={1} background="#cfd8dc" title="The face searched" />
+          <PixelPortrait portrait={face} scale={2} background="#cfd8dc" title="The face searched" />
         </span>
-        Searched the face in the video. On file with this face: {found.length === 0 ? 'nobody' : found.length}.
+        <span>Searched the face in the video. On file with this face: {found.length === 0 ? 'nobody' : found.length}.</span>
       </p>
       {found.map((r) => (
         <Record key={r.name} r={r} />
@@ -134,15 +135,19 @@ function Record({ r, children }: { r: Registrant; children?: ReactNode }) {
   return (
     <div className="record" data-testid="record">
       <span className="record-face">
-        <PixelPortrait portrait={r.face} scale={1.25} background="#cfd8dc" title={`Face on file for ${r.name}`} />
+        <PixelPortrait portrait={r.face} scale={2} background="#cfd8dc" title={`Face on file for ${r.name}`} />
       </span>
+      {/* One line to each entry, as the terminal prints it. */}
       <dl>
-        <dt>Name</dt>
-        <dd data-testid="record-name">{r.name}</dd>
-        <dt>Born</dt>
-        <dd>{formatYear(r.birthYear)}</dd>
-        <dt>Registered</dt>
-        <dd>{registeredWhere(r)}</dd>
+        <div>
+          <dt>Name</dt> <dd data-testid="record-name">{r.name}</dd>
+        </div>
+        <div>
+          <dt>Born</dt> <dd>{formatYear(r.birthYear)}</dd>
+        </div>
+        <div>
+          <dt>Registered</dt> <dd>{registeredWhere(r)}</dd>
+        </div>
         {children}
       </dl>
     </div>

@@ -142,7 +142,7 @@ test('day 7: the last unit passes every other rule, and only the slit in frame 3
   // Frame 3, its one blink: a slit of light between the brows, as in Fig. 2-2 today.
   await point('frame 3');
   await point('Rule 2');
-  await expect(inspector).toContainText('Discrepancy · Rule 2: The face. In frame 3 the eyes are shut, and there is a light between the brows.');
+  await expect(inspector).toContainText('Discrepancy under Rule 2: The face. In frame 3 the eyes are shut, and there is a light between the brows.');
   await shot(page, 'unit-day7-inspect.png');
   // Let in, it comes back on a citation with its memo.
   await page.getByRole('button', { name: 'Accept' }).click();

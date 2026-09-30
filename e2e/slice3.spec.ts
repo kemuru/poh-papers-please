@@ -75,7 +75,7 @@ test('day 1: the first two applicants are scripted, and the second gets the one 
   await expect(inspector).toContainText('Point at the transcript, then at Rule 1');
   await page.getByRole('button', { name: 'Inspect the transcript' }).click();
   await page.getByRole('button', { name: 'Inspect Rule 1' }).click();
-  await expect(inspector).toContainText('Discrepancy · Rule 1: The phrase.');
+  await expect(inspector).toContainText('Discrepancy under Rule 1: The phrase.');
   await expect(inspector).toContainText('“hooman”');
   await expect(page.locator('[data-inspect="transcript"]')).toHaveClass(/flagged/);
   await expect(page.locator('[data-inspect="rule-phrase"]')).toHaveClass(/flagged/);
@@ -111,7 +111,7 @@ test('inspect mode: two things that disagree are marked and the rule is named; t
     } else if (i === patAt) {
       await page.getByRole('button', { name: 'Inspect the photo' }).click();
       await page.getByRole('button', { name: 'Inspect frame 1' }).click();
-      await expect(inspector).toContainText('Discrepancy · Rule 2: The face. The photo is a mirror image of the face in the video.');
+      await expect(inspector).toContainText('Discrepancy under Rule 2: The face. The photo is a mirror image of the face in the video.');
       await expect(page.locator('[data-inspect="photo"]')).toHaveClass(/flagged/);
       await expect(page.locator('[data-inspect="frame-1"]')).toHaveClass(/flagged/);
       await expect(page.locator('.flagged')).toHaveCount(2);
@@ -122,12 +122,12 @@ test('inspect mode: two things that disagree are marked and the rule is named; t
       // and its lamp is on. The book is open at Rule 2, the day's new rule.
       await page.getByRole('button', { name: 'Inspect frame 1' }).click();
       await page.getByRole('button', { name: 'Inspect Rule 2' }).click();
-      await expect(inspector).toContainText('Discrepancy · Rule 2: The face. In frame 1 the eyes are shut, and there is a light between the brows.');
+      await expect(inspector).toContainText('Discrepancy under Rule 2: The face. In frame 1 the eyes are shut, and there is a light between the brows.');
       await shot(page, 'inspect-lamp.png');
       // Its eyes are shut in frame 3 too: pointed at, frame 3 is the frame Inspect names.
       await page.getByRole('button', { name: 'Inspect frame 3' }).click();
       await page.getByRole('button', { name: 'Inspect Rule 2' }).click();
-      await expect(inspector).toContainText('Discrepancy · Rule 2: The face. In frame 3 the eyes are shut, and there is a light between the brows.');
+      await expect(inspector).toContainText('Discrepancy under Rule 2: The face. In frame 3 the eyes are shut, and there is a light between the brows.');
       await expect(page.locator('[data-inspect="frame-3"]')).toHaveClass(/flagged/);
       await expect(page.locator('[data-inspect="rule-face"]')).toHaveClass(/flagged/);
       await expect(page.locator('.flagged')).toHaveCount(2);
@@ -176,7 +176,7 @@ test('the registry lookup finds a voucher by name, whether they are vouching alr
   await page.keyboard.press('i');
   await page.getByRole('button', { name: 'Inspect the voucher' }).click();
   await page.getByRole('button', { name: /Inspect the registry's answer for Maureen Oakes/ }).click();
-  await expect(page.getByTestId('inspector')).toContainText('Discrepancy · Rule 4: One vouch. Maureen Oakes is not registered.');
+  await expect(page.getByTestId('inspector')).toContainText('Discrepancy under Rule 4: One vouch. Maureen Oakes is not registered.');
   await shot(page, 'registry-voucher.png');
   await page.getByRole('button', { name: 'Challenge' }).click();
   await expect(page.getByTestId('filing')).toContainText('Case filed');

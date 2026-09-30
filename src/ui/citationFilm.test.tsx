@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import { planWeek } from '../gen/day';
 import { judge, rulebookForDay } from '../rules/judge';
 import type { Violation } from '../rules/types';
-import { FRAME_TIMES } from './Documents';
 import { CitationSlip } from './Slips';
 
 // A fake whose fault is in the video itself (a light, a face that turns into another, a picture held up,
@@ -40,7 +39,7 @@ describe('the citation slip', () => {
           kinds.add(inFilm.problem);
           expect(html.match(FRAME), where).toHaveLength(3);
           const named = [...html.matchAll(NAMED)].map((m) => m[1]);
-          if (inFilm.rule === 'face') expect(named, where).toEqual([`Frame ${inFilm.frame} · ${FRAME_TIMES[inFilm.frame - 1]}`]);
+          if (inFilm.rule === 'face') expect(named, where).toEqual([`Frame ${inFilm.frame}`]);
           else expect(named, where).toEqual([]);
           expect(html, where).not.toContain('data-inspect');
           expect(html, where).not.toContain('data-testid="frame-');

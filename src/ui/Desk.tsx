@@ -13,6 +13,7 @@ import type { Decided } from './week';
 import { Envelope, OfferLetter, SecondNote, type MorningPapers } from './Morning';
 import { NIGHT } from '../content/night';
 import { CitationSlip, FilingSlip, NightChallengeSlip } from './Slips';
+import { DeskSprite, KNOB, MAGNIFIER } from './DeskArt';
 import { StageScale } from './Stage';
 
 /** The night shift, as the desk shows it: which shift, its clock, and the night's two counts, the stamp on the desk included. */
@@ -176,10 +177,13 @@ export function Desk(p: Props) {
                   if (e.detail === 0) p.onDecide(decision);
                 }}
               >
-                <span className="stamp-knob" aria-hidden="true" />
+                {/* The key cap sits on the stamp's handle. */}
+                <span className="stamp-knob">
+                  <DeskSprite sprite={KNOB} />
+                  <kbd>{decision === 'accept' ? 'A' : 'C'}</kbd>
+                </span>
                 <span className="stamp-neck" aria-hidden="true" />
                 <span className="stamp-face">{decision === 'accept' ? 'Accept' : 'Challenge'}</span>
-                <kbd>{decision === 'accept' ? 'A' : 'C'}</kbd>
               </button>
             ))}
           </div>
@@ -191,16 +195,21 @@ export function Desk(p: Props) {
             onClick={p.onInspect}
             onMouseDown={keepFocus}
           >
-            <span className="inspect-glass" aria-hidden="true" />
-            Inspect <kbd>I</kbd>
+            {/* The key cap sits on the glass. */}
+            <span className="inspect-glass">
+              <DeskSprite sprite={MAGNIFIER} />
+              <kbd>I</kbd>
+            </span>
+            Inspect
           </button>
           {/* No court sits on the night shift: its verdicts come at once, and the tray stays in the drawer. */}
           {!p.night && (
             <div className="tray" aria-label={`Court tray: ${p.filed} case${p.filed === 1 ? '' : 's'}`}>
               <span className="tray-label">For the court</span>
+              {/* The case slips, each dropped a little askew: out by an art pixel, never turned. */}
               <span className="tray-slips">
                 {Array.from({ length: Math.min(p.filed, 6) }, (_, i) => (
-                  <span key={i} className="tray-slip" style={{ rotate: `${((i * 37) % 9) - 4}deg` }} />
+                  <span key={i} className="tray-slip" style={{ translate: `${(((i * 5) % 3) - 1) * 2}px ${-i * 2}px` }} />
                 ))}
               </span>
               <span className="tray-count">{p.filed}</span>
@@ -253,7 +262,8 @@ function Paper({ label, className, hidden, children }: { label: string; classNam
   const move = (e: PointerEvent<HTMLElement>) => {
     const from = grab.current;
     if (!from) return;
-    const clamp = (v: number) => Math.max(-700, Math.min(700, v));
+    // Moved an art pixel at a time: a paper between the desk's pixels would blur its print.
+    const clamp = (v: number) => Math.max(-700, Math.min(700, Math.round(v / 2) * 2));
     setPlace((s) => ({ ...s, x: clamp(e.clientX / scale - from.x), y: clamp(e.clientY / scale - from.y) }));
   };
   const up = () => {

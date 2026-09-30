@@ -79,7 +79,7 @@ test('day 1: one rule, one page, open all day; the letter says a rule comes each
   await page.getByRole('button', { name: 'Inspect', exact: true }).click();
   await page.getByRole('button', { name: 'Inspect the transcript' }).click();
   await page.getByRole('button', { name: 'Inspect Rule 1' }).click();
-  await expect(page.getByTestId('inspector')).toContainText('Discrepancy · Rule 1');
+  await expect(page.getByTestId('inspector')).toContainText('Discrepancy under Rule 1');
   await stamp(page, 'Challenge');
   await expect(openTab(page)).toHaveText('1');
 });
@@ -147,7 +147,7 @@ test('day 2: the paper reprints the frame, the book opens at Rule 2 with its fig
   await page.getByRole('button', { name: 'Inspect', exact: true }).click();
   await page.getByRole('button', { name: 'Inspect frame 3' }).click();
   await page.getByRole('button', { name: 'Inspect Rule 2' }).click();
-  const found = 'Discrepancy · Rule 2: The face. In frame 3 the eyes are shut, and there is a light between the brows.';
+  const found = 'Discrepancy under Rule 2: The face. In frame 3 the eyes are shut, and there is a light between the brows.';
   await expect(page.getByTestId('inspector')).toHaveText(found);
   await shot(page, 'day2-frame3-against-rule2.png');
 
