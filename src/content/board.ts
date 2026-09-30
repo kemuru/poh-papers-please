@@ -4,7 +4,9 @@
 import type { EndingId, LetterId } from '../economy/endings';
 
 export const BOARD = {
-  kicker: 'Ministry of Humanity · Registry Window 3',
+  /** The poster's head and foot: who printed it, and where it hangs. */
+  ministry: 'Ministry of Humanity',
+  window: 'Registry Window 3',
   title: 'Proof of Humanity',
   subtitle: 'Papers, Please',
   week: { head: 'Your week', continue: 'Continue' },

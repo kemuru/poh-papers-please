@@ -1,25 +1,146 @@
-/* Registry Window 3: the booth and the desk. Grey, stamped and official. No web fonts: system faces only. */
+/*
+ * Registry Window 3: the booth and the desk, drawn as a pixel-art game is drawn (notes/art-direction.md).
+ * One grid: an art pixel is 2 design pixels, so borders, offsets and gaps come in 2s. The Ministry's four
+ * pixel faces (type.css) at 20px. A few shades per object from one palette. Hard borders in an object's
+ * darkest shade, hard shadows, no curves, no blur, nothing turned.
+ */
+
+/* Anyone's handwriting: the print face's italic under its own name, so whatever asks for a hand gets the lean. */
+@font-face {
+  font-family: 'Ministry Hand';
+  src: url('/assets/fonts/ministry-print-italic.ttf') format('truetype');
+  font-display: block;
+}
+
 :root {
-  --desk: #34372f;
-  --desk-dark: #1e211c;
-  --paper: #ebe6d6;
-  --paper-light: #f6f3ea;
-  --rule-line: #c9c1aa;
-  --ink: #26221f;
-  --ink-soft: #5f584f;
+  /* ---------------------------------------------- the palette: every colour on the desk is one of these */
+  /* Inks. Violet belongs to the unit's lamp alone, and is not here. */
+  --black: #121411;
+  --ink: #1f1d1a;
+  --ink-soft: #57524a;
+  --ministry: #28452f;
   --pen: #2b3f7a;
-  --accept: #2f6e45;
-  --challenge: #9a2f2a;
+  --accept: #2e7443;
+  --challenge: #b0302a;
+  --challenge-deep: #4a120f;
   --marker: #f2c94c;
-  --booth: #2b2e28;
-  --booth-dark: #171915;
-  --wood: #7a6247;
-  --wood-dark: #4a3c2d;
+  --marker-deep: #3a2f0c;
   --amber: #ffb347;
-  --led: #ff6a3d;
-  --typewriter: 'Courier New', Courier, ui-monospace, monospace;
-  --official: 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
-  --hand: 'Bradley Hand', 'Segoe Print', 'Noteworthy', cursive;
+  --amber-dim: #8a5f22;
+  --led: #ff5a3a;
+  --lamp-green: #8fe07c;
+
+  /* The desk: green-grey baize, and the leather blotter on it. */
+  --baize-deep: #1a211c;
+  --baize-dark: #27322a;
+  --baize: #34423a;
+  --blotter: #2a382d;
+  --blotter-dark: #202b23;
+
+  /* The booth: charcoal and steel. */
+  --charcoal-deep: #121313;
+  --charcoal-dark: #1c1e1e;
+  --charcoal: #282b2b;
+  --charcoal-light: #363a39;
+  --steel-deep: #2e3438;
+  --steel-dark: #4c555a;
+  --steel: #737d82;
+  --steel-light: #9ba5a8;
+  --steel-shine: #c4ccce;
+
+  /* Wood (the counter) and brass (the lever, the nameplate). */
+  --wood-deep: #2f2117;
+  --wood-dark: #5f432d;
+  --wood: #8a6545;
+  --wood-light: #b48a5e;
+  --brass-deep: #4a3312;
+  --brass-dark: #8a6220;
+  --brass: #c28f36;
+  --brass-light: #e2b75c;
+
+  /* Paper stocks. Form 1: pale Ministry green-grey, printed in Ministry green. */
+  --form-edge: #7c8a74;
+  --form-rule: #a7b39c;
+  --form: #d4dccb;
+  --form-light: #e4e9dc;
+  /* The video printout: continuous printer paper, white with pale green bands. */
+  --printout-edge: #a3ab9f;
+  --printout-band: #dde9d6;
+  --printout: #f1f3ec;
+  /* The rulebook: buff pages in an oxblood binder, red rule numbers. */
+  --buff-edge: #8b7747;
+  --buff-dark: #c4ae78;
+  --buff: #dccb9c;
+  --buff-light: #e9dcb6;
+  --rule-red: #a32e27;
+  --binder-deep: #2b1311;
+  --binder: #5e2925;
+  /* The citation: pink carbon. The case slip: pale blue. The sticky note: yellow. */
+  --pink-edge: #b7837c;
+  --pink: #eec8c1;
+  --blue-edge: #8ba3b7;
+  --blue: #cddceb;
+  --sticky-edge: #b89a2e;
+  --sticky: #efd766;
+  --sticky-light: #f7e796;
+  /* The registry terminal: grey plastic, and a green screen. The Ministry's letterhead: cool white. */
+  --terminal-edge: #6e6d64;
+  --terminal: #b9b8ad;
+  --terminal-light: #d6d5cb;
+  --screen: #0f1a12;
+  --phosphor: #9fe08a;
+  --phosphor-dim: #5f9a52;
+  --letter: #e9edee;
+  --letter-edge: #a9b0b3;
+  /* The Gazette: grey newsprint, black ink, and its photos' halftone grey. */
+  --news-edge: #7d7c73;
+  --news-dark: #a3a197;
+  --news: #c8c6bb;
+  --news-light: #d8d6cc;
+  --news-ink: #161512;
+  /* Likeness Robotics' paper: bright bond, and the company's coral. Its envelope: manila. */
+  --bond-edge: #aba89f;
+  --bond: #f5f4ef;
+  --coral-deep: #6b2e1e;
+  --coral: #b9573a;
+  --coral-light: #d98a6c;
+  --manila-edge: #8c6f3c;
+  --manila: #d6ba80;
+  /* The hall's green wall, and the notice board on it: cork (its speckles are in board.css) in the counter's oak. */
+  --wall-deep: #4f5a48;
+  --wall-dark: #6f7a64;
+  --wall-seam: #7f8a73;
+  --wall: #8f9a83;
+  --cork-shade: #5e4024;
+  --cork: #b08652;
+
+  /* ---------------------------------------------- the old names, which later screens still use */
+  --desk: var(--baize);
+  --desk-dark: var(--baize-dark);
+  --paper: #dfe4e5;
+  --paper-light: var(--letter);
+  --rule-line: var(--letter-edge);
+  --booth: var(--charcoal);
+  --booth-dark: var(--charcoal-dark);
+  --typewriter: var(--type);
+  --official: var(--print);
+  --hand: 'Ministry Hand', 'Ministry Print', ui-monospace, monospace;
+
+  /* ---------------------------------------------- pixel textures, each step one art pixel */
+  --px-baize: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' shape-rendering='crispEdges'%3E%3Cpath fill='%233d4c42' d='M0 0h2v2H0zM6 6h2v2H6z'/%3E%3Cpath fill='%232f3c33' d='M8 2h2v2H8zM2 8h2v2H2z'/%3E%3C/svg%3E");
+  --px-baize-dim: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' shape-rendering='crispEdges'%3E%3Cpath fill='%232f3b33' d='M0 0h2v2H0zM6 6h2v2H6z'/%3E%3Cpath fill='%23222b25' d='M8 2h2v2H8zM2 8h2v2H2z'/%3E%3C/svg%3E");
+  --px-pocket-tl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' shape-rendering='crispEdges'%3E%3Cpath fill='%234a3626' d='M0 0h36v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2z'/%3E%3Cpath fill='%236b4e36' d='M34 0h2v2h-2zM32 2h2v2h-2zM30 4h2v2h-2zM28 6h2v2h-2zM26 8h2v2h-2zM24 10h2v2h-2zM22 12h2v2h-2zM20 14h2v2h-2zM18 16h2v2h-2zM16 18h2v2h-2zM14 20h2v2h-2zM12 22h2v2h-2zM10 24h2v2h-2zM8 26h2v2h-2zM6 28h2v2h-2zM4 30h2v2h-2zM2 32h2v2h-2zM0 34h2v2h-2z'/%3E%3C/svg%3E");
+  --px-pocket-tr: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' shape-rendering='crispEdges'%3E%3Cg transform='scale(-1 1) translate(-36 0)'%3E%3Cpath fill='%234a3626' d='M0 0h36v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2z'/%3E%3Cpath fill='%236b4e36' d='M34 0h2v2h-2zM32 2h2v2h-2zM30 4h2v2h-2zM28 6h2v2h-2zM26 8h2v2h-2zM24 10h2v2h-2zM22 12h2v2h-2zM20 14h2v2h-2zM18 16h2v2h-2zM16 18h2v2h-2zM14 20h2v2h-2zM12 22h2v2h-2zM10 24h2v2h-2zM8 26h2v2h-2zM6 28h2v2h-2zM4 30h2v2h-2zM2 32h2v2h-2zM0 34h2v2h-2z'/%3E%3C/g%3E%3C/svg%3E");
+  --px-pocket-bl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' shape-rendering='crispEdges'%3E%3Cg transform='scale(1 -1) translate(0 -36)'%3E%3Cpath fill='%234a3626' d='M0 0h36v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2z'/%3E%3Cpath fill='%236b4e36' d='M34 0h2v2h-2zM32 2h2v2h-2zM30 4h2v2h-2zM28 6h2v2h-2zM26 8h2v2h-2zM24 10h2v2h-2zM22 12h2v2h-2zM20 14h2v2h-2zM18 16h2v2h-2zM16 18h2v2h-2zM14 20h2v2h-2zM12 22h2v2h-2zM10 24h2v2h-2zM8 26h2v2h-2zM6 28h2v2h-2zM4 30h2v2h-2zM2 32h2v2h-2zM0 34h2v2h-2z'/%3E%3C/g%3E%3C/svg%3E");
+  --px-pocket-br: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' shape-rendering='crispEdges'%3E%3Cg transform='scale(-1 -1) translate(-36 -36)'%3E%3Cpath fill='%234a3626' d='M0 0h36v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2v2h-2z'/%3E%3Cpath fill='%236b4e36' d='M34 0h2v2h-2zM32 2h2v2h-2zM30 4h2v2h-2zM28 6h2v2h-2zM26 8h2v2h-2zM24 10h2v2h-2zM22 12h2v2h-2zM20 14h2v2h-2zM18 16h2v2h-2zM16 18h2v2h-2zM14 20h2v2h-2zM12 22h2v2h-2zM10 24h2v2h-2zM8 26h2v2h-2zM6 28h2v2h-2zM4 30h2v2h-2zM2 32h2v2h-2zM0 34h2v2h-2z'/%3E%3C/g%3E%3C/svg%3E");
+  --px-sprockets: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='24' shape-rendering='crispEdges'%3E%3Cpath fill='%23243128' d='M3 8h4v2h2v4H7v2H3v-2H1v-4h2z'/%3E%3C/svg%3E");
+  --px-torn: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='8' shape-rendering='crispEdges'%3E%3Cpath fill='%23e9e3d0' d='M0 0h120v6h-2v2h-2v-2h-4h-2v2h-2v-2h-4h-2v2h-2v-2h-4h-2v2h-2v-2h-4h-2v2h-2v-2h-4h-2v2h-2v-2h-4h-2v2h-2v-2h-4h-2v2h-2v-2h-4h-2v2h-2v-2h-4h-2v2h-2v-2h-4h-2v2h-2v-2h-4h-2v2h-2v-2h-4h-2v2h-2v-2h-4h-2v2h-2v-2h-4h-2v2h-2v-2h-4z'/%3E%3Cpath fill='%23c9c1a8' d='M0 0h120v2H0z'/%3E%3C/svg%3E");
+  --px-speckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' shape-rendering='crispEdges'%3E%3Cpath fill-rule='evenodd' d='M0 0h24v24H0z M4 2h2v2H4z M14 6h2v2h-2z M20 12h2v2h-2z M8 16h2v2H8z M2 20h2v2H2z M16 20h2v2h-2z M10 10h2v2h-2z'/%3E%3C/svg%3E");
+  --px-glint: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' shape-rendering='crispEdges'%3E%3Cpath fill='%23ffffff' fill-opacity='.35' d='M2 16h2v2h-2zM4 14h2v2h-2zM6 12h2v2h-2zM8 10h2v2h-2zM10 8h2v2h-2zM12 6h2v2h-2zM14 4h2v2h-2zM2 24h2v2h-2zM4 22h2v2h-2zM6 20h2v2h-2zM8 18h2v2h-2z'/%3E%3C/svg%3E");
+  --px-ring: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='16' shape-rendering='crispEdges'%3E%3Cpath fill='%23c4ccce' d='M6 0h2v2h-2zM8 0h2v2h-2zM10 0h2v2h-2zM12 0h2v2h-2zM14 0h2v2h-2zM16 0h2v2h-2zM18 0h2v2h-2zM2 2h2v2h-2zM4 2h2v2h-2zM20 2h2v2h-2zM22 2h2v2h-2zM0 4h2v2h-2zM0 6h2v2h-2z'/%3E%3Cpath fill='%239ba5a8' d='M6 2h2v2h-2zM8 2h2v2h-2zM10 2h2v2h-2zM12 2h2v2h-2zM14 2h2v2h-2zM16 2h2v2h-2zM18 2h2v2h-2zM2 4h2v2h-2zM4 4h2v2h-2zM20 4h2v2h-2zM22 4h2v2h-2zM2 6h2v2h-2zM22 6h2v2h-2zM2 8h2v2h-2zM22 8h2v2h-2zM2 10h2v2h-2zM4 10h2v2h-2zM20 10h2v2h-2zM22 10h2v2h-2zM6 12h2v2h-2zM8 12h2v2h-2zM10 12h2v2h-2zM12 12h2v2h-2zM14 12h2v2h-2zM16 12h2v2h-2zM18 12h2v2h-2z'/%3E%3Cpath fill='%234c555a' d='M0 8h2v2h-2zM0 10h2v2h-2zM2 12h2v2h-2zM4 12h2v2h-2zM20 12h2v2h-2zM22 12h2v2h-2zM6 14h2v2h-2zM8 14h2v2h-2zM10 14h2v2h-2zM12 14h2v2h-2zM14 14h2v2h-2zM16 14h2v2h-2zM18 14h2v2h-2z'/%3E%3Cpath fill='%232e3438' d='M24 4h2v2h-2zM24 6h2v2h-2zM24 8h2v2h-2zM24 10h2v2h-2z'/%3E%3Cpath fill='%236b5a36' d='M20 6h2v2h-2zM20 8h2v2h-2z'/%3E%3C/svg%3E");
+  --px-newsprint: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Cpath fill='%23bdbbb0' d='M2 2h2v2H2zM10 6h2v2h-2zM6 12h2v2H6zM14 14h2v2h-2z'/%3E%3Cpath fill='%23d0cec4' d='M12 0h2v2h-2zM0 10h2v2H0z'/%3E%3C/svg%3E");
+  --px-halftone: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Cpath fill='%23a3a197' d='M0 0h4v4H0z'/%3E%3Cpath fill='%23b3b1a6' d='M0 0h2v2H0zM2 2h2v2H2z'/%3E%3C/svg%3E");
+  --px-curl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' shape-rendering='crispEdges'%3E%3Cpath fill='%23c9aa3c' d='M12 0h2v14H0v-2h2v-2h2V8h2V6h2V4h2V2h2z'/%3E%3Cpath fill='%231c231e' fill-opacity='.35' d='M12 0h2v2h-2z'/%3E%3C/svg%3E");
 }
 
 * {
@@ -28,9 +149,9 @@
 
 body {
   margin: 0;
-  background: #121410;
+  background: var(--black);
   color: var(--ink);
-  font-family: var(--typewriter);
+  font-family: var(--print);
 }
 
 .sr-only {
@@ -42,20 +163,26 @@ body {
   white-space: nowrap;
 }
 
+/*
+ * A key cap: a small pixel key, its face and its front edge, on whatever it works. As tall as a line, so it sits
+ * on the grid in a line or a row; its capitals stand an art pixel clear of its top edge and of its front edge.
+ */
 kbd {
   display: inline-block;
-  min-width: 1.5em;
-  padding: 1px 4px;
-  border: 1px solid rgb(0 0 0 / 35%);
-  border-bottom-width: 2px;
-  border-radius: 3px;
-  background: rgb(255 255 255 / 18%);
-  font-family: var(--official);
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.3;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 4px;
+  border: 2px solid #2a2c2c;
+  background: #e2dfd6;
+  box-shadow: inset 0 -2px 0 #a9a59a;
+  color: #2a2c2c;
+  font-family: var(--print);
+  font-size: 20px;
+  font-style: normal;
+  font-weight: normal;
+  line-height: 20px;
   text-align: center;
-  text-transform: uppercase;
+  vertical-align: top;
 }
 
 .game {
@@ -63,7 +190,7 @@ kbd {
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  background: var(--desk);
+  background: var(--baize);
 }
 
 /* The whole game, laid out at its design size and scaled to fit the window (Stage.tsx). */
@@ -81,40 +208,153 @@ kbd {
   transform-origin: 0 0;
 }
 
+/* ------------------------------------------------------------ the desk rail */
+
+/* A steel rail along the top of the desk: the window's nameplate, the savings on a tally, three switches. */
 .topbar {
   display: flex;
-  align-items: baseline;
-  gap: 4px 18px;
-  flex-wrap: wrap;
-  padding: 7px 20px;
-  background: var(--booth-dark);
-  border-bottom: 2px solid #0c0d0b;
-  color: #d8d2c0;
+  flex: none;
+  align-items: center;
+  gap: 16px;
+  /* Set by the stage (RAIL, room.ts), which lays the shift out below it. Its plates sit on the grid: centred in 36px, above its lower edge. */
+  height: var(--rail);
+  padding: 0 14px 2px;
+  background: var(--steel-dark);
+  border-bottom: 2px solid var(--black);
+  box-shadow:
+    inset 0 2px 0 var(--steel),
+    inset 0 -2px 0 var(--steel-deep);
+  color: var(--steel-shine);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 24px;
+  white-space: nowrap;
 }
 
 .topbar h1 {
   margin: 0;
-  font-family: var(--official);
-  font-size: 17px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+  font-family: var(--stamp);
+  font-size: 20px;
+  font-weight: normal;
 }
 
 .topbar p {
   margin: 0;
-  font-size: 13px;
-  letter-spacing: 0.06em;
-  color: #9f9a8a;
 }
 
+/* Brass, screwed to the rail, engraved. */
+.nameplate {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 28px;
+  padding: 0 14px;
+  border: 2px solid var(--brass-deep);
+  background: var(--brass);
+  box-shadow:
+    inset 0 2px 0 var(--brass-light),
+    0 2px 0 var(--black);
+  color: var(--brass-deep);
+}
+
+.nameplate::before,
+.nameplate::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 4px;
+  width: 4px;
+  height: 4px;
+  background: var(--brass-dark);
+}
+
+.nameplate::after {
+  left: auto;
+  right: 4px;
+}
+
+.nameplate-window {
+  font-family: var(--stamp);
+}
+
+.nameplate-clerk {
+  padding-left: 10px;
+  border-left: 2px solid var(--brass-dark);
+}
+
+/* The savings: a counter with a wheel for each digit. */
 .topbar-savings {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-left: auto !important;
 }
 
 .topbar-savings strong {
+  min-width: 52px;
+  height: 28px;
+  padding: 0 0 0 2px;
+  border: 2px solid var(--black);
+  background: repeating-linear-gradient(90deg, var(--charcoal-deep) 0 10px, var(--charcoal-dark) 10px 12px);
+  box-shadow: 0 2px 0 var(--steel-deep);
   color: var(--amber);
-  font-size: 15px;
+  font-family: var(--type);
+  font-weight: normal;
+  text-align: right;
 }
+
+.audio-switches {
+  display: flex;
+  gap: 8px;
+}
+
+/* A switch plate on the rail: what it works, drawn, and a lamp that is lit while it is on. */
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 4px 0 6px;
+  border: 2px solid var(--black);
+  background: var(--charcoal);
+  box-shadow:
+    inset 0 2px 0 var(--charcoal-light),
+    0 2px 0 var(--black);
+  color: var(--steel-shine);
+  font: inherit;
+  cursor: pointer;
+}
+
+.switch:active {
+  translate: 0 2px;
+  box-shadow: inset 0 2px 0 var(--charcoal-light);
+}
+
+.switch svg {
+  display: block;
+}
+
+/* Centred as if it were 8px tall, so the 6px lamp lands on the grid, an art pixel above the middle. */
+.switch-lamp {
+  width: 6px;
+  height: 6px;
+  margin: 0 2px 2px 0;
+  background: var(--lamp-green);
+  box-shadow: 0 0 0 2px var(--black);
+}
+
+.switch[aria-pressed='true'] .switch-lamp {
+  background: #2f3530;
+}
+
+.switch kbd {
+  min-width: 20px;
+  height: 20px;
+  line-height: 16px;
+}
+
+/* ------------------------------------------------------------ the station */
 
 .shift {
   display: flex;
@@ -123,53 +363,74 @@ kbd {
   min-height: 0;
 }
 
+/* The booth takes the room the width gives it, up to the width of a face at the window, on the grid. */
 .station {
   display: grid;
-  /* Never shorter than what is on the desk: the hall above makes the room. */
+  /*
+   * Everything below the hall, which is as tall as the stage allows once the desk's tallest papers have
+   * their room (Hall.tsx): it never gives way to the papers, so the desk does not move as they change.
+   */
   flex: 1 0 auto;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: round(nearest, clamp(232px, 232px + (100% - 1240px) * 0.26, 284px), 2px) minmax(0, 1fr);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 24px;
 }
 
 /* ------------------------------------------------------------ the booth */
 
+/* Charcoal panels and a steel window; the papers slide out from under it. */
 .booth {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 9px;
-  padding: 12px 14px 14px;
-  background:
-    repeating-linear-gradient(0deg, rgb(255 255 255 / 1.5%) 0 1px, transparent 1px 4px),
-    linear-gradient(180deg, #33372f, var(--booth));
-  border-right: 3px solid #121410;
-  box-shadow: inset -8px 0 18px rgb(0 0 0 / 35%);
+  gap: 8px;
+  padding: 10px;
+  background: var(--charcoal);
+  border-right: 4px solid var(--black);
+  box-shadow: inset 2px 0 0 var(--charcoal-light);
+}
+
+/* The window takes whatever height the booth can spare, up to a head and shoulders with the hall behind. */
+.booth-frame {
+  display: flex;
+  /* It takes the spare height before the readout does (flex shares it by weight), up to its maximum. */
+  flex: 1000 1 auto;
+  flex-direction: column;
+  min-height: 228px;
+  max-height: 300px;
+  padding: 6px;
+  border: 2px solid var(--black);
+  background: var(--steel);
+  box-shadow:
+    inset 2px 2px 0 var(--steel-light),
+    inset -2px -2px 0 var(--steel-dark);
 }
 
 .booth-glass {
   position: relative;
   flex: 1;
-  min-height: 210px;
-  max-height: 290px;
   overflow: hidden;
-  border: 9px solid #1c1e19;
-  border-radius: 6px 6px 2px 2px;
-  box-shadow:
-    inset 0 0 0 2px #50554a,
-    0 2px 0 #50554a;
+  border: 2px solid var(--steel-deep);
 }
 
-/* The hall, through the glass. */
+/* The hall, through the glass: its wall, the green dado, the tiled floor. */
 .booth-room {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, transparent 72%, #5d6858 72% 86%, #3a4136 86% 88%, #a7a18a 88%),
-    linear-gradient(90deg, rgb(0 0 0 / 8%), transparent 30% 70%, rgb(0 0 0 / 8%)),
-    #8f9a83;
+    linear-gradient(#8f9a83 0 138px, #7c876f 138px 140px, #5d6858 140px 164px, #3a4136 164px 168px, transparent 168px),
+    repeating-conic-gradient(#a7a18a 0 25%, #b3ad97 0 50%) 0 168px / 40px 24px;
 }
 
+/*
+ * Whoever is at the window, three art pixels to a portrait pixel, standing behind the sill with their
+ * head near the top of the glass however tall the glass is. They step up, a stride at a time.
+ */
 .visitor {
   position: absolute;
-  bottom: -34px;
+  top: clamp(0px, 100% - 208px, 24px);
   left: 50%;
   translate: -50% 0;
   line-height: 0;
@@ -178,13 +439,25 @@ kbd {
 
 .visitor svg {
   display: block;
-  width: 220px;
-  height: 264px;
-  filter: drop-shadow(0 6px 10px rgb(0 0 0 / 30%));
 }
 
 .visitor.leaving {
   animation: step-off 0.7s 0.95s steps(7) both;
+}
+
+@keyframes step-up {
+  from {
+    transform: translateX(280px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes step-off {
+  to {
+    transform: translateX(-280px);
+  }
 }
 
 /*
@@ -193,22 +466,22 @@ kbd {
  */
 .booth-glass.reflecting .booth-room {
   filter: brightness(0.42) saturate(0.55);
-  transition: filter 1.2s;
+  transition: filter 1.2s steps(6);
 }
 
 .visitor.reflection {
   opacity: 0.3;
   scale: -1 1;
   mix-blend-mode: screen;
-  animation: reflect-in 1.6s both;
+  animation: reflect-in 1.6s steps(4) both;
 }
 
 .visitor.reflection svg {
-  filter: grayscale(0.5) blur(0.4px);
+  filter: grayscale(0.5);
 }
 
 .visitor.reflection.leaving {
-  animation: reflect-out 0.8s 0.95s both;
+  animation: reflect-out 0.8s 0.95s steps(4) both;
 }
 
 @keyframes reflect-in {
@@ -223,66 +496,27 @@ kbd {
   }
 }
 
-@keyframes step-up {
-  from {
-    transform: translate(120%, 6px);
-  }
-  70% {
-    transform: translate(0, -4px);
-  }
-  to {
-    transform: none;
-  }
-}
-
-@keyframes step-off {
-  from {
-    transform: none;
-    opacity: 1;
-  }
-  to {
-    transform: translate(-130%, 8px);
-    opacity: 0;
-  }
-}
-
+/* Light on the glass, in two stepped glints. */
 .glare {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    112deg,
-    transparent 22%,
-    rgb(255 255 255 / 13%) 29%,
-    transparent 37%,
-    transparent 56%,
-    rgb(255 255 255 / 7%) 61%,
-    transparent 66%
-  );
+  background: var(--px-glint) left 4px top 4px no-repeat;
   pointer-events: none;
 }
 
-.grille {
-  position: absolute;
-  bottom: 12px;
-  left: 50%;
-  width: 64px;
-  height: 18px;
-  translate: -50% 0;
-  border-radius: 9px;
-  background: radial-gradient(circle, #1c1e19 1.3px, transparent 1.8px) 0 0 / 6px 6px, rgb(40 44 36 / 55%);
-  box-shadow: 0 0 0 2px rgb(20 22 18 / 50%);
-}
-
+/* A steel roller shutter, slats and a bottom rail, with the window's enamel sign on it. */
 .shutter {
   position: absolute;
   inset: 0;
+  z-index: 3;
   display: grid;
   place-items: center;
-  background:
-    linear-gradient(180deg, rgb(0 0 0 / 25%), transparent 8%),
-    repeating-linear-gradient(180deg, #8c9186 0 11px, #6c7167 11px 13px, #a1a69a 13px 14px);
-  transform: translateY(-101%);
-  transition: transform 0.55s steps(11);
+  background: repeating-linear-gradient(180deg, var(--steel) 0 10px, var(--steel-deep) 10px 12px, var(--steel-light) 12px 14px);
+  box-shadow:
+    inset 0 -8px 0 var(--steel-dark),
+    inset 0 -10px 0 var(--steel-light);
+  transform: translateY(-100%);
+  transition: transform 0.52s steps(13);
 }
 
 .shutter.down {
@@ -294,58 +528,50 @@ kbd {
 }
 
 .shutter span {
-  padding: 6px 14px;
-  border: 2px solid #3a3d35;
-  background: #e2dccb;
-  color: #3a3d35;
-  font-family: var(--official);
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  box-shadow: 0 2px 0 rgb(0 0 0 / 30%);
+  padding: 4px 12px;
+  border: 2px solid var(--charcoal-deep);
+  background: #e6e1d2;
+  box-shadow: 0 4px 0 var(--steel-deep);
+  color: var(--ink);
+  font-family: var(--stamp);
 }
 
+.shutter.closing span {
+  color: var(--challenge);
+}
+
+/* The wooden sill under the glass, with the slot the papers come through. */
 .counter {
+  position: relative;
+  z-index: 1;
   display: grid;
+  flex: none;
   place-items: center;
   height: 18px;
-  margin-top: -12px;
-  background: linear-gradient(180deg, #957a58, var(--wood) 40%, var(--wood-dark));
-  border-radius: 2px;
-  box-shadow: 0 4px 8px rgb(0 0 0 / 35%);
+  margin: -14px -4px 0;
+  border: 2px solid var(--wood-deep);
+  background: var(--wood);
+  box-shadow:
+    inset 0 2px 0 var(--wood-light),
+    0 4px 0 var(--charcoal-deep);
 }
 
 .counter-slot {
-  width: 58%;
+  width: 60%;
   height: 4px;
-  border-radius: 2px;
-  background: #1a130d;
-  box-shadow: inset 0 1px 2px #000;
+  background: var(--wood-deep);
 }
 
+/* What is said at the window, as the intercom's readout shows it. */
 .speech {
   position: relative;
-  min-height: 76px;
-  padding: 11px 13px;
-  border: 2px solid #0b0c0a;
-  border-radius: 3px;
-  background: #11130f;
-  box-shadow: inset 0 0 18px rgb(0 0 0 / 60%);
-  color: #ece6d2;
-  font-size: 14.5px;
-  line-height: 1.42;
-}
-
-.speech::before {
-  content: '';
-  position: absolute;
-  top: -9px;
-  left: 50%;
-  translate: -50% 0;
-  border: 8px solid transparent;
-  border-top: 0;
-  border-bottom-color: #0b0c0a;
+  flex: 1 0 140px;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border: 2px solid var(--black);
+  background: var(--charcoal-deep);
+  box-shadow: inset 0 0 0 2px var(--charcoal-dark);
+  color: #e9e4d4;
 }
 
 .speech p {
@@ -353,7 +579,7 @@ kbd {
 }
 
 .speech:not(.speaking) {
-  color: #8f8a7a;
+  color: #a39d8a;
   font-style: italic;
 }
 
@@ -361,61 +587,44 @@ kbd {
   visibility: hidden;
 }
 
+/* The counters under the glass, in one row however narrow the booth: the day, the Ministry's clock, and how many have been seen. */
 .hud {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 6px;
-  align-items: stretch;
+  display: flex;
+  flex: none;
+  gap: 4px;
 }
 
 .hud-cell {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 5px 9px 6px;
-  border: 1px solid #0b0c0a;
-  border-radius: 3px;
-  background: #1a1c17;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  height: 36px;
+  padding: 0 4px;
+  border: 2px solid var(--black);
+  background: #0d0f0d;
+  box-shadow: inset 0 2px 0 #000;
+  font-family: var(--stamp);
 }
 
-.hud-label {
-  font-family: var(--official);
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #8a8575;
+.hud-cell svg {
+  display: block;
 }
 
 .hud-value {
   color: var(--amber);
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-shadow: 0 0 8px rgb(255 179 71 / 45%);
+}
+
+/* Off the clock (days 1 and 7) the clock only follows the queue, and is not lit. */
+.hud-clock:not(.timed) .hud-value {
+  color: #b4803a;
 }
 
 .hud-clock.hurry .hud-value {
   color: var(--led);
   animation: blink 1s steps(2) infinite;
-}
-
-.mute {
-  width: 76px;
-  padding: 2px 6px;
-  border: 1px solid #0b0c0a;
-  border-radius: 3px;
-  background: #22251f;
-  color: #9f9a8a;
-  font-family: var(--official);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-.mute[aria-pressed='true'] {
-  color: #6c685c;
 }
 
 @keyframes blink {
@@ -425,97 +634,106 @@ kbd {
 }
 
 .booth-actions {
-  margin-top: 2px;
+  margin-top: auto;
 }
 
-/* One big brass button: open, call the next one, close. */
+/* One big brass button: open, call the next one, close. Pressed, it goes down an art pixel. */
 .lever {
   display: flex;
   width: 100%;
+  min-height: 60px;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 14px 12px 16px;
-  border: 0;
-  border-radius: 6px;
-  background: linear-gradient(180deg, #d19a3e, #a8742a);
+  padding: 6px 10px 10px;
+  border: 2px solid var(--brass-deep);
+  background: var(--brass);
   box-shadow:
-    inset 0 2px 0 rgb(255 255 255 / 30%),
-    inset 0 -5px 0 rgb(0 0 0 / 28%),
-    0 5px 0 #4d3614,
-    0 9px 16px rgb(0 0 0 / 45%);
-  color: #2a1c08;
-  font-family: var(--official);
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  white-space: nowrap;
+    inset 0 2px 0 var(--brass-light),
+    inset 0 -4px 0 var(--brass-dark),
+    0 4px 0 var(--brass-deep);
+  color: var(--brass-deep);
+  font: inherit;
+  font-family: var(--stamp);
+  line-height: 24px;
+  text-align: center;
   cursor: pointer;
 }
 
 .lever:hover:not(:disabled) {
-  filter: brightness(1.08);
+  background: #cd9a40;
 }
 
 .lever:active:not(:disabled) {
-  translate: 0 4px;
+  translate: 0 2px;
   box-shadow:
-    inset 0 2px 0 rgb(255 255 255 / 30%),
-    inset 0 -2px 0 rgb(0 0 0 / 28%),
-    0 1px 0 #4d3614,
-    0 3px 8px rgb(0 0 0 / 45%);
+    inset 0 2px 0 var(--brass-light),
+    inset 0 -2px 0 var(--brass-dark),
+    0 2px 0 var(--brass-deep);
 }
 
 .lever:disabled {
-  filter: grayscale(0.7) brightness(0.62);
+  border-color: var(--black);
+  background: var(--steel-dark);
+  box-shadow:
+    inset 0 2px 0 var(--steel),
+    inset 0 -4px 0 var(--steel-deep),
+    0 4px 0 var(--black);
+  color: var(--steel-deep);
   cursor: default;
 }
 
-.lever.call:not(:disabled),
-.lever.open,
-.lever.end {
-  animation: beckon 1.8s ease-in-out infinite;
+.lever:disabled kbd {
+  background: var(--steel);
+  box-shadow: inset 0 -2px 0 var(--steel-dark);
 }
 
 .lever.end {
-  background: linear-gradient(180deg, #b6574a, #8c3b30);
+  border-color: #4a100d;
+  background: #b3443a;
   box-shadow:
-    inset 0 2px 0 rgb(255 255 255 / 25%),
-    inset 0 -5px 0 rgb(0 0 0 / 28%),
-    0 5px 0 #43170f,
-    0 9px 16px rgb(0 0 0 / 45%);
-  color: #f6e9e2;
+    inset 0 2px 0 #d06a5e,
+    inset 0 -4px 0 #7f2a23,
+    0 4px 0 #4a100d;
+  color: #fbe9e4;
 }
 
-@keyframes beckon {
-  50% {
-    filter: brightness(1.14);
-  }
+.lever.end:hover {
+  background: #bf4b40;
+}
+
+.lever.end:active {
+  box-shadow:
+    inset 0 2px 0 #d06a5e,
+    inset 0 -2px 0 #7f2a23,
+    0 2px 0 #4a100d;
 }
 
 .lever:focus-visible,
 .stamp-tool:focus-visible,
 .screen-button:focus-visible,
-.mute:focus-visible {
-  outline: 3px solid var(--marker);
-  outline-offset: 3px;
+.switch:focus-visible,
+.inspect-tool:focus-visible,
+.rule-tab:focus-visible,
+.side-tab:focus-visible {
+  outline: 2px solid var(--marker);
+  outline-offset: 2px;
 }
 
 /* ------------------------------------------------------------ the desk */
 
+/* Green-grey baize. Its columns: the papers, the rulebook (as wide as the room allows), the tools. */
 .desk {
+  --book: round(nearest, clamp(336px, 336px + (100% - 992px) * 0.55, 468px), 2px);
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 270px 112px;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) var(--book) 136px;
+  gap: 8px;
   align-items: start;
   min-height: 0;
-  padding: 14px 16px;
-  background:
-    repeating-linear-gradient(94deg, rgb(255 255 255 / 1.8%) 0 2px, transparent 2px 9px),
-    linear-gradient(180deg, #4b4c3d, #3a3b30 70%, #333429);
-  box-shadow: inset 0 10px 24px rgb(0 0 0 / 35%);
+  padding: 12px 8px 6px;
+  background: var(--px-baize) 0 0 / 12px 12px, var(--baize);
+  box-shadow: inset 0 4px 0 var(--baize-deep);
 }
 
 .desk-papers,
@@ -523,96 +741,97 @@ kbd {
 .desk-tools {
   display: flex;
   flex-direction: column;
-  gap: 14px;
   min-width: 0;
 }
 
+/* The rulebook's sheet is the container its page is set for: a size container is its own stacking context, and the sheet moves as one anyway. */
+.paper-rulebook {
+  container: book / inline-size;
+}
+
 .desk.thunked .desk-papers {
-  animation: thunk 0.28s ease-out;
+  animation: thunk 0.24s steps(3);
 }
 
-/* The blotter: a green leather pad with corner pockets. The papers land on it; the day starts with it bare. */
+/*
+ * The blotter: dark green leather with a leather pocket in each corner. The papers land on it; the day
+ * starts with it bare. Its foot is kept for the Inspect slip (and day 1's hint), which never lies over a paper.
+ */
 .desk-papers {
+  position: relative;
   align-self: stretch;
-  gap: 10px;
-  padding: 12px;
-  border-radius: 5px;
+  gap: 6px;
+  /* The top clears the printer and its shadow. */
+  padding: 16px 10px 68px;
+  border: 2px solid var(--baize-deep);
   background:
-    linear-gradient(135deg, #5a4030 0 26px, transparent 26px) top left / 56px 56px no-repeat,
-    linear-gradient(225deg, #5a4030 0 26px, transparent 26px) top right / 56px 56px no-repeat,
-    linear-gradient(45deg, #4a3526 0 26px, transparent 26px) bottom left / 56px 56px no-repeat,
-    linear-gradient(315deg, #4a3526 0 26px, transparent 26px) bottom right / 56px 56px no-repeat,
-    radial-gradient(ellipse at 35% 25%, rgb(255 255 255 / 6%), transparent 60%),
-    linear-gradient(165deg, #3a4733, #2b3527);
+    var(--px-pocket-tl) top left / 36px 36px no-repeat,
+    var(--px-pocket-tr) top right / 36px 36px no-repeat,
+    var(--px-pocket-bl) bottom left / 36px 36px no-repeat,
+    var(--px-pocket-br) bottom right / 36px 36px no-repeat,
+    var(--blotter);
   box-shadow:
-    inset 0 0 0 2px rgb(0 0 0 / 22%),
-    inset 0 0 34px rgb(0 0 0 / 38%),
-    0 3px 8px rgb(0 0 0 / 35%);
+    inset 0 0 0 2px var(--blotter-dark),
+    4px 4px 0 var(--baize-deep);
 }
 
-.desk-empty {
-  margin: auto 0;
-  color: rgb(236 230 210 / 24%);
-  font-family: var(--official);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  text-align: center;
-  text-transform: uppercase;
-  text-shadow: 0 1px 0 rgb(0 0 0 / 40%);
-}
-
+/* A sheet on the desk: straight, casting a hard shadow on the blotter, and moved an art pixel at a time. */
 .paper {
   position: relative;
   cursor: grab;
-  transition:
-    box-shadow 0.15s,
-    rotate 0.15s,
-    scale 0.15s;
   touch-action: pan-y;
 }
 
 .paper.lifted {
   cursor: grabbing;
-  rotate: 0deg !important;
-  scale: 1.012;
   user-select: none;
 }
 
-.paper.lifted .doc {
-  box-shadow:
-    0 2px 0 #b9b19a,
-    0 22px 34px rgb(0 0 0 / 50%);
+.paper.lifted > .doc {
+  box-shadow: 8px 8px 0 var(--baize-deep);
 }
 
+.paper.lifted > .offer-letter,
+.paper.lifted > .envelope {
+  box-shadow: 8px 8px 0 var(--baize-deep);
+}
+
+.paper.lifted > .sticky {
+  box-shadow:
+    inset 0 4px 0 var(--sticky-light),
+    8px 8px 0 var(--baize-deep);
+}
+
+.paper.lifted > .rulebook {
+  box-shadow:
+    -8px 8px 0 var(--binder),
+    -8px 8px 0 2px var(--binder-deep),
+    4px 12px 0 2px var(--baize-deep);
+}
+
+/* Paper comes in its own sizes: on a wide desk the blotter shows around it. */
+.paper-form,
+.paper-video {
+  max-width: 680px;
+}
+
+/* The applicant's papers come across the counter from under the booth, a step at a time, and go back the same way. */
 .paper-form {
-  rotate: -0.5deg;
-  animation: land 0.45s 0.55s both;
+  animation: land 0.32s 0.55s steps(8) both;
 }
 
 .paper-video {
-  rotate: 0.6deg;
-  animation: land 0.45s 0.7s both;
-}
-
-.paper-rulebook {
-  rotate: 0.9deg;
+  animation: land 0.32s 0.7s steps(8) both;
 }
 
 .paper.returning {
-  animation: hand-back 0.45s 0.75s both;
+  animation: hand-back 0.4s 0.75s steps(8) both;
   pointer-events: none;
 }
 
-/* The applicant's papers come across the counter, from the booth on the left, and go back the same way. */
 @keyframes land {
   from {
-    opacity: 0;
-    transform: translate(-110px, 4px) rotate(-4deg);
-  }
-  70% {
-    opacity: 1;
-    transform: translate(4px, 0) rotate(0.5deg);
+    transform: translateX(-160px);
   }
   to {
     transform: none;
@@ -620,13 +839,8 @@ kbd {
 }
 
 @keyframes hand-back {
-  from {
-    transform: none;
-    opacity: 1;
-  }
   to {
-    transform: translate(-110px, 4px) rotate(-4deg);
-    opacity: 0;
+    transform: translateX(calc(-100% - 64px));
   }
 }
 
@@ -635,11 +849,11 @@ kbd {
   100% {
     transform: none;
   }
-  25% {
-    transform: translate(2px, 3px);
+  33% {
+    transform: translate(2px, 2px);
   }
-  60% {
-    transform: translate(-1px, -1px);
+  66% {
+    transform: translate(-2px, 0);
   }
 }
 
@@ -647,109 +861,142 @@ kbd {
 
 .doc {
   position: relative;
-  padding: 11px 13px 13px;
-  background:
-    radial-gradient(ellipse at 20% 0%, rgb(255 255 255 / 35%), transparent 60%),
-    var(--paper);
-  box-shadow:
-    0 2px 0 #b9b19a,
-    0 8px 18px rgb(0 0 0 / 38%);
+  padding: 8px 12px 12px;
+  border: 2px solid var(--doc-edge, var(--letter-edge));
+  background: var(--doc-bg, var(--letter));
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--doc-ink, var(--ink));
 }
 
 .doc-title {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  margin: 0 0 10px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--rule-line);
-  font-family: var(--official);
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
+  margin: 0 0 8px;
+  font-family: var(--print);
+  font-size: 20px;
+  font-weight: normal;
+  line-height: 24px;
 }
 
 .doc-no {
-  font-weight: 400;
   white-space: nowrap;
 }
 
 .label {
-  font-family: var(--official);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-family: var(--print);
   color: var(--ink-soft);
 }
 
-/* Ink only lands on the paper, however hard the stamp comes down. */
+/* Form 1: pale green-grey Ministry stock, a band of Ministry green along the top with the form's title in it. */
 .card {
+  --doc-bg: var(--form);
+  --doc-edge: var(--form-edge);
+  --doc-ink: var(--ministry);
+  /* Ink only lands on the paper, however hard the stamp comes down. */
   overflow: hidden;
+  padding-top: 0;
+  padding-bottom: 10px;
+}
+
+.card .doc-title {
+  margin: 0 -12px 4px;
+  padding: 2px 10px;
+  background: var(--ministry);
+  box-shadow: inset 0 -2px 0 #1b3021;
+  color: var(--form-light);
+}
+
+.card .doc-no {
+  color: #a9bc9f;
 }
 
 .card-body {
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
+  gap: 14px;
   align-items: flex-start;
 }
 
-.photo {
-  display: inline-block;
+.photo-column {
+  display: flex;
   flex: none;
-  padding: 5px;
-  background: var(--paper-light);
-  border: 1px solid #9c9480;
-  line-height: 0;
-  rotate: -1deg;
-  box-shadow: 1px 1px 0 rgb(0 0 0 / 10%);
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
+.photo-holder {
+  display: block;
+  line-height: 0;
+}
+
+/* A passport photo on white photo paper, at the frames' own scale, so the two can be held side by side. */
+.photo {
+  display: inline-block;
+  padding: 4px;
+  border: 2px solid var(--form-edge);
+  background: #f4f6f0;
+  line-height: 0;
+}
+
+.photo svg {
+  display: block;
+}
+
+/* A selfie taken in the bathroom mirror: the photo is the face the other way round. */
+.photo.mirrored svg {
+  transform: scaleX(-1);
+}
+
+.case-no {
+  color: var(--ink);
+  font-family: var(--type);
+}
+
+/* The form's boxes, filled in on the typewriter: the Ministry's print on the left, the typed answers on their lines. */
 .fields {
-  flex: 1 1 200px;
   display: grid;
+  flex: 1 1 auto;
   grid-template-columns: max-content minmax(0, 1fr);
-  gap: 9px 14px;
-  margin: 4px 0 0;
+  gap: 2px 10px;
+  min-width: 0;
+  margin: 2px 0 0;
 }
 
 .fields dt {
-  padding-top: 3px;
-  font-family: var(--official);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
+  color: var(--ministry);
 }
 
 .fields dd {
   margin: 0;
-  font-size: 16px;
+  box-shadow: inset 0 -2px 0 var(--form-rule);
+  color: var(--ink);
+  font-family: var(--type);
   overflow-wrap: anywhere;
 }
 
-/* The stamp lands on the card with a thunk. */
+/* The stamp's impression: straight, in two frames of ink, with the gaps a rubber stamp leaves. */
 .stamp {
   position: absolute;
-  top: 42%;
-  right: 18px;
-  padding: 4px 14px;
-  border: 5px double currentColor;
-  border-radius: 4px;
-  font-family: var(--official);
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  opacity: 0.85;
+  right: 14px;
+  bottom: 10px;
+  padding: 2px 10px;
+  border: 4px solid currentColor;
+  font-family: var(--stamp);
+  font-size: 40px;
+  line-height: 40px;
+  opacity: 0.88;
   mix-blend-mode: multiply;
-  transform: rotate(-11deg);
-  animation: stamp-slam 0.2s ease-in both;
+  mask: var(--px-speckle) 0 0 / 24px 24px;
+  animation: stamp-slam 0.1s steps(1) both;
   pointer-events: none;
+}
+
+.stamp::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 2px solid currentColor;
 }
 
 .stamp-accept {
@@ -761,54 +1008,68 @@ kbd {
 }
 
 .stamped {
-  animation: thunk 0.28s 0.18s ease-out;
+  animation: thunk 0.24s 0.12s steps(3);
 }
 
 @keyframes stamp-slam {
   from {
     opacity: 0;
-    transform: rotate(-11deg) scale(2.2);
-  }
-  to {
-    opacity: 0.85;
-    transform: rotate(-11deg) scale(1);
   }
 }
 
-/* The video printout: three frames and what was said. */
+/* The video printout: continuous printer paper, pale green bands, sprocket holes down both edges. */
+.video {
+  --doc-bg: var(--printout);
+  --doc-edge: var(--printout-edge);
+  padding: 4px 20px 10px;
+  background:
+    var(--px-sprockets) left 2px top 0 / 10px 24px repeat-y,
+    var(--px-sprockets) right 2px top 0 / 10px 24px repeat-y,
+    linear-gradient(90deg, transparent 14px, var(--printout-edge) 14px 16px, transparent 16px calc(100% - 16px), var(--printout-edge) calc(100% - 16px) calc(100% - 14px), transparent calc(100% - 14px)),
+    repeating-linear-gradient(180deg, var(--printout-band) 0 24px, transparent 24px 48px),
+    var(--printout);
+}
+
+.doc-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.doc-head .doc-title {
+  flex: 1;
+}
+
+/* The printer's own header line. */
+.video .doc-title {
+  margin-bottom: 4px;
+  font-family: var(--type);
+}
+
+.video-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+/* Three frames, printed with a black border and the time under each. */
 .film {
-  position: relative;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 80px));
+  flex: none;
+  grid-template-columns: repeat(3, 84px);
   gap: 8px;
   width: fit-content;
-  max-width: 100%;
-  padding: 12px 9px 10px;
-  background: #1b1c1a;
-}
-
-.film::before,
-.film::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: repeating-linear-gradient(90deg, transparent 0 6px, #d8d2c0 6px 12px, transparent 12px 18px);
-  opacity: 0.8;
-}
-
-.film::before {
-  top: 4px;
-}
-
-.film::after {
-  bottom: 3px;
 }
 
 .frame {
-  margin: 0 0 6px;
+  margin: 0;
   line-height: 0;
+}
+
+.frame-picture {
+  display: block;
+  border: 2px solid var(--ink);
+  background: var(--ink);
 }
 
 .frame svg {
@@ -817,132 +1078,712 @@ kbd {
   height: auto;
 }
 
-.frame figcaption {
-  margin-top: 5px;
-  font-size: 10px;
-  line-height: 1;
-  color: #c9c3b1;
+.frame.pair .frame-picture {
+  display: flex;
 }
 
-.video .label {
+.frame.pair .frame-picture svg {
+  width: 50%;
+}
+
+.frame figcaption {
+  margin-top: 0;
+  color: var(--ink);
+  font-family: var(--type);
+  line-height: 20px;
+  text-align: center;
+}
+
+.sign-holder {
   display: block;
-  margin: 10px 0 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* The sign held up, enlarged: the applicant's own capitals, on card or on a phone. */
+.sign-still {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  height: 100%;
+}
+
+.sign-text {
+  display: flex;
+  flex-direction: column;
+  padding: 0 6px;
+  border: 2px solid #7c5d33;
+  background: #caa46a;
+  box-shadow: 2px 2px 0 #7c5d33;
+  color: var(--ink);
+  font-family: var(--print);
+  font-style: italic;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+/* The same address on a phone: a lit screen in a dark case, no wider than a card. */
+.sign-text.phone {
+  padding: 0 2px;
+  border: 4px solid #23262b;
+  background: #cfe3ea;
+  box-shadow: 2px 2px 0 #0b0c0d;
+}
+
+.sign-none {
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+.qr {
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin: 6px;
+  background:
+    linear-gradient(#1f1b18 0 0) 0 0 / 18px 18px no-repeat,
+    linear-gradient(#1f1b18 0 0) 100% 0 / 18px 18px no-repeat,
+    linear-gradient(#1f1b18 0 0) 0 100% / 18px 18px no-repeat,
+    repeating-conic-gradient(#1f1b18 0 25%, #fff 0 50%) 0 0 / 8px 8px,
+    #fff;
+  box-shadow:
+    0 0 0 4px #fff,
+    0 0 0 6px var(--printout-edge);
+}
+
+/* What was said: typed in a box, its label printed on the box's top edge. */
+.transcript-label {
+  position: relative;
+  z-index: 1;
+  width: fit-content;
+  margin: 4px 0 -12px 8px;
+  padding: 0 4px;
+  background: var(--printout);
+}
+
+.transcript-holder {
+  display: block;
 }
 
 .transcript {
-  /* Two lines of 60 characters hold every transcript (tested in src/gen/applicant.test.ts): the 60ch is the text, not the padding. */
-  box-sizing: content-box;
-  max-width: 60ch;
-  min-height: 2.7em;
+  min-height: 60px;
   margin: 0;
-  padding: 7px 9px;
-  background: var(--paper-light);
-  border: 1px solid var(--rule-line);
-  font-size: 13px;
-  line-height: 1.35;
+  padding: 8px 10px 4px;
+  border: 2px solid var(--printout-edge);
+  background: var(--printout);
+  font-family: var(--type);
 }
 
 .no-speech {
   color: var(--ink-soft);
 }
 
-/* The rulebook: a booklet with a spine. */
+/* ------------------------------------------------------------ the rulebook */
+
+/*
+ * A binder: the page in front, the oxblood cover showing behind it, two rings through the margin, and a
+ * numbered tab standing out on the right for each page in it.
+ */
 .rulebook {
-  padding-left: 22px;
-  background:
-    linear-gradient(90deg, #6b3a32 0 8px, #4f2a24 8px 10px, transparent 10px),
-    radial-gradient(ellipse at 20% 0%, rgb(255 255 255 / 35%), transparent 60%),
-    var(--paper);
+  --doc-bg: var(--buff);
+  --doc-edge: var(--buff-edge);
+  margin: 0 30px 8px 8px;
+  padding: 8px 12px 12px 30px;
+  background: var(--buff);
+  box-shadow:
+    -8px 8px 0 var(--binder),
+    -8px 8px 0 2px var(--binder-deep);
+}
+
+/* The binder's two rings, from the cover through the page's punched holes. */
+.rulebook::before,
+.rulebook::after {
+  content: '';
+  position: absolute;
+  top: 26px;
+  left: -16px;
+  width: 26px;
+  height: 16px;
+  background: var(--px-ring);
+}
+
+.rulebook::after {
+  top: auto;
+  bottom: 26px;
+}
+
+.rule-tabs {
+  position: absolute;
+  top: 12px;
+  right: -30px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/*
+ * Each page's index tab, cut into a divider card: it comes out from behind the page, so it has no left
+ * edge, and its outer corners are cut a pixel in. Its shadow falls on the baize.
+ */
+.rule-tab {
+  position: relative;
+  width: 30px;
+  height: 36px;
+  padding: 0 2px 0 0;
+  border: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='36' shape-rendering='crispEdges'%3E%3Cpath fill='%23c4ae78' d='M0 2h26v2h2v28h-2v2H0z'/%3E%3Cpath fill='%23d3c08f' d='M0 2h26v2H0z'/%3E%3Cpath fill='%238b7747' d='M0 0h26v2H0zM26 2h2v2h-2zM28 4h2v28h-2zM26 32h2v2h-2zM0 34h26v2H0z'/%3E%3C/svg%3E")
+    0 0 / 30px 36px no-repeat;
+  filter: drop-shadow(2px 2px 0 var(--baize-deep));
+  color: var(--rule-red);
+  font: inherit;
+  font-family: var(--stamp);
+  cursor: pointer;
+}
+
+.rule-tab:hover {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='36' shape-rendering='crispEdges'%3E%3Cpath fill='%23d0bb86' d='M0 2h26v2h2v28h-2v2H0z'/%3E%3Cpath fill='%23dccb9c' d='M0 2h26v2H0z'/%3E%3Cpath fill='%238b7747' d='M0 0h26v2H0zM26 2h2v2h-2zM28 4h2v28h-2zM26 32h2v2h-2zM0 34h26v2H0z'/%3E%3C/svg%3E");
+}
+
+/* The open page's tab is the page's own paper, joined to it across the page's edge. */
+.rule-tab[aria-selected='true'] {
+  width: 32px;
+  margin-left: -2px;
+  padding-left: 2px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='36' shape-rendering='crispEdges'%3E%3Cpath fill='%23dccb9c' d='M0 2h28v2h2v28h-2v2H0z'/%3E%3Cpath fill='%238b7747' d='M0 0h28v2H0zM28 2h2v2h-2zM30 4h2v28h-2zM28 32h2v2h-2zM0 34h28v2H0z'/%3E%3C/svg%3E")
+    0 0 / 32px 36px no-repeat;
+}
+
+/* Today's new page: a red corner on its tab. */
+.rule-tab.new::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  background: var(--challenge);
 }
 
 .rule h3 {
   margin: 0 0 6px;
-  font-family: var(--official);
-  font-size: 15px;
-  letter-spacing: 0.03em;
+  font-family: var(--stamp);
+  font-size: 20px;
+  font-weight: normal;
+  line-height: 24px;
+}
+
+.rule-no {
+  color: var(--rule-red);
+}
+
+/*
+ * Today's page is flagged: a red page flag stuck on its top corner, standing up into the margin above it,
+ * clear of the heading, which stays on one line. Its capitals sit an art pixel clear of its edges, on the grid.
+ */
+.rule-flag {
+  position: absolute;
+  z-index: 1;
+  top: -14px;
+  right: 10px;
+  padding: 2px 6px 0;
+  border: 2px solid var(--challenge-deep);
+  background: var(--challenge);
+  box-shadow: 2px 2px 0 var(--baize-deep);
+  color: #fff1ee;
+  font-family: var(--stamp);
+  line-height: 16px;
+  pointer-events: none;
 }
 
 .rule p {
   margin: 0 0 8px;
-  font-size: 13px;
-  line-height: 1.35;
-}
-
-.rule .phrase {
-  padding: 7px 9px;
-  background: var(--paper-light);
-  border-left: 4px solid #8a8069;
-  font-size: 14px;
-}
-
-.rule-note {
-  color: var(--ink-soft);
-}
-
-/* In the phrase, the words that count are bold; the small ones fade into the paper. */
-.phrase b {
-  font-weight: 700;
-}
-
-.small-word {
-  color: #8b8373;
 }
 
 .rule p:last-child {
   margin-bottom: 0;
 }
 
-/* ------------------------------------------------------------ printer and slips */
+.rule .phrase {
+  padding: 4px 8px;
+  border-left: 4px solid var(--buff-edge);
+  background: var(--buff-light);
+}
 
-.desk-papers {
+/* In the phrase, the words that count are in the Ministry's bold; the small ones fade into the paper. */
+.phrase b {
+  font-family: var(--stamp);
+  font-weight: normal;
+}
+
+.small-word {
+  color: #8e7f5c;
+}
+
+.rule-checks {
+  margin: 0 0 8px;
+  padding: 0 0 0 16px;
+  list-style: none;
+}
+
+.rule-checks li {
   position: relative;
 }
 
-/* The citation printer, bolted to the top edge of the blotter: a paper slot, a vent and a green
-   light, and the torn end of the last slip still in the slot. Slips drop out of it over the papers. */
+.rule-checks li::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: -14px;
+  width: 6px;
+  height: 6px;
+  background: var(--ink);
+}
+
+.rule-note {
+  color: var(--ink);
+}
+
+/* The page's footnote: when the rule was issued, and why, under a short rule. */
+.rule-cause {
+  margin: 10px 0 0;
+  padding-top: 8px;
+  background: linear-gradient(var(--buff-edge) 0 0) top left / 64px 2px no-repeat;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+/* Rule 2's Fig. 2: the specimen face in a video frame, eyes shut, without and with a light. */
+.rule-figure {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 6px 0 2px;
+}
+
+.rule-plate {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* The film's own black, so each still reads as a frame of video. */
+.rule-still {
+  position: relative;
+  flex: none;
+  padding: 2px;
+  background: var(--ink);
+  line-height: 0;
+}
+
+.rule-still > svg:first-child {
+  display: block;
+}
+
+.rule-mark {
+  position: absolute;
+  right: -8px;
+  bottom: -6px;
+}
+
+.rule-caption {
+  font-style: italic;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.rule-caption b,
+.rule-caption span {
+  display: block;
+}
+
+.rule-caption b {
+  font-weight: normal;
+}
+
+/*
+ * In a narrow book (on a stage up to about 1460 wide) Rule 2's page, set as on a wide one, would be the
+ * tallest thing on the desk, and the hall is only as tall as the desk's tallest papers let it be (Hall.tsx):
+ * so the page is set close, a line to every 20px, and Fig. 2's two stills stand side by side with their
+ * captions under them.
+ */
+@container book (max-width: 440px) {
+  .rulebook {
+    padding-right: 10px;
+    padding-left: 24px;
+    line-height: 20px;
+  }
+
+  .rule-checks {
+    padding-left: 14px;
+  }
+
+  /* Each check's square, level with the middle of its first line's small letters. */
+  .rule-checks li::before {
+    top: 8px;
+  }
+
+  .rule p {
+    margin-bottom: 6px;
+  }
+
+  .rule h3 {
+    margin-bottom: 4px;
+  }
+
+  .rule-cause {
+    margin-top: 8px;
+    padding-top: 6px;
+  }
+
+  .rule-figure {
+    flex-wrap: nowrap;
+    gap: 20px;
+    margin: 4px 0 2px;
+  }
+
+  .rule-plate {
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
+/* ------------------------------------------------------------ the rulebook's and the registry's tabs */
+
+/*
+ * From day 4 the side of the desk holds the registry terminal too, under the book. Each has a paper tab on its
+ * top edge, in its own stock, standing up into the desk's top margin: the one in front joined to it, the one
+ * behind a pixel lower and a shade darker. They take no row of their own.
+ */
+.side-tabs {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 4px;
+  height: 24px;
+  margin: -12px 0 0;
+  padding: 0 30px 0 22px;
+}
+
+/* A tab, its top corners cut a pixel in (a pixel of the baize at each). */
+.side-tab {
+  position: relative;
+  height: 22px;
+  margin-top: 2px;
+  padding: 0 10px;
+  border: 2px solid var(--buff-edge);
+  border-bottom: 0;
+  background: var(--buff-dark);
+  color: #5a4b2c;
+  font: inherit;
+  font-family: var(--print);
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.side-tab-registry {
+  border-color: var(--terminal-edge);
+  background: #a3a298;
+  color: #4a4940;
+}
+
+.side-tab::before,
+.side-tab::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 2px;
+  height: 2px;
+  background: var(--baize);
+}
+
+.side-tab::after {
+  right: -2px;
+  left: auto;
+}
+
+.side-tab:hover:not([aria-selected='true']) {
+  background: var(--buff);
+}
+
+.side-tab-registry:hover:not([aria-selected='true']) {
+  background: var(--terminal);
+}
+
+/* In front: its paper's own stock, and joined to it across the paper's top edge. */
+.side-tab[aria-selected='true'] {
+  z-index: 1;
+  height: 26px;
+  margin: 0 0 -2px;
+  background: var(--buff);
+  color: var(--ink);
+}
+
+.side-tab-registry[aria-selected='true'] {
+  background: var(--terminal);
+}
+
+.paper[hidden] {
+  display: none;
+}
+
+/* The registry terminal: grey plastic, keys, and a green screen that answers what it is asked. No tabs of the book's to clear. */
+.registry {
+  --doc-bg: var(--terminal);
+  --doc-edge: var(--terminal-edge);
+  margin: 0 8px 8px 0;
+  padding-top: 6px;
+}
+
+.registry .doc-title {
+  font-family: var(--stamp);
+  color: #4a4940;
+}
+
+.lookup-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+/* The input line, part of the terminal's green screen: its prompt, and the name typed after it. */
+.lookup-line {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 40px;
+  padding: 0 6px;
+  border: 2px solid var(--black);
+  background: var(--screen);
+  box-shadow: inset 0 2px 0 #000;
+  color: var(--phosphor-dim);
+  font-family: var(--type);
+}
+
+.lookup-line:focus-within {
+  outline: 2px solid var(--marker);
+  outline-offset: 0;
+}
+
+.lookup-form input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  caret-color: var(--phosphor);
+  color: var(--phosphor);
+  font: inherit;
+  font-family: var(--type);
+}
+
+.lookup-form input::placeholder {
+  color: var(--phosphor-dim);
+}
+
+/*
+ * The terminal's keys, and the lookups on the papers, are the steel key every screen's other keys are
+ * (.steel-key, screens.css). The terminal's return key has its arrow printed on it, and nothing else.
+ */
+.steel-key.lookup-enter {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 42px;
+  height: 40px;
+  padding: 0 0 2px;
+}
+
+/* The return arrow printed on the key, in the key's own ink. */
+.lookup-return {
+  width: 14px;
+  height: 10px;
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='10' shape-rendering='crispEdges'%3E%3Cpath d='M12 0h2v8H2V6h10zM4 4h2v6H4z'/%3E%3C/svg%3E");
+}
+
+/* A steel key with nothing to do yet sits down in its well, its word gone dim. */
+.desk .steel-key:disabled {
+  translate: 0 2px;
+  background: var(--steel);
+  box-shadow:
+    inset 0 2px 0 var(--steel-light),
+    0 2px 0 var(--steel-deep);
+  color: var(--steel-dark);
+  cursor: default;
+}
+
+.desk .steel-key:disabled kbd {
+  background: var(--steel-light);
+  box-shadow: none;
+  color: var(--steel-dark);
+}
+
+/* The terminal's two keys for whoever is at the window, each as wide as its word, side by side if there is room. */
+.lookup-quick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.lookup-quick .steel-key {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 8px;
+}
+
+/* A lookup beside what it looks up, on the papers: a small steel key, in the form's own print, with its key cap. */
+.steel-key.lookup-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  margin-left: 8px;
+  padding: 0 2px 0 6px;
+  box-shadow:
+    inset 0 2px 0 var(--steel-shine),
+    inset 0 -2px 0 var(--steel),
+    0 2px 0 var(--steel-deep);
+  font-family: var(--print);
+  line-height: 20px;
+  vertical-align: top;
+}
+
+.steel-key.lookup-chip:active {
+  translate: 0 2px;
+  box-shadow:
+    inset 0 2px 0 var(--steel-shine),
+    inset 0 -2px 0 var(--steel);
+}
+
+/* The small key caps, the switches' size: their capitals fill the face down to its front edge. */
+.lookup-chip kbd,
+.inspect-glass kbd {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 2px;
+  line-height: 16px;
+}
+
+.doc-head .lookup-chip {
+  margin: 0;
+}
+
+/* The screen: the registry's answers, typed out in green. */
+.lookup-result {
+  min-height: 120px;
+  padding: 4px 8px 8px;
+  border: 2px solid var(--black);
+  background: var(--screen);
+  box-shadow: inset 0 2px 0 #000;
+  color: var(--phosphor);
+  font-family: var(--type);
+}
+
+.lookup-result p {
+  margin: 0 0 6px;
+}
+
+/* What was searched: its face, the answer running round it and on under it. */
+.lookup-result .searched {
+  display: flow-root;
+}
+
+.searched > .record-face {
+  float: left;
+  margin: 2px 8px 4px 0;
+}
+
+/* A record, as the terminal prints it: the face on file, and the lines running round it and on under it. */
+.record {
+  display: flow-root;
+  margin-top: 6px;
+}
+
+.record-face {
+  flex: none;
+  border: 2px solid var(--phosphor-dim);
+  line-height: 0;
+}
+
+.record > .record-face {
+  float: left;
+  margin: 0 8px 4px 0;
+}
+
+.record-face svg {
+  display: block;
+}
+
+.record dl {
+  margin: 0;
+}
+
+.unbroken {
+  white-space: nowrap;
+}
+
+.record dt {
+  display: inline;
+  color: var(--phosphor-dim);
+}
+
+.record dd {
+  display: inline;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* ------------------------------------------------------------ the printer and its slips */
+
+/* The citation printer, bolted to the top edge of the blotter: a slot, a vent and a green lamp. Slips drop out of it over the papers. */
 .desk-papers::before {
   content: '';
   position: absolute;
   z-index: 60;
   top: -12px;
-  left: 50%;
-  width: 176px;
-  height: 20px;
-  translate: -50% 0;
-  border-radius: 0 0 8px 8px;
+  left: round(down, 50% - 90px, 2px);
+  width: 180px;
+  height: 22px;
+  box-sizing: border-box;
+  border: 2px solid var(--black);
   background:
-    radial-gradient(circle at 13px 8px, #9be38f 0 2px, rgb(155 227 143 / 35%) 3px, transparent 5px),
-    repeating-linear-gradient(90deg, rgb(255 255 255 / 9%) 0 2px, transparent 2px 5px) right 12px top 5px / 34px 5px no-repeat,
-    linear-gradient(180deg, #3a3c35, #1e1f1b);
+    linear-gradient(var(--lamp-green) 0 0) 10px 4px / 4px 4px no-repeat,
+    repeating-linear-gradient(90deg, var(--charcoal-deep) 0 2px, transparent 2px 4px) right 10px top 2px / 22px 8px no-repeat,
+    linear-gradient(var(--black) 0 0) 22px 12px / 132px 4px no-repeat,
+    var(--charcoal-light);
   box-shadow:
-    inset 0 -6px 0 #070806,
-    inset 0 -7px 0 #3a3c35,
-    0 4px 8px rgb(0 0 0 / 45%);
+    inset 0 2px 0 var(--steel-dark),
+    0 4px 0 var(--baize-deep);
 }
 
-/* The torn end of the last slip: what makes a slot a printer. Hidden while a new slip feeds out. */
+/* The torn end of the last slip, still in the slot: what makes a slot a printer. Hidden while a new slip feeds out. */
 .desk-papers::after {
   content: '';
   position: absolute;
-  z-index: 49;
+  z-index: 59;
   top: 6px;
-  left: 50%;
+  left: round(down, 50% - 60px, 2px);
   width: 120px;
-  height: 9px;
-  translate: -50% 0;
-  background: linear-gradient(180deg, #d8d0b8, #efe8d4 60%);
-  /* A serrated bottom edge, where it was torn off. */
-  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 6px 100%;
-  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 35%));
-  transition: opacity 0.2s;
+  height: 8px;
+  background: var(--px-torn);
 }
 
 .desk-papers.printing::after {
-  opacity: 0;
+  visibility: hidden;
 }
 
 .desk-papers.printing::before {
-  animation: printer-buzz 0.75s 0.25s steps(9);
+  animation: printer-buzz 0.72s 0.24s steps(6);
 }
 
 /* A citation waits a beat after the stamp, in silence (--citation-beat, from CITATION_BEAT_MS in Shift.tsx). */
@@ -952,33 +1793,40 @@ kbd {
 
 @keyframes printer-buzz {
   50% {
-    translate: -50% 1px;
+    translate: 0 2px;
   }
 }
 
 .printer {
   position: absolute;
   z-index: 50;
-  top: 2px;
-  left: 50%;
+  top: 12px;
+  right: 0;
+  left: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  width: min(470px, calc(100% - 30px));
-  translate: -50% 0;
+  align-items: center;
+  gap: 8px;
   pointer-events: none;
 }
 
 .printer .slip {
+  /* As wide as the blotter allows, up to 520px, and centred on an art pixel: its margins are whole art pixels. */
+  width: calc(100% - 2 * round(up, max(12px, (100% - 520px) / 2), 2px));
   pointer-events: auto;
 }
 
+/* A slip off the printer: typed, with its title stamped on. It feeds out a line at a time. */
 .slip {
-  padding: 11px 13px;
-  font-size: 13px;
-  line-height: 1.4;
-  box-shadow: 0 6px 14px rgb(0 0 0 / 40%);
-  animation: print 0.75s 0.25s steps(9) both;
+  padding: 8px 12px 10px;
+  border: 2px solid var(--slip-edge, var(--letter-edge));
+  background: var(--slip-bg, var(--letter));
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--ink);
+  font-family: var(--type);
+  font-size: 20px;
+  line-height: 24px;
+  animation: print 0.72s 0.24s steps(9) both;
 }
 
 .slip.slip-citation {
@@ -987,52 +1835,70 @@ kbd {
 
 .slip header {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 8px;
   padding-bottom: 6px;
-  border-bottom: 1px solid rgb(0 0 0 / 20%);
-  font-family: var(--official);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  border-bottom: 2px solid var(--slip-edge, var(--letter-edge));
+}
+
+.slip header strong {
+  font-family: var(--stamp);
+  font-weight: normal;
 }
 
 .slip header span {
-  font-size: 11px;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* A warning is stamped on the citation beside its title, in the citation's red: capitals an art pixel clear of its frame. */
+.slip-mark {
+  /* At the top of the title's line, so its capitals stand on the title's baseline. */
+  align-self: flex-start;
+  padding: 2px 4px 0;
+  border: 2px solid currentColor;
+  color: var(--challenge);
+  font-family: var(--stamp);
+  font-style: normal;
+  line-height: 16px;
 }
 
 .slip p {
-  margin: 0 0 7px;
+  margin: 0 0 6px;
 }
 
 .slip p:last-child {
   margin-bottom: 0;
 }
 
+/* Pink carbon, faintly ruled, printed in the citation's red. */
 .slip-citation {
-  background: #f0d6d0;
-  background-image: repeating-linear-gradient(180deg, transparent 0 21px, rgb(154 47 42 / 8%) 21px 22px);
+  --slip-bg: var(--pink);
+  --slip-edge: var(--pink-edge);
+  background-image: repeating-linear-gradient(180deg, transparent 0 22px, rgb(176 48 42 / 9%) 22px 24px);
 }
 
-.slip-citation header {
+.slip-citation header strong {
   color: var(--challenge);
 }
 
-.slip-warning header {
-  color: #9a5a1c;
+.slip-filing {
+  --slip-bg: var(--blue);
+  --slip-edge: var(--blue-edge);
 }
 
-.slip-filing {
-  background: #efe1a8;
+.slip-filing header strong {
+  color: #24445f;
 }
 
 @keyframes print {
   from {
-    clip-path: inset(0 0 100% 0);
-    transform: translateY(-14px);
+    clip-path: inset(0 -8px 100% -8px);
+    transform: translateY(-18px);
   }
   to {
-    clip-path: inset(0 0 -20px 0);
+    clip-path: inset(0 -8px -8px -8px);
     transform: none;
   }
 }
@@ -1040,40 +1906,23 @@ kbd {
 .evidence {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
-  gap: 4px 10px;
-  margin: 0 0 8px;
+  gap: 2px 10px;
+  margin: 0 0 6px;
 }
 
 .evidence dt {
-  padding-top: 2px;
-  font-family: var(--official);
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  color: var(--ink-soft);
 }
 
 .evidence dd {
   margin: 0;
 }
 
-/* A Rule 0 citation reprints the video as the desk showed it; the frame its evidence names is outlined. */
-.citation-film {
-  margin: 0 0 8px;
-}
-
-.frame.named .frame-picture {
-  outline: 3px solid var(--marker);
-  outline-offset: 1px;
-}
-
-/* Bold and white against the grey times. Not in capitals, and not spaced out: in Arial or Helvetica Neue
-   (no Arial Narrow) either one makes "Frame 1 · 00:01" wider than its 80px frame, into the next frame's time. */
-.frame.named figcaption {
-  color: #fff;
-  font-family: var(--official);
-  font-weight: 700;
-  white-space: nowrap;
+/* On a slip, the words that are wrong are printed in reverse, in the citation's red. */
+.slip mark {
+  padding: 0 2px;
+  background: var(--challenge);
+  color: #fff1ee;
 }
 
 mark {
@@ -1082,111 +1931,132 @@ mark {
   color: inherit;
 }
 
+/* A citation for a fault in the video reprints it as the desk showed it; the frame its evidence names is outlined, and named. */
+.citation-film {
+  margin: 0 0 8px;
+}
+
+.frame.named .frame-picture {
+  outline: 4px solid var(--challenge);
+}
+
+.frame.named figcaption {
+  margin-top: 6px;
+  color: var(--challenge);
+  font-family: var(--print);
+  white-space: nowrap;
+}
+
+/* A memo, in the Ministry's hand, under a torn-off line. */
 .memo {
-  padding-top: 7px;
-  border-top: 1px dashed rgb(0 0 0 / 25%);
+  padding-top: 8px;
+  background: repeating-linear-gradient(90deg, var(--slip-edge, var(--ink-soft)) 0 4px, transparent 4px 8px) top left / 100% 2px no-repeat;
+  font-family: var(--print);
+  font-style: italic;
 }
 
 .terms {
-  font-family: var(--official);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-family: var(--type);
 }
 
-/* ------------------------------------------------------------ stamps, tray, note */
+/* ------------------------------------------------------------ the stamps, Inspect, the tray, the note */
 
 .desk-tools {
-  align-items: center;
+  gap: 12px;
 }
 
 .stamps {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 10px;
 }
 
+/* A rubber stamp, from the side: a wooden knob with its key cap, a neck, and the block with its word on it. */
 .stamp-tool {
+  --stamp-ink: var(--accept);
+  --stamp-deep: #123520;
+  --stamp-light: #4b9a63;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 104px;
+  width: 100%;
   padding: 0;
   border: 0;
   background: none;
+  color: #f4efe2;
   font: inherit;
   cursor: pointer;
-  transition:
-    translate 0.12s,
-    filter 0.2s;
+  transition: translate 0.1s steps(1);
+}
+
+.stamp-tool-challenge {
+  --stamp-ink: var(--challenge);
+  --stamp-deep: #4a120f;
+  --stamp-light: #d05a50;
 }
 
 .stamp-knob {
-  width: 44px;
-  height: 34px;
-  border-radius: 50% 50% 42% 42%;
-  background: radial-gradient(circle at 35% 30%, #b58a5a, #7b5733 55%, #4f3620);
-  box-shadow:
-    inset 0 -3px 0 rgb(0 0 0 / 25%),
-    0 3px 5px rgb(0 0 0 / 40%);
+  position: relative;
+  display: block;
+  line-height: 0;
+}
+
+.stamp-knob svg {
+  display: block;
+}
+
+.stamp-knob kbd {
+  position: absolute;
+  top: 0;
+  left: calc(100% + 8px);
 }
 
 .stamp-neck {
   width: 16px;
-  height: 20px;
-  background: linear-gradient(90deg, #2e2720, #574a3b 50%, #2e2720);
+  height: 8px;
+  border: 2px solid var(--wood-deep);
+  border-top: 0;
+  border-bottom: 0;
+  background: var(--wood-dark);
 }
 
+/* Its word, in the middle of the block below the rubber's lit edge, on the grid. */
 .stamp-face {
   display: grid;
   place-items: center;
   width: 100%;
-  height: 44px;
-  border-radius: 3px;
-  border-top: 5px solid #8f949a;
+  height: 42px;
+  padding-top: 6px;
+  border: 2px solid var(--stamp-deep);
+  background: var(--stamp-ink);
   box-shadow:
-    inset 0 -4px 0 rgb(0 0 0 / 28%),
-    0 6px 10px rgb(0 0 0 / 45%);
-  color: #f4efe2;
-  font-family: var(--official);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.stamp-tool-accept .stamp-face {
-  background: linear-gradient(180deg, #3b8556, var(--accept));
-}
-
-.stamp-tool-challenge .stamp-face {
-  background: linear-gradient(180deg, #b23d37, var(--challenge));
-}
-
-.stamp-tool kbd {
-  position: absolute;
-  right: 2px;
-  bottom: -9px;
-  color: #d8d2c0;
-  background: #22251f;
+    inset 0 4px 0 var(--steel-light),
+    inset 0 6px 0 var(--stamp-light),
+    0 4px 0 var(--baize-deep);
+  font-family: var(--stamp);
 }
 
 .stamp-tool:hover:not(:disabled) {
-  translate: 0 -3px;
+  translate: 0 -2px;
 }
 
 .stamp-tool:active:not(:disabled) {
-  translate: 0 7px;
+  translate: 0 4px;
 }
 
 .stamp-tool:disabled {
-  filter: grayscale(0.65) brightness(0.62);
   cursor: default;
 }
 
+.stamp-tool:disabled .stamp-face,
+.stamp-tool:disabled .stamp-knob svg,
+.stamp-tool:disabled .stamp-neck {
+  filter: saturate(0.35) brightness(0.7);
+}
+
 .stamp-tool.used {
-  animation: stamp-down 0.3s ease-in;
+  animation: stamp-down 0.3s steps(3);
 }
 
 @keyframes stamp-down {
@@ -1195,180 +2065,460 @@ mark {
   }
 }
 
-.tray {
+/* Inspect: a steel plate with the magnifying glass on it, its key cap on the glass. */
+.inspect-tool {
+  display: flex;
+  width: 100%;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 4px;
+  border: 2px solid var(--black);
+  background: var(--steel-dark);
+  box-shadow:
+    inset 0 2px 0 var(--steel),
+    0 4px 0 var(--black);
+  color: var(--steel-shine);
+  font: inherit;
+  font-family: var(--stamp);
+  cursor: pointer;
+}
+
+.inspect-tool:active:not(:disabled) {
+  translate: 0 2px;
+  box-shadow:
+    inset 0 2px 0 var(--steel),
+    0 2px 0 var(--black);
+}
+
+/* On: pressed in, and lit in the highlighter's yellow. */
+.inspect-tool.on {
+  translate: 0 2px;
+  border-color: var(--marker-deep);
+  background: #7a6a25;
+  box-shadow:
+    inset 0 2px 0 #968536,
+    0 2px 0 var(--black);
+  color: #fff4cf;
+}
+
+.inspect-tool:disabled {
+  background: var(--steel-deep);
+  box-shadow:
+    inset 0 2px 0 var(--steel-dark),
+    0 4px 0 var(--black);
+  color: var(--steel);
+  cursor: default;
+}
+
+/* The day's one guided inspection points at it. */
+.inspect-tool.hint {
+  outline: 4px solid var(--marker);
+  outline-offset: 2px;
+}
+
+.inspect-glass {
   position: relative;
+  flex: none;
+  line-height: 0;
+}
+
+.inspect-glass svg {
+  display: block;
+}
+
+.inspect-glass kbd {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+}
+
+.inspect-tool:disabled .inspect-glass {
+  filter: brightness(0.6);
+}
+
+/* A wire tray for the day's cases: its brass plate on the front, the basket's bars behind the slips dropped in it, and the count in a window. */
+.tray {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  width: 104px;
-  padding: 6px 6px 8px;
-  border: 2px solid #8e959b;
-  border-radius: 3px;
-  background:
-    repeating-linear-gradient(90deg, rgb(142 149 155 / 50%) 0 1px, transparent 1px 8px),
-    rgb(0 0 0 / 15%);
+  border: 2px solid var(--steel-deep);
+  background: var(--baize-dark);
+  box-shadow: 4px 4px 0 var(--baize-deep);
 }
 
-.tray-label {
-  font-family: var(--official);
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #c9c3b1;
+/* Engraved brass, screwed on at each end, as the window's nameplate is. */
+.tray-plate {
+  position: relative;
+  height: 24px;
+  padding-top: 2px;
+  border-bottom: 2px solid var(--brass-deep);
+  background: var(--brass);
+  box-shadow: inset 0 2px 0 var(--brass-light);
+  color: var(--brass-deep);
+  line-height: 20px;
+  text-align: center;
 }
 
+.tray-plate::before,
+.tray-plate::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 2px;
+  width: 2px;
+  height: 2px;
+  background: var(--brass-dark);
+}
+
+.tray-plate::after {
+  right: 2px;
+  left: auto;
+}
+
+.tray-basket {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 4px 4px 4px 0;
+}
+
+/* The basket: its wires stand behind the slips, and nowhere else. */
 .tray-slips {
   position: relative;
-  width: 64px;
+  flex: 1;
   height: 26px;
+  background: repeating-linear-gradient(90deg, transparent 0 6px, var(--steel-dark) 6px 8px);
+  box-shadow: inset 0 -2px 0 var(--steel-dark);
 }
 
 .tray-slip {
   position: absolute;
-  inset: 4px 2px auto;
-  height: 18px;
-  background: #efe1a8;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 40%);
+  right: 6px;
+  bottom: 2px;
+  left: 6px;
+  height: 14px;
+  border: 2px solid var(--blue-edge);
+  background: var(--blue);
 }
 
+/* The count, on a wheel in its own window, as the savings are. */
 .tray-count {
+  min-width: 26px;
+  height: 26px;
+  padding-top: 2px;
+  border: 2px solid var(--black);
+  background: var(--charcoal-deep);
   color: var(--amber);
-  font-size: 16px;
-  font-weight: 700;
+  font-family: var(--stamp);
+  line-height: 20px;
+  text-align: center;
 }
 
-.sticky {
+/* The supervisor's notes, in pen, on a yellow sticky note with a curling corner, written close to its edges. */
+.sticky,
+.sticky-tip,
+.hint-note {
   position: relative;
-  width: 112px;
-  padding: 10px 9px 12px;
-  background: linear-gradient(180deg, #f4e58a, #eed96a);
+  padding: 4px 8px 8px;
+  border: 2px solid var(--sticky-edge);
+  background: var(--sticky);
   box-shadow:
-    0 1px 0 rgb(0 0 0 / 10%),
-    3px 6px 10px rgb(0 0 0 / 35%);
-  color: #2b3f7a;
-  font-family: var(--hand);
-  font-size: 13px;
-  line-height: 1.25;
-  rotate: 3deg;
+    inset 0 4px 0 var(--sticky-light),
+    4px 4px 0 var(--baize-deep);
+  color: var(--pen);
+  font-family: var(--print);
+  font-size: 20px;
+  font-style: italic;
+  line-height: 24px;
+}
+
+.sticky::after,
+.sticky-tip::after,
+.hint-note::after {
+  content: '';
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 14px;
+  height: 14px;
+  background: var(--px-curl);
 }
 
 .sticky-sign {
   display: block;
-  margin-top: 4px;
   text-align: right;
 }
 
-/* What else lies on the morning paper: Likeness's letter and its envelope, papers that can be moved like any other. */
-.paper.morning-extra {
-  position: absolute;
-  z-index: 5;
-  animation: land 0.5s 0.45s both;
+/* ------------------------------------------------------------ inspect mode */
+
+.photo-holder,
+.rule-holder,
+.transcript-holder,
+.record-holder,
+.sign-holder {
+  display: block;
 }
 
-.at-letter {
-  right: 18px;
-  bottom: 12px;
-}
-
-.at-envelope {
-  right: 32px;
-  bottom: 28px;
-}
-
-/* Another company's paper, in another company's colours, over the foot of the paper and clear of the day's notice. */
-.offer-letter {
-  box-shadow: 0 12px 26px rgb(0 0 0 / 50%);
-  width: 340px;
-  padding: 9px 14px 10px;
-  background: #f4f1fb;
-  border-top: 5px solid #5b3fa6;
-  font-size: 12.5px;
-  line-height: 1.33;
-  rotate: 1.4deg;
-}
-
-.offer-letter p {
-  margin: 0 0 4px;
-}
-
-.envelope p {
-  margin: 0 0 6px;
-}
-
-.offer-head {
-  color: #5b3fa6;
-  font-family: var(--official);
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.offer-sign {
-  font-family: var(--hand);
-  font-size: 15px;
-  text-align: right;
-}
-
-.offer-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 6px;
-}
-
-.offer-button {
-  flex: 1;
-  padding: 5px 8px;
-  border: 2px solid var(--ink);
-  border-radius: 4px;
-  background: var(--paper-light);
-  color: var(--ink);
-  font-family: var(--official);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-.offer-sign-it {
-  border-color: #5b3fa6;
-  color: #5b3fa6;
-}
-
-.offer-button:hover {
-  background: #fff;
-}
-
-.offer-button:focus-visible {
-  outline: 3px solid var(--marker);
+.inspectable {
+  position: relative;
+  outline: 2px solid transparent;
   outline-offset: 2px;
 }
 
-/* A manila envelope, flap and all. */
-.envelope {
-  box-shadow: 0 12px 26px rgb(0 0 0 / 50%);
-  width: 250px;
-  padding: 26px 16px 10px;
-  background:
-    linear-gradient(160deg, rgb(0 0 0 / 7%) 0 50%, transparent 50%) top left / 50% 22px no-repeat,
-    linear-gradient(200deg, rgb(0 0 0 / 7%) 0 50%, transparent 50%) top right / 50% 22px no-repeat,
-    #d7bd84;
-  font-size: 13px;
-  line-height: 1.4;
-  rotate: -2deg;
+.desk.inspecting .inspectable.on {
+  cursor: zoom-in;
+  outline: 2px dashed rgb(242 201 76 / 70%);
 }
 
-.second-note {
-  position: absolute;
-  z-index: 6;
-  left: 22px;
-  bottom: 22px;
-  width: 160px;
-  rotate: -4deg;
-  animation: land 0.45s 0.6s both;
+.desk.inspecting .inspectable.on:hover,
+.desk.inspecting .inspectable.on:focus-visible {
+  outline: 2px solid var(--marker);
 }
+
+/*
+ * What the clerk has pointed at is framed, and nothing is tinted: a hard frame an art pixel out, the paper
+ * showing between it and the thing as it was, its colour edged outside with its darkest shade, so it reads on
+ * every stock, the rulebook's buff included. The first of two in the highlighter's yellow; two that disagree
+ * under a rule in force in the citation's red; two that disagree where no rule in force reads it (.desk.noted)
+ * stay in the yellow, noted, since a challenge on them would lose the deposit.
+ */
+.inspectable.picked,
+.desk.noted .inspectable.flagged {
+  --ring: var(--marker);
+  --ring-deep: var(--marker-deep);
+}
+
+.inspectable.flagged {
+  --ring: var(--challenge);
+  --ring-deep: var(--challenge-deep);
+}
+
+.inspectable.picked::after,
+.inspectable.flagged::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border: 2px solid var(--ring-deep);
+  box-shadow: inset 0 0 0 4px var(--ring);
+  pointer-events: none;
+}
+
+/* Found, the frame knocks out an art pixel and back. */
+.inspectable.flagged::after {
+  animation: flag 0.3s steps(3);
+}
+
+@keyframes flag {
+  33% {
+    inset: -10px;
+  }
+}
+
+/* Framed, the dashed mark of a thing that can be pointed at gives way to the frame; a key's focus still shows. */
+.desk.inspecting .inspectable.on.picked:not(:focus-visible),
+.desk.inspecting .inspectable.on.flagged:not(:focus-visible) {
+  outline-color: transparent;
+}
+
+/* Inspecting stops the papers sliding about under the magnifier. */
+.desk.inspecting .paper {
+  cursor: default;
+}
+
+/*
+ * Inspecting, the desk goes a shade darker round the papers, as a room does with the lamp on the work, and
+ * whatever can be pointed at is marked out; the magnifier is down and lit, and has its tag.
+ */
+.desk.inspecting {
+  background: var(--px-baize-dim) 0 0 / 12px 12px, var(--baize-dark);
+}
+
+.desk.inspecting .desk-papers {
+  background-color: var(--blotter-dark);
+  box-shadow:
+    inset 0 0 0 2px #18211b,
+    4px 4px 0 var(--baize-deep);
+}
+
+/* The tabs' cut corners are the baize's, dimmed with it. */
+.desk.inspecting .side-tab::before,
+.desk.inspecting .side-tab::after {
+  background: var(--baize-dark);
+}
+
+/* ------------------------------------------------------------ what the desk says */
+
+/*
+ * The Inspect slip: what two things pointed at came to, on a slip of the Ministry's paper at the foot of the
+ * blotter, where no sheet lies (its foot is kept for it). A discrepancy is printed in the citation's red, its
+ * first word stamped: the clerk has found it. Anything else is in plain black, never an all-clear green. Above
+ * every sheet, however often one is picked up (topPaper in Desk.tsx counts up from 100), and never in the way
+ * of a click.
+ */
+.inspect-slip {
+  --slip-edge: var(--letter-edge);
+  position: absolute;
+  z-index: 100000;
+  bottom: 4px;
+  left: 18px;
+  max-width: min(468px, 100% - 36px);
+  margin: 0;
+  padding: 4px 10px;
+  border: 2px solid var(--slip-edge);
+  border-top: 0;
+  /* Torn off a pad along its perforation. */
+  background:
+    repeating-linear-gradient(90deg, var(--slip-edge) 0 4px, transparent 4px 8px) 0 0 / 100% 2px no-repeat,
+    var(--letter);
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--ink);
+  font-family: var(--print);
+  line-height: 24px;
+  pointer-events: none;
+  animation: print 0.3s steps(4) both;
+}
+
+.inspect-slip-found {
+  --slip-edge: var(--pink-edge);
+  color: var(--challenge);
+}
+
+/* Its first word, stamped in a frame of the same red, at the top of its line: its capitals on the line's baseline. */
+.inspect-slip-stamp {
+  display: inline-block;
+  padding: 2px 4px 0;
+  border: 2px solid currentColor;
+  font-family: var(--stamp);
+  font-weight: normal;
+  line-height: 16px;
+  vertical-align: top;
+}
+
+/* While Inspect is on, the glass has a manila tag on a string: what it wants pointed at. It hangs over the tray, which has nothing to say while the clerk looks. */
+.inspect-spot {
+  position: relative;
+}
+
+.inspect-tag {
+  position: absolute;
+  z-index: 3;
+  top: calc(100% + 16px);
+  right: 2px;
+  left: 6px;
+  margin: 0;
+  padding: 12px 8px 6px;
+  border: 2px solid var(--manila-edge);
+  background: var(--manila);
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--ink);
+  font-family: var(--print);
+  line-height: 24px;
+  pointer-events: none;
+}
+
+/* Its string, down from the glass's handle to the eyelet. */
+.inspect-tag::before {
+  content: '';
+  position: absolute;
+  top: -16px;
+  left: 26px;
+  width: 2px;
+  height: 20px;
+  background: var(--ink);
+}
+
+/* The eyelet: a steel ring round the punched hole. */
+.inspect-tag::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 24px;
+  width: 6px;
+  height: 6px;
+  background: var(--baize-dark);
+  box-shadow: 0 0 0 2px var(--steel-light);
+}
+
+/* A second note from the supervisor, stuck on the first a line down: how to use a registry tool, the day it comes. */
+.sticky-spot {
+  position: relative;
+}
+
+.sticky-tip {
+  position: absolute;
+  z-index: 3;
+  top: 26px;
+  right: 6px;
+  left: -6px;
+  pointer-events: none;
+  animation: stick 0.16s steps(2) both;
+}
+
+.sticky-tip p {
+  margin: 0;
+}
+
+@keyframes stick {
+  from {
+    translate: 0 -6px;
+  }
+}
+
+/*
+ * Day 1's one guided look: the supervisor's note, stuck on the foot of the blotter under the papers it is
+ * about, where the Inspect slip prints once two things have been compared. On the dark leather its yellow is
+ * the brightest thing on the desk; it is stuck down as the papers land (Desk.tsx sets the delay), where the
+ * eye already is. Two lines, so it stays clear of the tallest papers day 1 brings on the shortest desk.
+ */
+.hint-note {
+  position: absolute;
+  z-index: 100000;
+  bottom: 8px;
+  left: 18px;
+  width: 236px;
+  pointer-events: none;
+  animation: stick-down 0.16s steps(2) both;
+}
+
+.hint-note p {
+  display: inline;
+  margin: 0;
+}
+
+/* Initialled at the end of its last line. */
+.hint-note .sticky-sign {
+  float: right;
+  margin-left: 8px;
+}
+
+/* Out of sight until it is stuck down, then down in two frames. */
+@keyframes stick-down {
+  from {
+    visibility: hidden;
+    translate: 0 -8px;
+  }
+}
+
+/* The clerk's own note, where Likeness's letter lay: in the clerk's hand, on a scrap of the Ministry's paper. */
+.own-note {
+  position: absolute;
+  z-index: 100000;
+  right: 18px;
+  bottom: 14px;
+  max-width: calc(100% - 36px);
+  margin: 0;
+  padding: 4px 12px 6px;
+  border: 2px solid var(--letter-edge);
+  background: var(--letter);
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--ink-soft);
+  font-family: var(--hand);
+  line-height: 24px;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------ motion and keys, as the clerk has them set */
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1398,694 +2548,492 @@ mark {
   transition-delay: 0s !important;
 }
 
-.audio-switches {
-  display: flex;
-  gap: 6px;
-  align-self: center;
+/* ------------------------------------------------------------ the morning's papers */
+
+/* Until the window opens the blotter holds the morning's papers and no Inspect strip: its foot is theirs. */
+.desk-papers.morning {
+  padding-bottom: 10px;
 }
 
-.mute {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--amber);
+/* What else lies on the morning paper: Likeness's letter and its envelope, papers that can be moved like any other. */
+.paper.morning-extra {
+  position: absolute;
+  z-index: 5;
+  animation: land 0.32s 0.4s steps(8) both;
 }
 
-.mute-label {
-  font-size: 9px;
-  color: #8a8575;
+.at-letter {
+  right: 18px;
+  bottom: 14px;
 }
 
-.photo svg {
-  width: 100px;
-  height: 120px;
+.at-envelope {
+  right: 26px;
+  bottom: 22px;
 }
 
-/* ------------------------------------------------------------ slice 3: the week's new tools */
-
-/* A selfie taken in the bathroom mirror: the photo is the face the other way round. */
-.photo.mirrored svg {
-  transform: scaleX(-1);
+.paper.at-note {
+  z-index: 6;
+  bottom: 18px;
+  left: 22px;
 }
 
-.photo-holder,
-.rule-holder,
-.transcript-holder,
-.record-holder,
-.sign-holder {
-  display: block;
-}
+/* ---------------------------------------------- the Registry Gazette's front page */
 
-.photo-holder {
+/*
+ * Grey newsprint, black ink, a masthead in the paper's own textura, set close as papers are (20px leading):
+ * read at a glance, before the window opens, and never taller than the blotter.
+ */
+.front-page {
+  container: front / inline-size;
   flex: none;
+  width: 100%;
+  max-width: 660px;
+  margin: 0 auto;
+  padding: 4px 12px 10px;
+  border: 2px solid var(--news-edge);
+  background: var(--px-newsprint) 0 0 / 16px 16px, var(--news);
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--news-ink);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 20px;
+  animation: land 0.32s steps(8) both;
 }
 
-.inspectable {
-  position: relative;
-  border-radius: 3px;
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-  transition: outline-color 0.12s, background-color 0.12s;
-}
-
-.desk.inspecting .inspectable.on {
-  cursor: zoom-in;
-  outline: 2px dashed rgb(242 201 76 / 55%);
-}
-
-.desk.inspecting .inspectable.on:hover,
-.desk.inspecting .inspectable.on:focus-visible {
-  outline-color: var(--marker);
-}
-
-.inspectable.picked {
-  outline: 3px solid var(--marker) !important;
-  background-color: rgb(242 201 76 / 18%);
-}
-
-.inspectable.flagged {
-  outline: 3px solid var(--challenge) !important;
-  background-color: rgb(154 47 42 / 12%);
-  animation: flag 0.35s ease-out;
-}
-
-@keyframes flag {
-  30% {
-    outline-offset: 6px;
-  }
-}
-
-/* Inspecting stops the papers sliding about under the magnifier. */
-.desk.inspecting .paper {
-  cursor: default;
-}
-
-/* Above every sheet, however often one is picked up (topPaper in Desk.tsx counts up from 100). */
-.inspector {
-  position: absolute;
-  z-index: 100000;
-  left: 12px;
-  right: 12px;
-  bottom: 8px;
+.front-page p {
   margin: 0;
-  padding: 7px 11px;
-  border-radius: 3px;
-  background: rgb(20 22 17 / 92%);
-  box-shadow: 0 3px 10px rgb(0 0 0 / 45%);
-  color: #e9e3cf;
-  font-family: var(--official);
-  font-size: 13px;
-  letter-spacing: 0.02em;
-  line-height: 1.35;
-  pointer-events: none;
 }
 
-.inspector-found {
-  color: #fff;
-  background: rgb(122 34 30 / 95%);
-}
-
-.inspector-none {
-  color: #ffd98c;
-}
-
-.inspector-hint,
-.inspector-tip {
-  color: #20251c;
-  background: var(--marker);
-}
-
-.inspect-tool {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: 104px;
-  padding: 7px 6px;
-  border: 2px solid #8e959b;
-  border-radius: 4px;
-  background: linear-gradient(180deg, #4d5046, #34372f);
-  color: #e9e3cf;
-  font-family: var(--official);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-.inspect-tool kbd {
-  color: #d8d2c0;
-}
-
-.inspect-tool.on {
-  border-color: var(--marker);
-  background: linear-gradient(180deg, #6d6230, #4b4322);
-  color: #fff4cf;
-}
-
-.inspect-tool.hint {
-  animation: hint 1.2s ease-in-out infinite;
-}
-
-@keyframes hint {
-  50% {
-    box-shadow: 0 0 0 5px rgb(242 201 76 / 55%);
-  }
-}
-
-.inspect-glass {
-  width: 12px;
-  height: 12px;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-  box-shadow: 5px 5px 0 -3.5px currentColor;
-}
-
-/* The video printout: the film, and the sign enlarged beside it. */
-.video-row {
-  display: flex;
-  gap: 12px;
-  align-items: stretch;
-}
-
-.frame-picture {
-  display: block;
-}
-
-.frame.pair .frame-picture {
-  display: flex;
-}
-
-.frame.pair .frame-picture svg {
-  width: 50%;
-}
-
-.sign-holder {
-  flex: 1;
-  min-width: 0;
-}
-
-.sign-still {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  height: 100%;
-  padding: 7px 9px;
-  background: var(--paper-light);
-  border: 1px solid var(--rule-line);
-}
-
-.sign-text {
-  display: flex;
-  flex-direction: column;
-  align-self: flex-start;
-  padding: 6px 8px;
-  background: #d9bd8c;
-  box-shadow: inset 0 0 0 1px #9f7f50;
-  color: #1f1b18;
-  /* Marker capitals, one clear face: every character can be read against the form. */
-  font-family: var(--typewriter);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  line-height: 1.3;
-}
-
-/* The same address on a phone: a lit screen in a dark case. Case and screen margin together are a
-   pixel inside the paper's 8px a side, so a phone is no wider than a sign and fits the panel wherever
-   a sign does, even once the stage's scale has rounded the case. */
-.sign-text.phone {
-  padding: 8px 3px;
-  border: 4px solid #23262b;
-  border-radius: 7px;
-  background: #cfe3ea;
-  box-shadow: none;
-}
-
-.sign-none {
-  color: var(--ink-soft);
-  font-style: italic;
-  font-size: 13px;
-}
-
-.qr {
-  display: block;
-  width: 64px;
-  height: 64px;
-  background:
-    linear-gradient(#1f1b18 0 0) 0 0 / 18px 18px no-repeat,
-    linear-gradient(#1f1b18 0 0) 100% 0 / 18px 18px no-repeat,
-    linear-gradient(#1f1b18 0 0) 0 100% / 18px 18px no-repeat,
-    conic-gradient(#1f1b18 25%, #fff 0 50%, #1f1b18 0 75%, #fff 0) 0 0 / 8px 8px,
-    #fff;
-  box-shadow: 0 0 0 5px #fff, 0 0 0 6px #9c9480;
-  margin: 6px;
-}
-
-/* The rulebook's pages: a tab per rule in force, the new one marked. */
-.rule-tabs {
-  display: flex;
-  gap: 4px;
-  margin: -2px 0 9px;
-}
-
-.rule-tab {
-  position: relative;
-  width: 28px;
-  height: 24px;
-  padding: 0;
-  border: 1px solid #a89f88;
-  border-radius: 3px 3px 0 0;
-  background: #ddd6c2;
-  color: var(--ink-soft);
-  font-family: var(--official);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.rule-tab[aria-selected='true'] {
-  background: var(--paper-light);
-  border-bottom-color: var(--paper-light);
-  color: var(--ink);
-}
-
-.rule-tab.new::after {
-  content: '';
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--challenge);
-}
-
-.rule-new {
-  margin-left: 8px;
-  padding: 1px 5px;
-  border: 1px solid var(--challenge);
-  color: var(--challenge);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  vertical-align: 2px;
-  white-space: nowrap;
-}
-
-.rule-checks {
+/*
+ * The masthead, the dateline under it (the day at one end, the countdown at the other), and the paper's
+ * rule, a thick line and a thin one. A page wide enough prints the dateline as the masthead's ears.
+ */
+.front-mast {
+  display: grid;
+  grid-template-areas:
+    'title title'
+    'day count';
+  justify-content: space-between;
   margin: 0 0 8px;
-  padding-left: 18px;
-  font-size: 13px;
-  line-height: 1.35;
-}
-
-/* Rule 0's Fig. 0: the specimen face in a video frame, eyes shut, without and with a light. */
-.rule-figure {
-  display: flex;
-  gap: 10px;
-  margin: 4px 0 0;
-}
-
-.rule-plate {
-  display: flex;
-  align-items: flex-start;
-  gap: 7px;
-  min-width: 0;
-}
-
-/* The film's own black, so each still reads as a frame of video. */
-.rule-still {
-  position: relative;
-  flex: none;
-  padding: 2px;
-  background: #1b1c1a;
-  line-height: 0;
-}
-
-.rule-still > svg:first-child {
-  display: block;
-}
-
-/* On the still's bottom-right corner, clear of the next line and of the face. */
-.rule-mark {
-  position: absolute;
-  right: -6px;
-  bottom: 0;
-}
-
-.rule-mark circle {
-  stroke: var(--ink);
-  stroke-width: 1.5;
-}
-
-.rule-mark path {
-  fill: none;
-  stroke-width: 1.8;
-}
-
-.rule-mark-ok circle {
-  fill: var(--paper-light);
-}
-
-.rule-mark-ok path {
-  stroke: var(--ink);
-  stroke-linecap: square;
-}
-
-.rule-mark-not circle {
-  fill: var(--ink);
-}
-
-.rule-mark-not path {
-  stroke: var(--paper-light);
-}
-
-/* One line each, never wrapped: without Arial Narrow a wrap would add a line and push the page down. */
-.rule-caption {
-  font-family: var(--official);
-  font-size: 12px;
-  line-height: 1.2;
-  white-space: nowrap;
-  color: var(--ink);
-}
-
-.rule-caption b,
-.rule-caption span {
-  display: block;
-}
-
-.rule-caption b {
-  letter-spacing: 0.04em;
-}
-
-/* The side of the desk holds the rulebook and, from day 4, the registry terminal. */
-.side-tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: -10px;
-}
-
-.side-tabs button {
-  flex: 1;
-  padding: 5px 0;
-  border: 0;
-  border-radius: 4px 4px 0 0;
-  background: #2a2c24;
-  color: #a39d8a;
-  font-family: var(--official);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-.side-tabs button[aria-selected='true'] {
-  background: var(--paper);
-  color: var(--ink);
-}
-
-.paper[hidden] {
-  display: none;
-}
-
-.registry {
-  font-size: 13px;
-}
-
-.lookup-form {
-  display: flex;
-  gap: 5px;
-  margin-bottom: 6px;
-}
-
-.lookup-form input {
-  flex: 1;
-  min-width: 0;
-  padding: 4px 6px;
-  border: 1px solid #9c9480;
-  background: var(--paper-light);
-  font: inherit;
-}
-
-.lookup-form button,
-.lookup-quick button {
-  padding: 4px 7px;
-  border: 1px solid #6e6754;
-  border-radius: 3px;
-  background: #d8d0b8;
-  color: var(--ink);
-  font-family: var(--official);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-/* A lookup beside what it looks up: small, labelled, with its key. */
-.doc-head {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.doc-head .doc-title {
-  flex: 1;
-}
-
-.lookup-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 24px;
-  margin-left: 8px;
-  padding: 2px 6px;
-  border: 1px solid #6e6754;
-  border-radius: 3px;
-  background: #d8d0b8;
-  color: var(--ink);
-  font-family: var(--official);
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  vertical-align: middle;
-  cursor: pointer;
-}
-
-.doc-head .lookup-chip {
-  margin: -5px 0 0;
-}
-
-.lookup-chip:hover {
-  background: #e6dfca;
-}
-
-.lookup-chip:focus-visible {
-  outline: 3px solid var(--marker);
-  outline-offset: 2px;
-}
-
-.lookup-chip kbd,
-.lookup-quick kbd {
-  font-size: 9px;
-}
-
-.lookup-result .searched {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.lookup-quick {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 8px;
-}
-
-.lookup-quick button:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-
-.lookup-result {
-  min-height: 90px;
-  padding: 7px;
-  background: #1c201b;
-  color: #b9e3a8;
-  font-size: 12px;
-  line-height: 1.35;
-}
-
-.lookup-result p {
-  margin: 0 0 5px;
-}
-
-.record {
-  display: flex;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.record-face {
-  flex: none;
-  line-height: 0;
-}
-
-.record dl {
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
-  gap: 1px 7px;
-  margin: 0;
-}
-
-.record dt {
-  color: #7fa872;
-  text-transform: uppercase;
-  font-size: 10px;
-  padding-top: 1px;
-}
-
-.record dd {
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-
-/* The morning paper, on the blotter until the window opens. */
-.gazette,
-.welcome {
-  margin: 14px 8px auto;
-  padding: 14px 18px 16px;
+  padding: 0 2px 10px;
   background:
-    radial-gradient(ellipse at 20% 0%, rgb(255 255 255 / 30%), transparent 60%),
-    #e8e2cf;
-  box-shadow: 0 2px 0 #b9b19a, 0 10px 22px rgb(0 0 0 / 45%);
-  rotate: -0.6deg;
-  animation: land 0.45s both;
+    linear-gradient(var(--news-ink) 0 0) 0 calc(100% - 4px) / 100% 4px no-repeat,
+    linear-gradient(var(--news-ink) 0 0) 0 100% / 100% 2px no-repeat;
+  white-space: nowrap;
 }
 
-.gazette-mast {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  padding-bottom: 6px;
-  border-bottom: 3px double var(--ink);
-  font-family: var(--official);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.gazette-mast h2 {
+.front-title {
+  grid-area: title;
   margin: 0;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 26px;
-  letter-spacing: 0.02em;
-  text-transform: none;
+  line-height: 0;
 }
 
-.gazette-headline {
-  margin: 10px 0 10px;
-  font-family: var(--official);
-  font-size: 22px;
-  line-height: 1.1;
-  letter-spacing: 0.01em;
+.front-title svg {
+  display: block;
+  margin: 0 auto;
 }
 
-.gazette-columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  font-size: 13px;
-  line-height: 1.4;
+.front-day {
+  grid-area: day;
 }
 
-.gazette-columns p {
-  margin: 0 0 6px;
-}
-
-.gazette-notice {
-  padding-left: 12px;
-  border-left: 1px solid var(--rule-line);
-}
-
-.gazette-notice h4 {
-  margin: 0 0 4px;
-  font-family: var(--official);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.gazette-foot {
-  margin-top: 8px;
-  padding-top: 7px;
-  border-top: 1px solid var(--ink);
-  font-size: 12.5px;
-  line-height: 1.35;
-}
-
-.gazette-foot p {
-  margin: 0 0 4px;
-}
-
-.gazette-small {
-  color: var(--ink-soft);
-  font-style: italic;
-}
-
-.welcome {
-  background: var(--paper-light);
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-.welcome h2 {
-  margin: 0 0 10px;
-  font-family: var(--official);
-  font-size: 18px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.welcome p {
-  margin: 0 0 9px;
-}
-
-.welcome-sign {
-  color: var(--pen);
-  font-family: var(--hand);
-  font-size: 16px;
+.front-count {
+  grid-area: count;
   text-align: right;
 }
 
-/* The night shift's card, where the morning paper would be: the Ministry never closes. */
-.night-card {
+@container front (min-width: 626px) {
+  .front-mast {
+    grid-template-areas: 'day title count';
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 8px;
+    padding: 0 0 10px;
+    white-space: normal;
+  }
+}
+
+/* The headline, in the Ministry's big print, set tight: capitals need no room for descenders. */
+.front-headline {
+  margin: 0 0 4px;
+  font-family: var(--stamp);
+  font-size: 30px;
+  font-weight: normal;
+  line-height: 32px;
+  text-align: center;
+}
+
+.front-photo {
+  margin: 0;
+}
+
+/* Yesterday at Window 3, as a line-up: a row of faces for each stamp, the stamp at its head, on the halftone. */
+.front-wall {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 16px;
+  margin: 0;
+  padding: 4px 8px;
+  border: 2px solid var(--news-ink);
+  background: var(--px-halftone) 0 0 / 4px 4px;
+  list-style: none;
+}
+
+.wall-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* The stamp, as it came down: its word in a frame, on the paper's white, over any ring, an art pixel clear of the frame. */
+.wall-stamp {
+  position: relative;
+  z-index: 2;
+  padding: 2px 6px 0;
+  border: 2px solid var(--news-ink);
+  background: var(--news-light);
+  font-family: var(--stamp);
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.wall-faces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wall-face {
+  position: relative;
+  border: 2px solid var(--news-ink);
+  background: var(--news-light);
+  line-height: 0;
+}
+
+/* Printed as newsprint prints a colour photo: muted, and a little warm. */
+.wall-face > svg {
+  display: block;
+  filter: saturate(0.4) sepia(0.2) brightness(1.05);
+}
+
+/* The one the headline is about, ringed. */
+.wall-ring {
+  position: absolute;
+  z-index: 1;
+  top: -10px;
+  left: -10px;
+  pointer-events: none;
+}
+
+.front-page .front-caption {
+  margin: 2px 0 0;
+  font-style: italic;
+}
+
+.front-page .front-thread {
+  margin: 4px 0 0;
+  padding-top: 6px;
+  background: linear-gradient(var(--news-ink) 0 0) 0 0 / 100% 2px no-repeat;
+}
+
+/* The small notice, boxed. */
+.front-page .front-notice {
+  margin: 4px 0 0;
+  padding: 0 8px 2px;
+  border: 2px solid var(--news-ink);
+}
+
+/*
+ * Day 2: the frame day 1's unit lit up in, reprinted large, two art pixels to a portrait pixel, and the
+ * story beside it. Each block beside the photo keeps to its own column.
+ */
+.front-still {
+  position: relative;
+  float: left;
+  margin: 2px 12px 4px 0;
+  padding: 4px;
+  border: 2px solid var(--news-ink);
+  background: var(--px-halftone) 0 0 / 4px 4px;
+  line-height: 0;
+}
+
+.front-still svg {
+  width: 160px;
+  height: 192px;
+}
+
+/* Printed as newsprint prints every face, the wall's included: muted, and a little warm. */
+.front-still .frame-picture svg {
+  filter: saturate(0.4) sepia(0.2) brightness(1.05);
+}
+
+/* The light the story is about, printed over it in its own colour: the lamp's pixels and nothing else. */
+.front-lamp {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  pointer-events: none;
+}
+
+.front-page .front-reprint .front-caption {
+  margin: 0;
+}
+
+.front-reprint .front-caption,
+.front-reprint ~ .front-thread,
+.front-reprint ~ .front-notice {
+  display: flow-root;
+}
+
+/* ---------------------------------------------- the Ministry's letterhead: the welcome letter */
+
+/* Cool white, the Ministry's seal and name in its green over a green rule; the supervisor signs in pen. */
+.letterhead {
+  flex: none;
+  width: 100%;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 10px 18px 12px;
+  border: 2px solid var(--letter-edge);
+  background: var(--letter);
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--ink);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 24px;
+  animation: land 0.32s steps(8) both;
+}
+
+.letterhead p {
+  margin: 0 0 8px;
+}
+
+.letterhead-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  padding-bottom: 8px;
   background:
-    radial-gradient(ellipse at 20% 0%, rgb(255 255 255 / 20%), transparent 60%),
-    #dcd5c0;
+    linear-gradient(var(--ministry) 0 0) 0 100% / 100% 2px no-repeat,
+    linear-gradient(var(--ministry) 0 0) 0 calc(100% - 4px) / 100% 2px no-repeat;
+  color: var(--ministry);
+  font-family: var(--stamp);
 }
 
-.night-shift {
-  font-family: var(--official);
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+.letterhead-top svg {
+  display: block;
+  flex: none;
 }
 
-.night-tally {
-  font-weight: 700;
+.letter-subject {
+  margin: 0 0 8px;
+  font-family: var(--stamp);
+  font-size: 20px;
+  font-weight: normal;
+  line-height: 24px;
 }
 
-/* The night's topbar: two counts where the savings would be. */
+.letterhead .letter-sign {
+  margin: 0;
+  color: var(--pen);
+  font-family: var(--hand);
+  font-size: 30px;
+  line-height: 36px;
+  text-align: right;
+}
+
+/* ---------------------------------------------- Likeness Robotics' letter and envelope */
+
+/* Another company's paper, in the company's own coral: bright bond, its mark and name at the head. */
+.offer-letter {
+  width: 344px;
+  padding: 10px 14px 14px;
+  border: 2px solid var(--bond-edge);
+  background: var(--bond);
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--ink);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 24px;
+}
+
+.offer-letter p {
+  margin: 0 0 6px;
+}
+
+.likeness-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0 8px;
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--coral);
+}
+
+.likeness-head svg {
+  display: block;
+  grid-row: span 2;
+}
+
+.likeness-name {
+  color: var(--coral);
+  font-family: var(--stamp);
+  white-space: nowrap;
+}
+
+.likeness-dept {
+  color: var(--ink-soft);
+}
+
+.offer-letter .offer-sign {
+  margin: 0 0 12px;
+  color: var(--coral-deep);
+  font-family: var(--hand);
+  text-align: right;
+}
+
+.offer-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Two steel keys at the foot of the letter, side by side. */
+.offer-actions .steel-key {
+  flex: 1;
+  padding-inline: 6px;
+}
+
+/* A manila envelope, its flap folded down and sealed with the company's mark. */
+.envelope {
+  position: relative;
+  width: 312px;
+  padding: 54px 14px 10px;
+  border: 2px solid var(--manila-edge);
+  background: var(--manila);
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--ink);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 24px;
+}
+
+.envelope p {
+  margin: 0 0 4px;
+}
+
+.envelope-flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  line-height: 0;
+}
+
+/* On the flap's point: fifteen art pixels wide on a point two wide, so half an art pixel to its right, on the grid. */
+.envelope-seal {
+  position: absolute;
+  top: 18px;
+  left: 140px;
+  padding: 2px;
+  border: 2px solid var(--coral-deep);
+  background: var(--bond);
+  line-height: 0;
+}
+
+.envelope .envelope-from {
+  color: var(--coral);
+  font-family: var(--stamp);
+}
+
+/* The supervisor's second note, stuck to the paper's foot. */
+.second-note {
+  width: 176px;
+}
+
+/* ---------------------------------------------- the night shift's clock card */
+
+/* A clock card: buff card, its title in the Ministry's band, the shift stamped big, the time clock's figures at its foot. */
+.clock-card {
+  flex: none;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0 16px 12px;
+  border: 2px solid var(--buff-edge);
+  background: var(--buff-light);
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--ink);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 24px;
+  animation: land 0.32s steps(8) both;
+}
+
+.clock-card p {
+  margin: 0 0 8px;
+}
+
+.clock-card-title {
+  margin: 0 -16px 10px;
+  padding: 2px 16px;
+  background: var(--ministry);
+  box-shadow: inset 0 -2px 0 #1b3021;
+  color: var(--form-light);
+  font-family: var(--print);
+  font-size: 20px;
+  font-weight: normal;
+  line-height: 24px;
+}
+
+.clock-card .clock-card-shift {
+  width: fit-content;
+  margin: 0 0 10px;
+  padding: 0 8px;
+  border: 4px solid currentColor;
+  background: var(--buff-light);
+  font-family: var(--stamp);
+  font-size: 30px;
+  line-height: 36px;
+}
+
+.clock-card .clock-card-tally {
+  margin: 12px 0 0;
+  padding: 4px 8px;
+  border: 2px solid var(--buff-edge);
+  background: #f3ead0;
+  font-family: var(--type);
+}
+
+.clock-card-tally span {
+  display: block;
+}
+
+/* The night's rail: two tallies where the savings would be, the citations on a red wheel. */
 .night .topbar-savings strong {
   margin: 0 2px;
+}
+
+.topbar-tally {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar-tally strong {
+  height: 28px;
+  padding: 0 4px;
+  border: 2px solid var(--black);
+  background: var(--charcoal-deep);
+  box-shadow: 0 2px 0 var(--steel-deep);
+  color: var(--led);
+  font-family: var(--type);
+  font-weight: normal;
 }

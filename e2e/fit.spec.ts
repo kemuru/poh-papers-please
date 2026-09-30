@@ -84,6 +84,46 @@ for (const [width, height] of [
   });
 }
 
+// The desk's tallest states, on the shortest windows a small laptop gives: Rule 2's page under the registry's
+// tab (day 4 on), and a voucher's form over a phone held up in the video (seed 1's day 4, second applicant).
+// The stage takes no crisp scale that would cut them off (src/ui/room.ts): until 30 Sep 2026 these windows
+// took scale 1 and lost up to 58px at the foot of the desk.
+for (const [width, height] of [
+  [1240, 760],
+  [1280, 768],
+] as const) {
+  test(`the desk's tallest states fit a ${width}×${height} window`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await page.goto('/?seed=1&day=4');
+    await page.getByRole('button', { name: /Open the window/ }).click();
+    await page.getByRole('button', { name: 'Call next applicant' }).click();
+    await page.keyboard.press('2');
+    await expect(page.getByRole('tablist', { name: 'Rulebook pages' }).getByRole('tab', { selected: true })).toHaveText('2');
+    await expect(page.getByRole('tab', { name: 'Registry' })).toBeVisible();
+    await fitsIn(page, width, height, [
+      page.getByRole('img', { name: /The waiting hall/ }),
+      page.getByRole('region', { name: 'Rulebook' }),
+      page.getByRole('region', { name: 'Profile card' }),
+      page.getByTestId('transcript'),
+      page.getByRole('button', { name: 'Accept' }),
+      page.locator('.sticky'),
+    ]);
+    // Pat's voucher is not registered; the next applicant vouched for, holding a phone up to the camera.
+    await page.getByRole('button', { name: 'Challenge' }).click();
+    await page.getByRole('button', { name: 'Call next applicant' }).click();
+    await expect(page.getByTestId('sign')).toContainText('Phone screen, enlarged');
+    await expect(page.getByTestId('voucher')).not.toBeEmpty();
+    await page.waitForFunction(() => document.querySelector('.paper-video')?.getAnimations().every((a) => a.playState === 'finished'));
+    await fitsIn(page, width, height, [
+      page.getByRole('region', { name: 'Profile card' }),
+      page.getByRole('region', { name: 'Video strip' }),
+      page.getByTestId('transcript'),
+      page.getByRole('region', { name: 'Rulebook' }),
+      page.getByRole('button', { name: 'Challenge' }),
+    ]);
+  });
+}
+
 // From day 3 about half the queue hold their address up on a phone, a case drawn around the screen:
 // it must be no wider than a paper sign and fit the panel wherever a sign does. Seed 1, day 6: the
 // first applicant holds paper, the third a phone.

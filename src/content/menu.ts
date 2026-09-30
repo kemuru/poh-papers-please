@@ -5,17 +5,18 @@
 export const MENU = {
   button: 'Menu',
   key: 'Esc',
-  head: 'Ministry of Humanity · Window 3',
+  /** In the corner of the menu's form, as a form's number is. */
+  head: 'Window 3',
   paused: { title: 'Paused', line: 'The queue will wait. It is used to it.' },
-  /** Where the week stands, under the title. */
+  /** Where the week stands, typed on the menu's form and on the notice board. */
   where: {
-    morning: 'Day {day} · Morning',
-    open: 'Day {day} · At the window',
-    left: 'Day {day} · At the window · {left} left',
-    closing: 'Day {day} · Closing time',
-    court: 'Day {day} · In court',
-    statement: 'Day {day} · The accounts',
-    ending: 'Day {day} · The letter',
+    morning: 'Day {day}, morning',
+    open: 'Day {day}, at the window',
+    left: 'Day {day}, at the window, {left} left',
+    closing: 'Day {day}, closing time',
+    court: 'Day {day}, in court',
+    statement: 'Day {day}, the accounts',
+    ending: 'Day {day}, the letter',
   },
   back: 'Back to the window',
   dayAgain: 'Start day {day} again',

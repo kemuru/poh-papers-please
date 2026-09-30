@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { TERMINAL_KEYS } from '../content/desk';
 import type { Portrait } from '../gen/portrait';
 import { findFace, findName } from '../rules/registry';
 import type { Registrant, Registry } from '../rules/types';
@@ -52,30 +53,40 @@ export function RegistryLookup({
     <div className="doc registry" aria-label="Registry lookup">
       <h2 className="doc-title">Registry lookup</h2>
       <form className="lookup-form" onSubmit={search}>
-        <input
-          ref={box}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              e.preventDefault();
-              box.current?.blur();
-            }
-          }}
-          aria-label="Name to look up"
-          placeholder="A name"
-          value={typed}
-          onChange={(e) => setTyped(e.target.value)}
-          spellCheck={false}
-          autoComplete="off"
-        />
-        <button type="submit" disabled={!typed.trim()}>Search</button>
+        {/* The terminal's input line, the width of its screen: its prompt, and the name typed after it. */}
+        <span className="lookup-line">
+          <span className="lookup-prompt" aria-hidden="true">
+            &gt;
+          </span>
+          <input
+            ref={box}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                box.current?.blur();
+              }
+            }}
+            aria-label="Name to look up"
+            placeholder="A name"
+            value={typed}
+            onChange={(e) => setTyped(e.target.value)}
+            spellCheck={false}
+            autoComplete="off"
+          />
+        </span>
+        {/* The terminal's return key: the arrow printed on it is all it says. */}
+        <button type="submit" className="steel-key lookup-enter" aria-label={TERMINAL_KEYS.search} title={TERMINAL_KEYS.searchTitle} disabled={!typed.trim()}>
+          <span className="lookup-return" aria-hidden="true" />
+        </button>
       </form>
+      {/* The terminal's two keys for whoever is at the window. */}
       <div className="lookup-quick">
-        <button disabled={!voucher} onClick={() => voucher && onLookup({ by: 'name', name: voucher })} onMouseDown={keepFocus}>
-          Look up the voucher <kbd>V</kbd>
+        <button className="steel-key" disabled={!voucher} onClick={() => voucher && onLookup({ by: 'name', name: voucher })} onMouseDown={keepFocus}>
+          {TERMINAL_KEYS.voucher} <kbd>V</kbd>
         </button>
         {faceSearch && (
-          <button disabled={!face} onClick={() => onLookup({ by: 'face' })} onMouseDown={keepFocus}>
-            Search the face in the video <kbd>F</kbd>
+          <button className="steel-key" disabled={!face} onClick={() => onLookup({ by: 'face' })} onMouseDown={keepFocus} title={TERMINAL_KEYS.faceTitle}>
+            {TERMINAL_KEYS.face} <kbd>F</kbd>
           </button>
         )}
       </div>
@@ -107,8 +118,9 @@ function NameResult({ name, found }: { name: string; found: Registrant | null })
     );
   return (
     <Record r={found}>
-      <dt>Vouching today for</dt>
-      <dd data-testid="vouching">{found.vouching ?? 'nobody'}</dd>
+      <div>
+        <dt>Vouching today for</dt> <dd data-testid="vouching">{found.vouching ?? 'nobody'}</dd>
+      </div>
     </Record>
   );
 }
@@ -117,9 +129,10 @@ function NameResult({ name, found }: { name: string; found: Registrant | null })
 function FaceResult({ face, found }: { face: Portrait; found: Registrant[] }) {
   return (
     <>
+      {/* The answer runs round the face searched, and on under it. */}
       <p className={found.length === 0 ? 'record-none searched' : 'record-count searched'}>
         <span className="record-face">
-          <PixelPortrait portrait={face} scale={1} background="#cfd8dc" title="The face searched" />
+          <PixelPortrait portrait={face} scale={2} background="#cfd8dc" title="The face searched" />
         </span>
         Searched the face in the video. On file with this face: {found.length === 0 ? 'nobody' : found.length}.
       </p>
@@ -130,19 +143,28 @@ function FaceResult({ face, found }: { face: Portrait; found: Registrant[] }) {
   );
 }
 
+/** "Window 7" and "day 4" are one thing each: the terminal never breaks one across two lines. */
+function unbroken(text: string): ReactNode[] {
+  return text.split(/((?:Window|day) \d+)/).map((part, i) => (i % 2 ? <span key={i} className="unbroken">{part}</span> : part));
+}
+
 function Record({ r, children }: { r: Registrant; children?: ReactNode }) {
   return (
     <div className="record" data-testid="record">
       <span className="record-face">
-        <PixelPortrait portrait={r.face} scale={1.25} background="#cfd8dc" title={`Face on file for ${r.name}`} />
+        <PixelPortrait portrait={r.face} scale={2} background="#cfd8dc" title={`Face on file for ${r.name}`} />
       </span>
+      {/* One line to each entry, as the terminal prints it. */}
       <dl>
-        <dt>Name</dt>
-        <dd data-testid="record-name">{r.name}</dd>
-        <dt>Born</dt>
-        <dd>{formatYear(r.birthYear)}</dd>
-        <dt>Registered</dt>
-        <dd>{registeredWhere(r)}</dd>
+        <div>
+          <dt>Name</dt> <dd data-testid="record-name">{r.name}</dd>
+        </div>
+        <div>
+          <dt>Born</dt> <dd>{formatYear(r.birthYear)}</dd>
+        </div>
+        <div>
+          <dt>Registered</dt> <dd>{unbroken(registeredWhere(r))}</dd>
+        </div>
         {children}
       </dl>
     </div>

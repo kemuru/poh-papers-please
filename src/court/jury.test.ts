@@ -63,14 +63,13 @@ describe('the jury', () => {
     expect(fakes.length).toBeGreaterThan(3000);
     expect(new Set(fakes.flatMap((h) => h.kind.split(' + ')))).toEqual(
       new Set([
-        'human:machine', 'human:deepfake', 'human:printed', 'human:generated',
         'phrase:wrong-word', 'phrase:missing-words', 'phrase:silence', 'phrase:quiet-word',
-        'photo:another-face', 'photo:mirrored', 'photo:filter',
+        'face:another-face', 'face:mirrored', 'face:filter', 'face:machine', 'face:deepfake',
         'sign:two-wrong', 'sign:no-sign', 'sign:qr', 'sign:wrong-address',
         'vouch:company', 'vouch:unregistered', 'vouch:busy',
         'duplicate:farm', 'duplicate:clone', 'duplicate:unit', 'duplicate:back-in-a-hat',
         // Socrates comes before day 6: 470 BC is never an offence in a generated week.
-        'living:version', 'living:year-typo', 'living:no-blink',
+        'living:version', 'living:year-typo', 'living:printed', 'living:generated',
       ]),
     );
     expect(new Set(fakes.flatMap((h) => h.violations.map(visibility)))).toEqual(new Set(TIERS));
@@ -127,8 +126,8 @@ describe('the jury', () => {
       ['sign:qr', 'plain'],
       ['sign:no-sign', 'plain'],
       ['phrase:wrong-word', 'often'],
-      ['photo:mirrored', 'often'],
-      ['human:deepfake', 'rare'],
+      ['face:mirrored', 'often'],
+      ['face:deepfake', 'rare'],
       // Tuned: two wrong characters, a voucher not registered or already vouching, a face on file.
       ['sign:two-wrong', 'rare'],
       ['vouch:unregistered', 'rare'],
@@ -144,16 +143,15 @@ describe('the jury', () => {
       expect(seen.length, kind).toBeGreaterThan(10);
       expect(new Set(seen.map(visibility)), kind).toEqual(new Set([tier]));
     }
-    // A lamp as plainly as it shows (slice 5): the day 1 unit's bloom often, the glow of days 2 and 3
-    // sometimes, day 6's small lamp and day 7's slit rarely.
+    // A lamp as plainly as it shows: the glow of days 2 and 3 sometimes, day 6's small lamp and day 7's
+    // slit rarely. Day 1's unit, the only bloom, breaks no rule.
     const lamps = new Map<string, Set<Tier>>();
     for (const h of fakes) {
-      const v = h.violations.find((x) => x.rule === 'human' && x.problem === 'machine');
-      if (v?.rule !== 'human') continue;
+      const v = h.violations.find((x) => x.rule === 'face' && x.problem === 'machine');
+      if (v?.rule !== 'face') continue;
       lamps.set(`day ${h.day}`, (lamps.get(`day ${h.day}`) ?? new Set()).add(visibility(v)));
     }
     expect(Object.fromEntries([...lamps].map(([day, tiers]) => [day, [...tiers]]))).toEqual({
-      'day 1': ['often'],
       'day 2': ['sometimes'],
       'day 3': ['sometimes'],
       'day 6': ['rare'],
@@ -170,11 +168,11 @@ describe('the jury', () => {
       wrong,
     });
     const table: [Violation, Tier][] = [
-      [{ rule: 'human', problem: 'machine', frame: 3, lamp: 'small' }, 'rare'],
-      [{ rule: 'human', problem: 'machine', frame: 3, lamp: 'slit' }, 'rare'],
-      [{ rule: 'human', problem: 'machine', frame: 3, lamp: 'glow' }, 'sometimes'],
-      [{ rule: 'human', problem: 'machine', frame: 3, lamp: 'bloom' }, 'often'],
-      [{ rule: 'human', problem: 'changes', frame: 3 }, 'rare'],
+      [{ rule: 'face', problem: 'machine', frame: 3, lamp: 'small' }, 'rare'],
+      [{ rule: 'face', problem: 'machine', frame: 3, lamp: 'slit' }, 'rare'],
+      [{ rule: 'face', problem: 'machine', frame: 3, lamp: 'glow' }, 'sometimes'],
+      [{ rule: 'face', problem: 'machine', frame: 3, lamp: 'bloom' }, 'often'],
+      [{ rule: 'face', problem: 'changes', frame: 3 }, 'rare'],
       [sign([7, 30]), 'rare'],
       [sign([7, 19, 30]), 'rare'],
       [sign([7, 19, 30, 41]), 'often'],

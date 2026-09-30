@@ -53,7 +53,8 @@ test('one band plays from the first morning into day 2, never two at once', asyn
   await page.goto('/?seed=1&day=1');
   await page.getByRole('button', { name: /Open the window/ }).click();
   await expect.poll(() => bands(page)).toBe(1);
-  for (let i = 0; i < 5; i++) {
+  const { length } = await page.evaluate(() => window.__game!.queue);
+  for (let i = 0; i < length; i++) {
     await page.getByRole('button', { name: 'Call next applicant' }).click();
     await page.getByRole('button', { name: 'Accept' }).click();
   }

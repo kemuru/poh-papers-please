@@ -16,8 +16,8 @@ describe('generateWeek', () => {
     expect(generateDay(3, 5)).toEqual(generateWeek(3)[4]);
   });
 
-  it('has the applicant counts of the day table: 5, 7, 8, 8, 9, 10, and on Humanity Day six and the clerk', () => {
-    expect(DAYS.map((d) => d.applicants)).toEqual([5, 7, 8, 8, 9, 10, 7]);
+  it('has the applicant counts of the day table: 6, 7, 8, 8, 9, 10, and on Humanity Day six and the clerk', () => {
+    expect(DAYS.map((d) => d.applicants)).toEqual([6, 7, 8, 8, 9, 10, 7]);
     for (const week of weeks) expect(week.map((day) => day.length)).toEqual(DAYS.map((d) => d.applicants));
   });
 
@@ -25,17 +25,14 @@ describe('generateWeek', () => {
     expect(DAYS.map((d) => d.shiftSeconds !== null)).toEqual([false, true, true, true, true, true, false]);
   });
 
-  it('keeps 65 to 75% of each day valid (day 1: 3 of 5, the nearest its five applicants allow; day 7, the six before the clerk)', () => {
+  it('keeps 65 to 75% of each day valid (day 1: 4 of 6; day 7, the six before the clerk)', () => {
     for (const week of weeks) {
       week.forEach((day, i) => {
         // The clerk's own renewal ends Humanity Day, and is not the public's queue.
         const queue = day.filter((a) => a.cast !== 'clerk');
         const share = queue.filter(valid).length / queue.length;
-        if (i === 0) expect(share).toBe(0.6);
-        else {
-          expect(share, `day ${i + 1}`).toBeGreaterThanOrEqual(0.65);
-          expect(share, `day ${i + 1}`).toBeLessThanOrEqual(0.75);
-        }
+        expect(share, `day ${i + 1}`).toBeGreaterThanOrEqual(0.65);
+        expect(share, `day ${i + 1}`).toBeLessThanOrEqual(0.75);
       });
     }
   });
@@ -45,13 +42,13 @@ describe('generateWeek', () => {
     expect(cast.filter(valid).length / cast.length).toBeGreaterThanOrEqual(0.4);
   });
 
-  it('sends a Likeness unit once a day, each with a new face, never valid, with one fault', () => {
+  it('sends a Likeness unit once a day, each with a new face: legal on day 1, when no rule reads a face, and never valid after, with one fault', () => {
     for (const week of weeks) {
       const units = week.map((queue) => queue.filter((a) => a.cast === 'unit'));
       expect(units.map((u) => u.length)).toEqual([1, 1, 1, 1, 1, 1, 1]);
       units.forEach(([unit], i) => {
         expect(unit.photo).toEqual(UNIT_FACES[i]);
-        expect(unit.planted).toHaveLength(1);
+        expect(unit.planted).toHaveLength(i === 0 ? 0 : 1);
       });
     }
   });
@@ -95,11 +92,11 @@ describe('generateWeek', () => {
     for (const week of weeks) expect(week[0][0]).toMatchObject({ cast: null, planted: [] });
   });
 
-  it('plants one rule at most on each applicant, besides Rule 0 on a non-human', () => {
+  it('plants one rule at most on each applicant, but on the Agent, whose generated video breaks Rule 6 too', () => {
     for (const a of weeks.flat(2)) {
-      expect(a.planted.filter((p) => p.rule !== 'human').length).toBeLessThanOrEqual(1);
-      // The only ones with two faults are the non-humans that also slip on something else.
-      if (a.planted.length > 1) expect(['agent', 'cutout']).toContain(a.cast);
+      expect(a.planted.length).toBeLessThanOrEqual(2);
+      // The only one with two faults: the Agent, whose video was generated and who slips on something else.
+      if (a.planted.length > 1) expect(a.cast).toBe('agent');
     }
   });
 

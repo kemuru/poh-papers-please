@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { MENU } from '../content/menu';
 import { NIGHT } from '../content/night';
-import { LETTER_HEAD } from '../content/verdicts';
 import { generateDay } from '../gen/day';
 import type { NightView } from './Desk';
+import { DeskSprite, MOON } from './DeskArt';
 import { AudioSwitches } from './Game';
 import { exposeGameState } from './gameState';
 import { setMusicScene, stopMusic } from './music';
+import { CARD_RACK, TIME_CLOCK } from './ScreenArt';
+import { arrived, useKeyToContinue } from './Screens';
 import { SettingsPanel } from './SettingsPanel';
 import { Shift } from './Shift';
 import { reduce, shiftOver, startWeek, type Action, type GameState } from './week';
@@ -110,38 +112,60 @@ function NightShift({ seed, best, onDone, onBoard, onAgain }: { seed: number; be
     return () => window.removeEventListener('keydown', onKey);
   }, [over]);
 
+  // At the night's end, Enter takes another night, once its key is there; a Space from the lever does not.
+  const again = useRef<HTMLButtonElement>(null);
+  useKeyToContinue(onAgain, { enter: true, shown: () => arrived(again.current) });
+
   const view: NightView = { shift: n.shift, seconds: secondsFor(n.shift), right: n.right, citations: n.citations };
   const bestNow = Math.max(best ?? 0, closed ? n.right : 0);
   return (
     <div className="game phase-shift night">
+      {/* The desk rail at night: the window's nameplate with the shift on it, and the night's two tallies. */}
       <header className="topbar">
-        <h1>{NIGHT.title}</h1>
-        <p>{NIGHT.card.shift.replace('{n}', String(n.shift))}</p>
+        <h1 className="sr-only">{NIGHT.title}</h1>
+        <p className="nameplate">
+          <span className="nameplate-window">Window 3</span>
+          <span className="nameplate-clerk">{NIGHT.card.shift.replace('{n}', String(n.shift))}</span>
+        </p>
         <p className="topbar-savings">
-          {NIGHT.topbar.right} <strong data-testid="night-right">{n.right}</strong> · {NIGHT.topbar.citations}{' '}
-          <strong data-testid="night-citations">{NIGHT.topbar.count.replace('{n}', String(n.citations)).replace('{all}', String(CITATIONS))}</strong>
+          {NIGHT.topbar.right} <strong data-testid="night-right">{n.right}</strong>
+        </p>
+        <p className="topbar-tally">
+          {NIGHT.topbar.citations} <strong data-testid="night-citations">{NIGHT.topbar.count.replace('{n}', String(n.citations)).replace('{all}', String(CITATIONS))}</strong>
         </p>
         <AudioSwitches onMenu={() => setPaused(true)} />
       </header>
       {closed ? (
-        <main className="screen ending-screen night-end">
-          <article className="notice notice-fired" aria-label="Notice" data-testid="night-end">
-            <p className="notice-head">{LETTER_HEAD}</p>
-            <h2>{NIGHT.end.title}</h2>
-            {NIGHT.end.lines.map((line) => (
-              <p key={line}>{line.replace('{right}', String(n.right)).replace('{shifts}', (n.shift === 1 ? NIGHT.end.shift : NIGHT.end.shifts).replace('{n}', String(n.shift)))}</p>
-            ))}
-            <p className="notice-grade">{NIGHT.end.best.replace('{best}', String(bestNow))}</p>
-            <div className="notice-stamp">{NIGHT.end.stamp}</div>
+        // The time clock by the staff door, and the clerk's card punched out under it: the window closed, the
+        // night's figures, and the time clock's stamp.
+        <main className="screen night-end">
+          {/* The clock between its two racks of cards, every other clerk's still in. */}
+          <div className="time-station" aria-hidden="true">
+            <DeskSprite sprite={CARD_RACK} />
+            <DeskSprite sprite={TIME_CLOCK} className="time-clock" />
+            <DeskSprite sprite={CARD_RACK} />
+          </div>
+          <article className="punched-card" aria-label={NIGHT.end.title} data-testid="night-end">
+            <h2 className="punched-title">
+              {NIGHT.end.title}
+              <DeskSprite sprite={MOON} />
+            </h2>
+            <div className="punched-lines">
+              {NIGHT.end.lines.map((line) => (
+                <p key={line}>{line.replace('{right}', String(n.right)).replace('{shifts}', (n.shift === 1 ? NIGHT.end.shift : NIGHT.end.shifts).replace('{n}', String(n.shift)))}</p>
+              ))}
+            </div>
+            <p className="punched-stamp">{NIGHT.end.stamp}</p>
+            <p className="punched-best">{NIGHT.end.best.replace('{best}', String(bestNow))}</p>
           </article>
-          <div className="ending-buttons">
-            <button className="screen-button" onClick={onAgain}>
-              {NIGHT.end.again}
-            </button>
-            <button className="board-button" onClick={leave}>
+          <div className="night-end-others">
+            <button className="steel-key" onClick={leave}>
               {MENU.board}
             </button>
           </div>
+          <button ref={again} className="screen-button way-on" onClick={onAgain}>
+            {NIGHT.end.again} <kbd>Enter</kbd>
+          </button>
         </main>
       ) : (
         <Shift
@@ -190,7 +214,7 @@ function NightPause({ onBack, onBoard }: { onBack: () => void; onBoard: () => vo
           </button>
         </div>
         <div className="menu-restarts">
-          <button className="menu-link" onClick={onBoard}>
+          <button className="steel-key" onClick={onBoard}>
             {MENU.board}
           </button>
         </div>

@@ -2,8 +2,8 @@
 import { KEY_WORDS, PHRASE } from '../rules/phrase';
 import type { RuleId } from '../rules/types';
 
-/** Fig. 0 under a rule's first check: one face in a video frame, eyes shut, twice, `ok` as the rule allows and `not` as it does not. Captions are printed a line at a time, three at most: a fourth makes the figure taller than its stills, and the page costs the hall (e2e/rule0.spec.ts). */
-export type Figure = { label: string; ok: readonly string[]; not: readonly string[] };
+/** A figure under one of a rule's checks (`under`, from 0): one face in a video frame, eyes shut, twice, `ok` as the rule allows and `not` as it does not. Captions are printed a line at a time, three at most. */
+export type Figure = { under: number; label: string; ok: readonly string[]; not: readonly string[] };
 
 type Entry = {
   number: number;
@@ -15,51 +15,44 @@ type Entry = {
   bold?: readonly boolean[];
   /** What to compare, as a short list. */
   checks?: readonly string[];
-  /** Printed under the first check. */
+  /** Printed under one of the checks. */
   figure?: Figure;
   note: string;
+  /** The page's footnote: when the rule was issued, and why. Each rule comes with its reason, usually something registered the day before. */
+  cause: string;
 };
 
 export const RULEBOOK: Record<RuleId, Entry> = {
-  human: {
-    number: 0,
-    title: 'A real human',
-    text: 'The policy, in its own words:',
-    quote: 'The submitter must be a real human and not a computer-generated person or avatar.',
-    bold: [false, false, false, false, false, true, true, false, true, false, true, true, false, true],
-    checks: [
-      'In every frame, eyes open or shut: the same human face, giving off no light.',
-      'Three identical frames: a picture held up.',
-      'A video generator leaves its mark ✦ in a corner.',
-    ],
-    figure: {
-      label: 'Fig. 0-1: a face in a video frame, eyes shut, no light. Fig. 0-2: the same face, eyes shut, a light between the brows: a robot’s night lamp.',
-      ok: ['Fig. 0-1', 'Eyes shut.', 'No light.'],
-      not: ['Fig. 0-2', 'A light:', 'a robot.'],
-    },
-    note: 'Anything worn, painted or carried does not count, for or against: a costume robot’s head is a costume, bulb and all.',
-  },
   phrase: {
     number: 1,
-    title: 'Certification phrase',
+    title: 'The phrase',
     text: 'In the video, the applicant must say the words in bold, in this order:',
     quote: PHRASE,
     bold: KEY_WORDS,
     note: 'Small words may be swapped or left out; "I\'m" will do for "I am". Anything else said, before, after or in between, is not assessed.',
+    cause: 'In force from day 1. The words are the registry’s own.',
   },
-  photo: {
+  face: {
     number: 2,
-    title: 'Photo',
-    text: 'The photo on the form must be of the face in the video, facing the camera, and not mirrored.',
-    checks: ['Compare the photo with the face in the video.', 'A mirror puts a mole on the other cheek.'],
-    note: 'Hair is not the face. Nor are hats, glasses or a new haircut. The chin is not considered part of the internal facial features.',
+    title: 'The face',
+    text: 'The photo on the form and every frame of the video show the same face, facing the camera and not mirrored. It is a human face.',
+    checks: ['Compare the photo with each frame. A mirror puts a mole on the other cheek.', 'Eyes open or shut, a human face gives off no light.'],
+    figure: {
+      under: 1,
+      label: 'Fig. 2-1: a face in a video frame, eyes shut, no light. Fig. 2-2: the same face, eyes shut, a light between the brows: not a human face.',
+      ok: ['Fig. 2-1', 'Eyes shut.', 'No light.'],
+      not: ['Fig. 2-2', 'A light:', 'not human.'],
+    },
+    note: 'Hair, hats, glasses and costumes are not the face, for or against: a costume robot\u2019s head is a costume, bulb and all.',
+    cause: 'Issued on day 2, following the registration at Window 3 of a home robot that certified it was a real human.',
   },
   sign: {
     number: 3,
     title: 'The sign',
-    text: 'In the video, the applicant holds up the wallet address on the form, in full and the right way up: on paper or on a phone’s screen.',
+    text: 'In the video, the applicant holds up the wallet address on the form, in full and the right way up: on paper or on a phone\u2019s screen.',
     checks: ['Compare the sign with the wallet on the form.', 'No QR codes. No ellipsis.'],
     note: 'One character may be wrong; two may not.',
+    cause: 'Issued on day 3, following a registration claimed with someone else’s wallet.',
   },
   vouch: {
     number: 4,
@@ -67,6 +60,7 @@ export const RULEBOOK: Record<RuleId, Entry> = {
     text: 'The applicant is vouched for by one registered human, who is not already vouching for someone else today.',
     checks: ['Look the voucher up in the registry.', 'Applicants may not vouch for themselves.'],
     note: 'When a challenge is upheld, whoever vouched for the applicant is removed from the registry as well.',
+    cause: 'Issued on day 4, following the registration at Window 6 of a man who vouched for himself.',
   },
   duplicate: {
     number: 5,
@@ -74,12 +68,14 @@ export const RULEBOOK: Record<RuleId, Entry> = {
     text: 'The face in the video must not be in the registry already.',
     checks: ['Search the face in the registry.'],
     note: 'Twins are registered by filming both twins together. A hat is not a new face.',
+    cause: 'Issued on day 5, following the registration of one face four times at Window 5, in four hats.',
   },
   living: {
     number: 6,
     title: 'Living',
-    text: 'The applicant must be born between 1900 and today, and blink in the video.',
-    checks: ['Read the year of birth.', 'Look for closed eyes in a frame.'],
+    text: 'The applicant must be born between 1900 and today, and alive on camera: filmed, not generated, and seen to blink.',
+    checks: ['Read the year of birth.', 'Look for closed eyes in a frame. A picture held up never blinks.', 'A video generator leaves its mark \u2726 in a corner.'],
     note: 'Submitters not able to give recent proof of life are to be considered deceased.',
+    cause: 'Issued on day 6, following the registration of a man born in 470 BC.',
   },
 };

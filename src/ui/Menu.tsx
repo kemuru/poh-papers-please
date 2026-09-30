@@ -9,7 +9,7 @@ export type MenuView = 'paused' | 'day' | 'week' | 'back';
 
 type Props = {
   view: MenuView;
-  /** Where the week stands, e.g. "Day 3 · At the window · 2:40 left". */
+  /** Where the week stands, e.g. "Day 3, at the window, 2:40 left". */
   where: string;
   day: number;
   /** Days at the window this week, and the savings a new week would throw away. */
@@ -90,7 +90,7 @@ export function Menu(p: Props) {
               <button className="screen-button" data-safe onClick={p.onClose}>
                 {MENU.keep}
               </button>
-              <button className="screen-button menu-destroy" onClick={yes}>
+              <button className="red-key" onClick={yes}>
                 {fill(question.yes)}
               </button>
             </div>
@@ -109,7 +109,7 @@ export function Menu(p: Props) {
               <div className="menu-mornings">
                 <span>{MENU.backTo}</span>
                 {earlier.map((d) => (
-                  <button key={d} className="menu-link" onClick={() => p.onBack(d)}>
+                  <button key={d} className="steel-key" onClick={() => p.onBack(d)}>
                     {MENU.backDay.replace('{day}', String(d))}
                   </button>
                 ))}
@@ -117,14 +117,14 @@ export function Menu(p: Props) {
             )}
             <div className="menu-restarts">
               {dayBegun && (
-                <button className="menu-link" onClick={() => p.onView('day')}>
+                <button className="steel-key" onClick={() => p.onView('day')}>
                   {fill(MENU.dayAgain)}
                 </button>
               )}
-              <button className="menu-link" onClick={() => p.onView('week')}>
+              <button className="steel-key" onClick={() => p.onView('week')}>
                 {MENU.newWeek}
               </button>
-              <button className="menu-link" onClick={p.onBoard}>
+              <button className="steel-key" onClick={p.onBoard}>
                 {MENU.board}
               </button>
             </div>

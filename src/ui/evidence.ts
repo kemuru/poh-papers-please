@@ -54,8 +54,9 @@ export const registeredWhere = (r: { day: number; window?: string }) =>
 export function asPointed(v: Violation, e: Evidence | null, video: Video): Violation {
   if (!e || e.rule !== v.rule) return v;
   const pointed = e.items.flatMap((item) => (item.kind === 'frame' ? [item.frame] : []));
-  if (v.rule === 'photo' && !v.mirrored && pointed.length > 0) return { ...v, frame: pointed[0] };
-  if (v.rule === 'human' && v.problem === 'machine') {
+  if (v.rule !== 'face') return v;
+  if (v.problem === 'another' && pointed.length > 0) return { ...v, frame: pointed[0] };
+  if (v.problem === 'machine') {
     const frame = pointed.find((n) => litFrames(video).includes(n));
     if (frame !== undefined) return { ...v, frame };
   }
@@ -69,11 +70,6 @@ export function asPointed(v: Violation, e: Evidence | null, video: Video): Viola
  */
 export function evidenceLine(v: Violation, at: 'desk' | 'court' = 'desk'): string {
   switch (v.rule) {
-    case 'human':
-      if (v.problem === 'machine') return `in frame ${v.frame} the eyes are shut, and there is a light between the brows.`;
-      if (v.problem === 'changes') return `the face in frame ${v.frame} is not the face in the other frames.`;
-      if (v.problem === 'picture') return 'every frame is the same picture, mouth and eyes included.';
-      return 'a video generator’s mark is in the corner of every frame.';
     case 'phrase': {
       const said = runs(v.heard);
       const missing = runs(v.expected);
@@ -82,8 +78,10 @@ export function evidenceLine(v: Violation, at: 'desk' | 'court' = 'desk'): strin
       const count = v.expected.filter((m) => !m.ok).length;
       return count > 4 ? `${count} of its words never said.` : `never said “${missing}”.`;
     }
-    case 'photo':
-      return v.mirrored ? 'the photo is a mirror image of the face in the video.' : `the photo is not the face in frame ${v.frame}.`;
+    case 'face':
+      if (v.problem === 'machine') return `in frame ${v.frame} the eyes are shut, and there is a light between the brows.`;
+      if (v.problem === 'changes') return `the face in frame ${v.frame} is not the face in the other frames.`;
+      return v.problem === 'mirrored' ? 'the photo is a mirror image of the face in the video.' : `the photo is not the face in frame ${v.frame}.`;
     case 'sign':
       if (!v.sign) return 'no sign held up.';
       if (v.sign.kind === 'qr') return 'the sign is a QR code, not the address.';
@@ -97,7 +95,10 @@ export function evidenceLine(v: Violation, at: 'desk' | 'court' = 'desk'): strin
     case 'duplicate':
       return `the face ${at === 'court' ? 'was' : 'is'} registered already, as ${v.match.name}, ${registeredWhere(v.match)}.`;
     case 'living':
-      return v.problem === 'born' ? `born ${formatYear(v.born)}.` : 'no frame shows a blink.';
+      if (v.problem === 'born') return `born ${formatYear(v.born)}.`;
+      if (v.problem === 'picture') return 'every frame is the same picture, mouth and eyes included.';
+      if (v.problem === 'generated') return 'a video generator’s mark is in the corner of every frame.';
+      return 'no frame shows a blink.';
   }
 }
 

@@ -98,8 +98,8 @@ test('day 3: handed in, Likeness’s letter earns a commendation that evening, a
   await nextMorning(page);
   await expect(page.getByTestId('headline')).toHaveText('LIKENESS ROBOTICS FINED FOR WRITING TO A CLERK');
   await expect(page.getByTestId('gazette')).toContainText('It has written to the clerk to apologise.');
-  // The dimmed lamp is still the day's news.
-  await expect(page.getByTestId('gazette')).toContainText('Likeness Robotics has dimmed the night lamp in its older units');
+  // Likeness's patch to its lamps is still the day's news.
+  await expect(page.getByTestId('gazette')).toContainText('Likeness has taught its current units to wait out a blink');
   await shot(page, 'gazette-day4-fined.png');
 });
 
@@ -116,7 +116,7 @@ test('day 3: left on the desk, the letter goes in the drawer unsigned, and nothi
   await expect(page.getByTestId('inspector')).toHaveCount(0);
 });
 
-test('day 7: the last unit passes Rules 1 to 6, and only the slit in frame 3 catches it', async ({ page }) => {
+test('day 7: the last unit passes every other rule, and only the slit in frame 3 catches it, under Rule 2', async ({ page }) => {
   await page.goto('/?seed=1&day=7');
   await page.getByRole('button', { name: /Open the window/ }).click();
   const { queue } = await game(page);
@@ -135,25 +135,25 @@ test('day 7: the last unit passes Rules 1 to 6, and only the slit in frame 3 cat
   await point('the sign');
   await point('the wallet');
   await expect(inspector).toHaveText('No discrepancy.');
-  await page.keyboard.press('0');
+  await page.keyboard.press('2');
   await point('frame 1');
-  await point('Rule 0');
+  await point('Rule 2');
   await expect(inspector).toHaveText('No discrepancy.');
-  // Frame 3, its one blink: a slit of light between the brows, as in Fig. 0-2 today.
+  // Frame 3, its one blink: a slit of light between the brows, as in Fig. 2-2 today.
   await point('frame 3');
-  await point('Rule 0');
-  await expect(inspector).toContainText('Discrepancy · Rule 0: A real human. In frame 3 the eyes are shut, and there is a light between the brows.');
+  await point('Rule 2');
+  await expect(inspector).toContainText('Discrepancy under Rule 2: The face. In frame 3 the eyes are shut, and there is a light between the brows.');
   await shot(page, 'unit-day7-inspect.png');
   // Let in, it comes back on a citation with its memo.
   await page.getByRole('button', { name: 'Accept' }).click();
-  await expect(page.getByTestId('citation')).toContainText('Memo 0-Q: Likeness Robotics had resolved all known issues. This was not one of the known ones.');
+  await expect(page.getByTestId('citation')).toContainText('Memo 2-Q: Likeness Robotics had resolved all known issues. This was not one of the known ones.');
   await page.waitForTimeout(1500);
   await shot(page, 'unit-day7-citation.png');
 });
 
 test('day 7: the last applicant is the clerk, whose video says "a real clerk"', async ({ page }) => {
   await page.goto('/?seed=1&day=7');
-  await expect(page.getByTestId('gazette')).toContainText('Clerks whose registrations expire today will be renewed at their own windows');
+  await expect(page.getByTestId('gazette')).toContainText('Registrations made two years ago expire today, clerks’ included.');
   await expect(page.locator('.sticky').first()).toContainText('Your registration ran out at nine, so you are last in the queue.');
   await page.getByRole('button', { name: /Open the window/ }).click();
   const { queue } = await game(page);

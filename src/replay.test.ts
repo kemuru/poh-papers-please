@@ -1,15 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { HEADLINES, RULE_NOTICES } from './content/gazette';
+import { UNITS } from './content/cast';
+import { HEADLINES, ROBOT_STORY } from './content/gazette';
+import { RULEBOOK } from './content/rulebook';
 import type { GeneratedApplicant } from './gen/applicant';
 import { generateWeek } from './gen/day';
 import { createRng } from './gen/rng';
-import { judge, RULE_DAYS, rulebookForDay, type Decision } from './rules/judge';
+import { inspect, type Item } from './rules/inspect';
+import { judge, RULE_DAYS, RULES, rulebookForDay, type Decision } from './rules/judge';
+import type { Rulebook } from './rules/types';
+import type { Evidence } from './ui/court';
 import { reduce, startWeek, type GameState } from './ui/week';
 
 // Whole runs through the reducer the desk uses (src/ui/week.ts), which judges every stamp against
 // the registry the clerk has built, hears the challenges and writes the Gazette.
 
-type Choice = { decision: Decision };
+type Choice = { decision: Decision; evidence?: Evidence };
 /** How a clerk decides: from the applicant, the day, their place in the queue and the state of the desk. */
 type Clerk = (a: GeneratedApplicant, day: number, i: number, s: GameState) => Choice;
 
@@ -41,6 +46,31 @@ const careful: Clerk = (a, day, _, s) => {
   const { violations } = judge(a, rulebookForDay(day), s.registry);
   return violations.length === 0 ? { decision: 'accept' } : { decision: 'challenge' };
 };
+/** Everything on the desk the clerk can point at, as src/rules/inspect.test.ts lists it. */
+const itemsFor = (a: GeneratedApplicant, rulebook: Rulebook): Item[] => [
+  { kind: 'photo' },
+  ...[1, 2, 3].map((frame): Item => ({ kind: 'frame', frame })),
+  { kind: 'transcript' },
+  { kind: 'name' },
+  { kind: 'birth-year' },
+  ...(a.wallet !== undefined ? [{ kind: 'wallet' } as Item, { kind: 'sign' } as Item] : []),
+  ...(a.voucher !== undefined ? [{ kind: 'voucher' } as Item, { kind: 'name-record', name: a.voucher ?? '' } as Item] : []),
+  ...(rulebook.includes('duplicate') ? [{ kind: 'face-record' } as Item] : []),
+  ...rulebook.map((rule): Item => ({ kind: 'rule', rule })),
+];
+
+/** Careful, and challenges with what Inspect finds, as a careful clerk does: the court upholds every fake. */
+const thorough: Clerk = (a, day, _, s) => {
+  const rulebook = rulebookForDay(day);
+  const [broken] = judge(a, rulebook, s.registry).violations;
+  if (!broken) return { decision: 'accept' };
+  const items = itemsFor(a, rulebook);
+  for (const [i, x] of items.entries()) {
+    for (const y of items.slice(i + 1)) if (inspect(x, y, a, rulebook, s.registry)?.rule === broken.rule) return { decision: 'challenge', evidence: { rule: broken.rule, items: [x, y] } };
+  }
+  return { decision: 'challenge' };
+};
+
 /** Careful, but gets about one in four wrong. */
 const sloppy = (seed: number): Clerk => {
   const rng = createRng(seed * 31);
@@ -127,7 +157,7 @@ describe('no line from a content pool twice in one run', () => {
       const notes = days.flatMap((s) => s.rulings.flatMap((r) => (r.note ? [r.note] : [])));
       const gazettes = days.flatMap((s) => (s.gazette ? [s.gazette] : []));
       expect(gazettes.map((g) => g.day)).toEqual(days.slice(1).map((s) => s.day));
-      const items = gazettes.flatMap((g) => [g.headline, g.notice, g.thread, g.small, ...g.report]);
+      const items = gazettes.flatMap((g) => [g.headline, g.thread, g.small, g.caption]);
       const headlines = gazettes.map((g) => g.headlineLine);
       for (const lines of [memos, notes, items, headlines]) expect(lines.length - new Set(lines).size, `seed ${seed}`).toBe(0);
       // The run's shown list holds each of them once, too.
@@ -147,33 +177,54 @@ describe('no line from a content pool twice in one run', () => {
 });
 
 describe('the morning Gazette', () => {
-  it('reports yesterday’s actual decisions and gives the reason for the day’s new rule, from day 2', () => {
+  it('reports yesterday’s actual decisions face by face from day 3, day 1’s unit on day 2, and each rule’s reason on its page', () => {
     for (let seed = 1; seed <= 6; seed++) {
       const { days } = runWeek(seed, sloppy(seed));
       for (const [n, s] of days.slice(0, -1).entries()) {
         const g = days[n + 1].gazette!;
         const today = s.day + 1;
         expect(g.day).toBe(today);
-        const queue = generateWeek(seed)[s.day - 1];
-        const named = queue.filter((a) => g.report.some((line) => line.includes(a.name)) || g.headline.includes(a.name.toUpperCase()));
-        expect(named.length, `day ${today}: ${g.report.join(' ')}`).toBeGreaterThan(0);
-        expect(g.report[0]).toContain(`Day ${s.day} at Window 3: ${s.decided.filter((d, i) => d.decision === 'accept' || !s.rulings.find((r) => r.index === i)?.upheld).length} registered`);
-        if (today <= 6) {
-          expect(g.notice).toBe(RULE_NOTICES[today]);
-          expect(g.notice).toMatch(/^(Following|A registration)/);
-          expect(rulebookForDay(today).filter((r) => RULE_DAYS[r] === today)).toHaveLength(1);
+        if (today === 2) {
+          expect(g.robot).toBe(true);
+          expect(g.caption).toContain(UNITS[0].name);
+          continue;
         }
+        const queue = generateWeek(seed)[s.day - 1];
+        // Everyone stamped, in queue order, as they left: a voucher removed with them straight after.
+        const stamped = g.wall.filter((w) => w.stamp !== 'removed' && w.stamp !== 'home');
+        expect(stamped.map((w) => w.name), `day ${today}`).toEqual(s.decided.map((_, i) => queue[i].name));
+        s.decided.forEach((d, i) => {
+          const upheld = s.rulings.find((r) => r.index === i)?.upheld;
+          expect(stamped[i].stamp, `day ${today}, ${queue[i].name}`).toBe(d.decision === 'accept' ? 'registered' : upheld ? 'refused' : 'court');
+        });
+        expect(g.wall.filter((w) => w.stamp === 'home').map((w) => w.name)).toEqual(queue.slice(s.decided.length).map((a) => a.name));
+        const registered = s.decided.filter((d, i) => d.decision === 'accept' || !s.rulings.find((r) => r.index === i)?.upheld).length;
+        expect(g.caption).toContain(`Window 3, day ${s.day}: ${registered} registered`);
       }
     }
+    // Each rule's page gives its reason at the foot: Rule N, issued on day N.
+    for (const rule of RULES.filter((r) => RULE_DAYS[r] >= 2)) expect(RULEBOOK[rule].cause).toMatch(new RegExp(`^Issued on day ${RULE_DAYS[rule]}, following `));
+  });
+
+  it('opens day 2 with day 1’s unit: registered, then found to be a home robot', () => {
+    const { days } = runWeek(1, careful);
+    const g = days[1].gazette!;
+    expect(g.headline).toBe(ROBOT_STORY.headline);
+    expect(g.robot).toBe(true);
+    // And the registry has let it go by the morning.
+    expect(days[0].registry.some((r) => r.name === UNITS[0].name)).toBe(true);
+    expect(days[1].registry.some((r) => r.name === UNITS[0].name)).toBe(false);
   });
 
   it('leads with a Likeness unit when the clerk registered one, and with a human sent to court when that happened', () => {
-    const unitIn: Clerk = (a, day, i, s) => (a.cast === 'unit' && day === 1 ? { decision: 'accept' } : careful(a, day, i, s));
-    const day2 = runWeek(1, unitIn).days[1].gazette!;
-    expect(HEADLINES.unit).toContain(day2.headlineLine);
-    const firstChallenged: Clerk = (a, day, i, s) => (day === 1 && i === 0 ? { decision: 'challenge' } : careful(a, day, i, s));
-    const humanDay2 = runWeek(1, firstChallenged).days[1].gazette!;
-    expect(HEADLINES.human).toContain(humanDay2.headlineLine);
-    expect(humanDay2.headline).toContain(generateWeek(1)[0][0].name.toUpperCase());
+    // Day 2's unit: day 1's broke no rule, and registering it was right.
+    const unitIn: Clerk = (a, day, i, s) => (a.cast === 'unit' && day === 2 ? { decision: 'accept' } : careful(a, day, i, s));
+    const day3 = runWeek(1, unitIn).days[2].gazette!;
+    expect(HEADLINES.unit).toContain(day3.headlineLine);
+    // A human challenged on day 2, and every fake refused on what Inspect found: the court is the day's only news.
+    const firstChallenged: Clerk = (a, day, i, s) => (day === 2 && i === 0 ? { decision: 'challenge' } : thorough(a, day, i, s));
+    const humanDay3 = runWeek(1, firstChallenged).days[2].gazette!;
+    expect(HEADLINES.human).toContain(humanDay3.headlineLine);
+    expect(humanDay3.headline).toContain(generateWeek(1)[1][0].name.toUpperCase());
   });
 });

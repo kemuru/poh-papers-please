@@ -1,8 +1,11 @@
-// What the strip along the bottom of the blotter says while the clerk works: inspect mode's answers,
-// the one guided inspection of day 1, and how to use each registry tool the day it arrives.
+// What the desk says while the clerk works: on the magnifier's tag while Inspect is on, on the Inspect slip
+// at the foot of the blotter once two things have been compared; for the one guided inspection of day 1, on a
+// note from the supervisor stuck at the foot of the blotter; and for each registry tool the day it arrives, on
+// a second note from the supervisor stuck on the day's.
 
 export const INSPECT_LINES = {
-  found: 'Discrepancy',
+  /** "{rule}" is the rule's name: "Rule 1: The phrase". The slip stamps its first word, in red. */
+  found: 'Discrepancy under {rule}.',
   notInForce: 'These disagree, but no rule in force covers it. Yet.',
   agree: 'No discrepancy.',
   second: 'And the second thing?',
@@ -21,9 +24,23 @@ export const NEW_TOOL_TIPS = {
   duplicate: { tool: 'face', text: 'New today: the face search. Press F, or Search this face, to see who is on file with it.' },
 } as const;
 
+/** The supervisor's second note, on the blotter (the guided look) or on the day's (a new tool). What a screen reader calls it. */
+export const TIP_NOTE_LABEL = 'Another note from your supervisor';
+
+/** The registry terminal's keys: its return key (only its arrow is printed on it), and one for each lookup. */
+export const TERMINAL_KEYS = {
+  search: 'Search',
+  searchTitle: 'Search (Enter)',
+  voucher: 'Look up the voucher',
+  face: 'Search the face',
+  faceTitle: 'Search the face in the video (F)',
+};
+
 /** Likeness Robotics' letter on the morning of day 3 (notes/game-design.md, The offer): the week's one temptation. */
 export const OFFER_LETTER = {
-  head: 'Likeness Robotics Ltd · Partner programme',
+  /** The letterhead: the company, and the department writing. */
+  head: 'Likeness Robotics Ltd',
+  dept: 'Partner programme',
   lines: [
     'Dear Clerk,',
     'Some households would like their Likeness units registered before Humanity Day. So would we.',
@@ -33,9 +50,9 @@ export const OFFER_LETTER = {
   sign: 'Likeness Robotics Ltd, a company',
   signIt: 'Sign it',
   handIn: 'Hand it in',
-  /** In the strip along the blotter once it is signed. */
+  /** On a note in the clerk's own hand, where the letter was, once it is signed. */
   signed: 'Signed. The letter is in the drawer.',
-  /** In the strip along the blotter, if the window opens with the letter still on the desk. */
+  /** The same, if the window opens with the letter still on the desk. */
   drawer: 'The letter goes in the drawer, unsigned.',
 };
 

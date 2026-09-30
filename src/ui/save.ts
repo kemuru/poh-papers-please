@@ -91,7 +91,7 @@ export function stepOf(action: Action): Step {
 }
 
 const STEPS = new Set<string>(['open', 'call', 'accept', 'challenge', 'time-up', 'close', 'statement', 'next-day', 'sign', 'hand-in']);
-const RULES = new Set<string>(['human', 'phrase', 'photo', 'sign', 'vouch', 'duplicate', 'living'] satisfies RuleId[]);
+const RULES = new Set<string>(['phrase', 'face', 'sign', 'vouch', 'duplicate', 'living'] satisfies RuleId[]);
 const PLAIN_ITEMS = new Set<string>(['photo', 'transcript', 'sign', 'name', 'birth-year', 'wallet', 'voucher', 'face-record'] satisfies Item['kind'][]);
 const whole = (n: unknown): n is number => Number.isSafeInteger(n) && (n as number) >= 0;
 

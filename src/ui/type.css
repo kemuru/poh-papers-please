@@ -1,0 +1,47 @@
+/* The Ministry's type: four self-made pixel faces (scripts/fonts), each belonging to a thing on the
+   desk. A glyph pixel is 100 font units and the em is 10 pixels, so at font-size 20px a glyph pixel is
+   2 design pixels, one art pixel of the desk, as the portraits are drawn. Use sizes in 10px steps
+   (20px is the desk's size) and line heights in whole art pixels, and nothing synthesised. */
+@font-face {
+  font-family: 'Ministry Print';
+  src: url('/assets/fonts/ministry-print.ttf') format('truetype');
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Ministry Print';
+  font-style: italic;
+  src: url('/assets/fonts/ministry-print-italic.ttf') format('truetype');
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Ministry Type';
+  src: url('/assets/fonts/ministry-type.ttf') format('truetype');
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Ministry Stamp';
+  src: url('/assets/fonts/ministry-stamp.ttf') format('truetype');
+  font-display: block;
+}
+
+:root {
+  /* The Ministry's printed forms, the rulebook, letters and signs. */
+  --print: 'Ministry Print', ui-monospace, monospace;
+  /* Whatever was typed in or printed out: the values on a form, transcripts, the ledger, the printer's slips. */
+  --type: 'Ministry Type', ui-monospace, monospace;
+  /* Rubber stamps, headings, the counters and the Ministry's big print. Capitals only. */
+  --stamp: 'Ministry Stamp', 'Ministry Print', ui-monospace, monospace;
+}
+
+html {
+  font-synthesis: none;
+  font-kerning: none;
+  font-variant-ligatures: none;
+  /* Grey coverage at a glyph's edges only, never macOS's thickening: every pixel of a glyph lands whole. */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeSpeed;
+}

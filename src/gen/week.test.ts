@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ASIDES, SLIPS } from '../content/applicants';
-import { FIRST_APPLICANT, PAT, PAT_MOTHER } from '../content/cast';
+import { FIRST_APPLICANT, FIRST_SLIP, PAT, PAT_MOTHER } from '../content/cast';
 import { UNIT_FACES } from '../content/portraits';
 import { endDay } from '../economy/economy';
 import { judge, RULE_DAYS, RULES, rulebookForDay } from '../rules/judge';
@@ -18,15 +18,13 @@ const everyone = weeks.flatMap((week, w) =>
 const newRule = (day: number) => RULES.find((r) => RULE_DAYS[r] === day);
 
 describe('the week', () => {
-  it('has every invalid applicant break exactly one rule, and a non-human Rule 0 as well, on every day', () => {
+  it('has every invalid applicant break exactly one rule, but the Agent, whose generated video breaks Rule 6 as well', () => {
     const invalid = everyone.filter((a) => a.planted.length > 0);
     expect(invalid.length).toBeGreaterThan(250);
     for (const a of invalid) {
       const { planted, cast, lookAlike, seed, day, place, length, registry, ...visible } = a;
-      const besides = planted.filter((p) => p.rule !== 'human');
-      expect(besides.length, `${a.name}, day ${day}`).toBeLessThanOrEqual(1);
-      if (planted.length > 1) expect(['agent', 'cutout'], `${a.name}, day ${day}`).toContain(cast);
-      expect(planted.length, `${a.name}, day ${day}`).toBe(besides.length + (planted[0].rule === 'human' ? 1 : 0));
+      expect(planted.length, `${a.name}, day ${day}`).toBeLessThanOrEqual(2);
+      if (planted.length > 1) expect(cast, `${a.name}, day ${day}`).toBe('agent');
       expect(judge(visible, rulebookForDay(day), registry).violations.map((v) => v.rule), `${a.name}, day ${day}`).toEqual(planted.map((p) => p.rule));
     }
   });
@@ -39,14 +37,16 @@ describe('the week', () => {
     for (const a of scripted) expect(a.place, `seed ${a.seed}, day ${a.day}: ${a.name}`).toBeLessThan(a.length / 2);
   });
 
-  it('sends a Likeness unit once a day, with a new face each day, caught by one thing only', () => {
+  it('sends a Likeness unit once a day, with a new face each day, legal on day 1 and caught by one thing only after it', () => {
     for (const week of weeks) {
       const units = week.queues.map((queue) => queue.filter((a) => a.cast === 'unit'));
       expect(units.map((u) => u.length)).toEqual([1, 1, 1, 1, 1, 1, 1]);
-      // The lamp under Rule 0, but on day 4 its maker's vouch, and on day 5 its factory face, on file at Window 7.
+      // Day 1's lamp breaks no rule: Rule 2 comes the next morning, because of it. Then the lamp under
+      // Rule 2, but on day 4 its maker's vouch, and on day 5 its factory face, on file at Window 7.
       expect(units.map(([u]) => u.planted.map((p) => `${p.rule}:${p.mistake}`))).toEqual([
-        ['human:machine'], ['human:machine'], ['human:machine'], ['vouch:company'], ['duplicate:unit'], ['human:machine'], ['human:machine'],
+        [], ['face:machine'], ['face:machine'], ['vouch:company'], ['duplicate:unit'], ['face:machine'], ['face:machine'],
       ]);
+      expect(units[0][0].video.lamp).toBe('bloom');
       // Nothing at the window gives a unit away: its photo is its own face, and each day's face is new.
       units.forEach(([u], i) => expect(u.photo).toEqual(UNIT_FACES[i]));
       expect(new Set(units.map(([u]) => JSON.stringify(u.photo.face))).size).toBe(7);
@@ -72,13 +72,16 @@ describe('the week', () => {
     }
   });
 
-  it('opens with the tutorial: the same two applicants every week, one valid, then the "hooman"', () => {
+  it('opens with the tutorial, the same four applicants every week: one valid, the "hooman", the unit, legal today, and the "ministry"', () => {
     for (const week of weeks) {
-      const [first, second] = week.queues[0];
+      const [first, second, unit, slip] = week.queues[0];
       expect(first).toMatchObject({ name: FIRST_APPLICANT.name, planted: [], cast: null });
       expect(second).toMatchObject({ name: PAT.name, planted: [{ rule: 'phrase', mistake: 'wrong-word' }], cast: 'pat' });
       expect(second.video.transcript).toContain('hooman');
-      expect(week.queues[0].slice(0, 2)).toEqual(weeks[0].queues[0].slice(0, 2));
+      expect(unit).toMatchObject({ cast: 'unit', planted: [] });
+      expect(slip).toMatchObject({ name: FIRST_SLIP.name, planted: [{ rule: 'phrase', mistake: 'wrong-word' }], cast: null });
+      expect(slip.video.transcript).toContain('ministry');
+      expect(week.queues[0].slice(0, 4)).toEqual(weeks[0].queues[0].slice(0, 4));
     }
   });
 

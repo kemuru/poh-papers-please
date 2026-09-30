@@ -47,10 +47,11 @@ test('the same seed gives the same queue, with the day table’s count', async (
 test('a full day: the court hears the challenges, the statement adds up, savings carry to day 2', async ({ page }) => {
   await page.goto('/?seed=7&day=1');
   await page.getByRole('button', { name: /Open the window/ }).click();
-  // Day 1 is scripted (slice 3): a valid applicant, then Pat's "hooman", then the day's robot, then two valid.
-  // Challenge the first (a mistake) and register the second (another), then do the rest by the rulebook.
+  // Day 1 is scripted: a valid applicant, then Pat's "hooman", then the day's robot (legal today), then Gordon
+  // Pim's "ministry", then two valid. Challenge the first (a mistake) and register the second (another), then
+  // do the rest by the rulebook.
   const { queue } = await game(page);
-  expect(queue.map((a) => a.planted.length > 0)).toEqual([false, true, true, false, false]);
+  expect(queue.map((a) => a.planted.length > 0)).toEqual([false, true, false, true, false, false]);
   await stampNext(page, true);
   await stampNext(page, true);
   await expect(page.getByTestId('citation')).toContainText('Warning only');
@@ -66,15 +67,15 @@ test('a full day: the court hears the challenges, the statement adds up, savings
   await expect(rulings.nth(0)).toContainText('Challenge dismissed');
   await expect(rulings.nth(0)).toContainText(queue[0].name);
   await expect(rulings.nth(1)).toContainText('Challenge upheld');
-  await expect(rulings.nth(1)).toContainText('Clara Voss');
+  await expect(rulings.nth(1)).toContainText('Gordon Pim');
   await shot(page, 'court.png');
 
   await page.getByRole('button', { name: /To the accounts/ }).click();
   const { end } = await game(page);
-  // 2 registrations (+20), 1 upheld (+15), 1 dismissed (-15), 1 warning (0): 20 PNK at the desk.
-  expect(end!.pay).toEqual({ registrations: 2, upheld: 1, dismissed: 1, warnings: 1, fines: 0, total: 20 });
+  // 3 registrations, the robot among them (+30), 1 upheld (+15), 1 dismissed (-15), 1 warning (0): 30 PNK at the desk.
+  expect(end!.pay).toEqual({ registrations: 3, upheld: 1, dismissed: 1, warnings: 1, fines: 0, total: 30 });
   const bills = end!.bills.reduce((sum, b) => sum + b.amount, 0);
-  expect(end!.after).toBe(end!.before + 20 - bills);
+  expect(end!.after).toBe(end!.before + 30 - bills);
   const statement = page.getByRole('region', { name: 'Statement' });
   await expect(statement.getByTestId('savings')).toHaveText(`${end!.after} PNK`);
   for (const bill of end!.bills) await expect(statement).toContainText(bill.item);
@@ -90,10 +91,13 @@ test('a full day: the court hears the challenges, the statement adds up, savings
 test('the first fake registered each day is a warning; the next is a fine', async ({ page }) => {
   await page.goto('/?seed=7&day=1');
   await page.getByRole('button', { name: /Open the window/ }).click();
-  // Day 1: valid, Pat, the robot, valid, valid. Register Pat (the warning), then the robot (the fine).
+  // Day 1: valid, Pat, the robot (legal today), Gordon Pim, valid, valid. Register Pat (the warning), the robot
+  // (right: no citation), then Gordon (the fine).
   await stampNext(page);
   await stampNext(page, true);
   await expect(page.getByTestId('citation')).toHaveAttribute('data-variant', 'warning');
+  await stampNext(page);
+  await expect(page.getByTestId('citation')).toHaveCount(0);
   await stampNext(page, true);
   await expect(page.getByTestId('citation')).toHaveAttribute('data-variant', 'fine');
   await expect(page.getByTestId('citation')).toContainText('Fine: 20 PNK');
@@ -103,7 +107,7 @@ test('the first fake registered each day is a warning; the next is a fine', asyn
   await page.getByRole('button', { name: /End shift/ }).click();
   await page.getByRole('button', { name: /To the accounts/ }).click();
   await expect(page.getByRole('region', { name: 'Statement' })).toContainText('Citations: 1 warning, 1 fine');
-  expect((await game(page)).end!.pay.total).toBe(3 * 10 - 20);
+  expect((await game(page)).end!.pay.total).toBe(4 * 10 - 20);
 });
 
 test('the keyboard runs the window: Space opens and calls, A and C stamp', async ({ page }) => {
@@ -174,7 +178,8 @@ test('mouse and keyboard mix: the sound button keeps no focus, and the stamps re
   await page.keyboard.press('c');
   await expect(page.getByRole('button', { name: 'Challenge' })).toHaveClass(/used/);
   await expect(page.getByRole('button', { name: 'Accept' })).not.toHaveClass(/used/);
-  for (let i = 1; i < 5; i++) {
+  const { queue } = await game(page);
+  for (let i = 1; i < queue.length; i++) {
     await page.keyboard.press('Space');
     await expect.poll(async () => (await game(page)).called).toBe(i + 1);
     await page.getByRole('button', { name: 'Accept' }).click();

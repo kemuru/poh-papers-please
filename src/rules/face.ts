@@ -1,8 +1,9 @@
-// What makes a face the same face, and how the video's three frames show it. Hair, clothes and
-// whatever is worn are not the face: a new haircut or a pair of glasses since the photo was taken
-// changes nothing.
+// Rule 2: the face. The photo is of the face in the video, facing the camera and not mirrored, and
+// that face is a human one: the same face in every frame, eyes open or shut, giving off no light of its
+// own. Hair, clothes and whatever is worn are not the face: a new haircut or a pair of glasses since
+// the photo was taken changes nothing, and a costume robot's head is a costume, bulb and all.
 import type { Face, Portrait, Pose } from '../gen/portrait';
-import type { Video } from './types';
+import type { Applicant, Video, Violation } from './types';
 
 const FEATURES: readonly (keyof Face)[] = ['skin', 'shape', 'eyes', 'eyeColor', 'brows', 'nose', 'mouth', 'ears', 'age', 'mark'];
 
@@ -25,3 +26,15 @@ export const framePoses = (v: Video): Pose[] => {
 /** The frames a unit's lamp shows in: every frame with the eyes shut. */
 export const litFrames = (v: Video): number[] =>
   v.lamp ? framePoses(v).flatMap((p, i) => (p.eyes === 'closed' ? [i + 1] : [])) : [];
+
+/** Null when the photo and every frame show one human face; otherwise what shows otherwise, and where. */
+export function checkFace(a: Applicant): Omit<Extract<Violation, { rule: 'face' }>, 'rule'> | null {
+  const lit = litFrames(a.video);
+  if (lit.length) return { problem: 'machine', frame: lit[0], lamp: a.video.lamp };
+  const frames = frameFaces(a.video);
+  const changes = frames.findIndex((face) => !sameFace(face, a.video.face));
+  if (changes >= 0) return { problem: 'changes', frame: changes + 1 };
+  if (a.mirrored) return { problem: 'mirrored', frame: 1 };
+  const another = frames.findIndex((face) => !sameFace(a.photo, face));
+  return another < 0 ? null : { problem: 'another', frame: another + 1 };
+}

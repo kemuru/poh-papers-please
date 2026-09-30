@@ -32,7 +32,7 @@ export const OUTFIT_COLORS = [
 export const ACCESSORIES = [
   'glasses', 'monocle', 'earrings', 'pearls', 'top-hat', 'sweat', 'sleep-mask', 'flat-cap', 'bobble-hat', 'robot-helmet',
 ] as const;
-/** How bright a unit's night lamp shows on camera: loudest on day 1, dimmer as the week goes, a lit slit on Humanity Day. */
+/** How bright a unit's night lamp shows on camera: loudest on days 1 and 2, dimmer as the week goes, a lit slit on Humanity Day. */
 export const LAMP_SIZES = ['bloom', 'glow', 'small', 'slit'] as const;
 
 export type Species = (typeof SPECIES)[number];

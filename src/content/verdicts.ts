@@ -6,15 +6,8 @@ import type { CastId } from './cast';
 
 /** The closing line of a citation, by broken rule. */
 export const CITATION_MEMOS: Record<RuleId, readonly string[]> = {
-  // A unit's citation has a memo of its own: these are for everything else that is not a person.
-  // Every memo must fit any fault under its rule: it is chosen by the rule alone.
-  human: [
-    'Memo 0-A: The registry is for humans. It says so on the front.',
-    'Memo 0-B: Clerks are reminded to look at every frame, not only the first.',
-    'Memo 0-C: The Ministry registers people, not pictures of people, however good the picture.',
-    'Memo 0-D: The applicant was not in the video. Something else was.',
-    'Memo 0-E: Rule 0 has been in force since before the Ministry had a building.',
-  ],
+  // A unit's citation has a memo of its own (UNIT_MEMOS), and a year that is not a living one has its
+  // own (YEAR_MEMOS). Every other memo must fit any fault under its rule: it is chosen by the rule alone.
   phrase: [
     'Memo 1-A: The sentence is printed on your desk. The applicant did not say it.',
     'Memo 1-B: Clerks are reminded that nearly the sentence is not the sentence.',
@@ -22,8 +15,9 @@ export const CITATION_MEMOS: Record<RuleId, readonly string[]> = {
     'Memo 1-D: The words that count are printed in bold. The Ministry paid extra for the bold.',
     'Memo 1-E: A registry is not a pantry, a ministry or a humane society. Please compare the words.',
   ],
-  photo: [
-    'Memo 2-A: The photograph is of the applicant, or it is of someone else.',
+  face: [
+    'Memo 2-A: One face, in the photograph and in every frame. The Ministry does not accept substitutes.',
+    'Memo 2-B: Clerks are reminded to look at every frame, not only the first.',
     'Memo 2-C: Hair is not the face. The face is the face.',
     'Memo 2-D: The Ministry registers the person in the video, not the person they would prefer to be.',
   ],
@@ -44,31 +38,40 @@ export const CITATION_MEMOS: Record<RuleId, readonly string[]> = {
     'Memo 5-E: The applicant is now registered twice. Once was the limit.',
   ],
   living: [
-    'Memo 6-B: The year of birth is a year. Please check that it is one.',
-    'Memo 6-D: The Ministry registers the living. The department for everyone else is closed.',
-    'Memo 6-E: Born before 1900 is born too early. The Ministry makes no exception for philosophers.',
+    'Memo 6-A: The Ministry registers the living. The department for everyone else is closed.',
+    'Memo 6-C: Submitters not able to give recent proof of life are to be considered deceased. This one was not able.',
+    'Memo 6-D: A pulse is not required. Evidence of one is.',
   ],
 };
 
-/** A unit's citation, by day: the memo for the one thing that gave it away. */
-export const UNIT_MEMOS: readonly string[] = [
-  'Memo 0-L: The applicant was a home robot. It shut its eyes and lit up. Humans do only one of those.',
-  'Memo 0-M: The applicant shut its eyes twice in five seconds, and switched on both times. Its household has been informed.',
-  'Memo 0-N: The address in frame 3 was in order. The light above it was not.',
-  'Memo 4-L: A company is not a registered human, whatever its brochure says.',
-  'Memo 5-L: The factory made this face twice. The registry takes each face once.',
-  'Memo 0-P: Likeness Robotics has asked what the income is per unit. The Ministry has not replied.',
-  'Memo 0-Q: Likeness Robotics had resolved all known issues. This was not one of the known ones.',
+/** Rule 6's memos for a year of birth that is not a living one. */
+export const YEAR_MEMOS: readonly string[] = [
+  'Memo 6-B: The year of birth is a year. Please check that it is one.',
+  'Memo 6-E: Born before 1900 is born too early. The Ministry makes no exception for philosophers.',
 ];
+
+/** A unit's citation, by day: the memo for the one thing that gave it away. Day 1's unit breaks no rule. */
+export const UNIT_MEMOS: Readonly<Record<number, string>> = {
+  2: 'Memo 2-L: The applicant was a home robot. It shut its eyes twice, and lit up twice. Humans manage only the first.',
+  3: 'Memo 2-N: The address in frame 3 was in order. The light above it was not.',
+  4: 'Memo 4-L: A company is not a registered human, whatever its brochure says.',
+  5: 'Memo 5-L: The factory made this face twice. The registry takes each face once.',
+  6: 'Memo 2-P: Likeness Robotics has asked what the income is per unit. The Ministry has not replied.',
+  7: 'Memo 2-Q: Likeness Robotics had resolved all known issues. This was not one of the known ones.',
+};
+
+/** The court's line when the clerk challenged the day 1 unit, which no rule in force could catch. */
+export const FIRST_UNIT_DISMISSED = 'No rule in force reads a face. The court has written to the Ministry about it.';
 
 /** The memo on the week's last citation, if the clerk registers their own renewal. */
 export const CLERK_MEMO = 'Memo 1-Z: You registered a clerk.';
 
-/** A Rule 0 citation reprints the video. "{n}" is the frame its evidence names, "{time}" when it was taken. */
+/** A citation for a fault in the video reprints it. "{n}" is the frame its evidence names. */
 export const CITATION_FILM = {
   label: 'The video, as submitted.',
   labelNamed: 'The video, as submitted, frame {n} marked.',
-  named: 'Frame {n} · {time}',
+  /** The caption of the frame the evidence names, in place of its time: it is outlined, and named. */
+  named: 'Frame {n}',
 };
 
 /** The bottom line of a citation. "{fine}" is the fine in PNK. */
@@ -109,8 +112,8 @@ export const DISMISSED_NOTES = [
 export const CAST_RULINGS: Record<CastId, { upheld?: readonly string[]; dismissed?: readonly string[] }> = {
   unit: {
     upheld: [
-      'The court asked the applicant where it was born. It gave the address of a factory.',
       'The court asked the applicant a question. The answer arrived two seconds later, from somewhere else.',
+      'The court asked the applicant where it was born. It gave the address of a factory.',
       'The applicant offered the court its serial number, to save time.',
       'Likeness Robotics sent a letter of support. The court has asked it to stop sending letters.',
       'The court was shown the registration at Window 7: the same face, under another name.',
@@ -171,8 +174,8 @@ export const CAST_RULINGS: Record<CastId, { upheld?: readonly string[]; dismisse
 
 export const EMPTY_COURT = 'No challenges were filed today. The court has gone home early.';
 
-/** Whose letters they are. */
-export const LETTER_HEAD = 'Ministry of Humanity · Human Resources';
+/** Whose letters they are: the Ministry's letterhead, and the department under its name. */
+export const LETTER_HEAD = { ministry: 'Ministry of Humanity', dept: 'Human Resources' };
 
 /**
  * The letters at the end of the week, one per ending (notes/game-design.md, Endings). Each adds up what
@@ -270,7 +273,8 @@ export const LETTER_NOTES = {
 
 /** Clipped to a Humanity Day letter when the clerk signed Likeness's offer and stamped in one or two units. */
 export const HEADHUNTED = {
-  head: 'Likeness Robotics Ltd · Partner programme',
+  /** Whose letter it is, for a screen reader: the letterhead itself is the company's own (OFFER_LETTER's). */
+  head: 'Likeness Robotics Ltd, Partner programme',
   title: 'An offer',
   lines: [
     'Dear Robin Hale,',

@@ -27,6 +27,41 @@ export function textImage(text: string, color: string): PixelImage {
   return { width, height: 5, pixels };
 }
 
+/** A drawing turned a quarter turn, clockwise or not: pixels stay pixels, so a hanging banner is re-lettered, not rotated. */
+export function turned({ width, height, pixels }: PixelImage, way: 'cw' | 'ccw' = 'cw'): PixelImage {
+  const out: (string | null)[] = new Array(width * height).fill(null);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const [nx, ny] = way === 'cw' ? [height - 1 - y, x] : [y, width - 1 - x];
+      out[ny * height + nx] = pixels[y * width + x];
+    }
+  }
+  return { width: height, height: width, pixels: out };
+}
+
+/** A drawing with each column dropped by `drop(x)` whole pixels: how a sign hangs crooked or a banner sags, in steps. */
+export function sheared({ width, height, pixels }: PixelImage, drop: (x: number) => number): PixelImage {
+  const drops = Array.from({ length: width }, (_, x) => drop(x));
+  const tall = height + Math.max(0, ...drops);
+  const out: (string | null)[] = new Array(width * tall).fill(null);
+  for (let x = 0; x < width; x++) for (let y = 0; y < height; y++) out[(y + drops[x]) * width + x] = pixels[y * width + x];
+  return { width, height: tall, pixels: out };
+}
+
+/** A card of one colour with pixel text on it, `pad` pixels in from its edges. */
+export function card(text: PixelImage, color: string, pad: number): PixelImage {
+  const width = text.width + 2 * pad;
+  const height = text.height + 2 * pad;
+  const pixels: (string | null)[] = new Array(width * height).fill(color);
+  for (let y = 0; y < text.height; y++) {
+    for (let x = 0; x < text.width; x++) {
+      const ink = text.pixels[y * text.width + x];
+      if (ink) pixels[(y + pad) * width + x + pad] = ink;
+    }
+  }
+  return { width, height, pixels };
+}
+
 /** Greedy word wrap for the pixel font, `max` characters a line. */
 export function wrapWords(text: string, max: number): string[] {
   const lines: string[] = [];
@@ -53,6 +88,50 @@ export const PIGEON: Sprite = {
     '....f.f...',
   ],
   palette: { k: INK, h: '#7d8594', o: '#e0782c', b: '#3b3838', n: '#5e8c7e', g: '#9aa0ab', w: '#c3c8cf', t: '#5f6570', f: '#c46f69' },
+};
+
+/** The same pigeon between steps, head down at the floor, tail up: the frame it pecks with. */
+export const PIGEON_PECK: Sprite = {
+  rows: [
+    '..........',
+    '..........',
+    '..........',
+    '...kkkk...',
+    '..knggwkk.',
+    '.kngggwwtk',
+    'khokgggktt',
+    'bkk.f.f...',
+  ],
+  palette: PIGEON.palette,
+};
+
+/** A bunting flag, hanging from its rope. */
+export const FLAG = ['fffffff', '.fffff.', '..fff..', '...f...'];
+
+/** The hall's wall clock: a black rim, a cream face and a mark at twelve, three, six and nine. Hall.tsx draws the hands by the minute. */
+export const CLOCK: Sprite = {
+  rows: [
+    '.......rrrrr.......',
+    '.....rrrrrrrrr.....',
+    '...rrrrffkffrrrr...',
+    '..rrrffffkffffrrr..',
+    '..rrfffffffffffrr..',
+    '.rrfffffffffffffrr.',
+    '.rrfffffffffffffrr.',
+    'rrfffffffffffffffrr',
+    'rrfffffffffffffffrr',
+    'rrkkfffffffffffkkrr',
+    'rrfffffffffffffffrr',
+    'rrfffffffffffffffrr',
+    '.rrfffffffffffffrr.',
+    '.rrfffffffffffffrr.',
+    '..rrfffffffffffrr..',
+    '..rrrffffkffffrrr..',
+    '...rrrrffkffrrrr...',
+    '.....rrrrrrrrr.....',
+    '.......rrrrr.......',
+  ],
+  palette: { r: '#2d2a2e', f: '#efe9d6', k: '#57524a' },
 };
 
 const POT = { p: '#9a5b3b', q: '#6f3d27', s: '#3b2a1f' };

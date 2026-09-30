@@ -97,10 +97,11 @@ describe('a challenge names no rule', () => {
   it('names every rule broken when there is more than one, as with a generated video that holds up a QR code', () => {
     const base = person('Alex Test', 52);
     const agent: Applicant = { ...base, video: { ...base.video, generated: true, sign: { kind: 'qr' } } };
-    const judgment = judge(agent, rulebookForDay(4), REGISTRY);
-    expect(judgment.violations.map((v) => v.rule)).toEqual(['human', 'sign']);
+    // A generated video breaks Rule 6, so it is day 6 before the court can name both.
+    const judgment = judge(agent, rulebookForDay(6), REGISTRY);
+    expect(judgment.violations.map((v) => v.rule)).toEqual(['sign', 'living']);
     expect(decide('challenge', judgment)).toEqual({ correct: true, violations: judgment.violations });
-    expect(playDay(REGISTRY, 4, [agent], ['challenge']).outcomes[0].violations.map((v) => v.rule)).toEqual(['human', 'sign']);
+    expect(playDay(REGISTRY, 6, [agent], ['challenge']).outcomes[0].violations.map((v) => v.rule)).toEqual(['sign', 'living']);
   });
 
   it('refuses the applicant who broke a rule, and registers the one who broke none (the deposit is the economy’s: economy.test.ts)', () => {

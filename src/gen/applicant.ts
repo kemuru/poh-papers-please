@@ -11,27 +11,27 @@ export type PhraseMistake = 'wrong-word' | 'missing-words' | 'silence' | 'quiet-
 
 /** Every kind of fault the generator plants, by the rule it breaks. */
 export type Mistakes = {
-  /** A unit, whose night lamp shows between its brows in every frame with its eyes shut; the Deepfake, whose ears change between frames; the Cutout, a picture held up; the Agent, a generated video. */
-  human: 'machine' | 'deepfake' | 'printed' | 'generated';
   phrase: PhraseMistake;
-  /** Someone else's face; a mirror selfie; a beauty filter. */
-  photo: 'another-face' | 'mirrored' | 'filter';
+  /**
+   * Someone else's face; a mirror selfie; a beauty filter; a unit, whose night lamp shows between its brows
+   * in every frame with its eyes shut; the Deepfake, whose ears change between frames.
+   */
+  face: 'another-face' | 'mirrored' | 'filter' | 'machine' | 'deepfake';
   /** Two characters wrong; no sign; a QR code; someone else's address. */
   sign: 'two-wrong' | 'no-sign' | 'qr' | 'wrong-address';
   /** Vouched for by a company (a unit's maker); by someone not registered; by someone already vouching today. */
   vouch: 'company' | 'unregistered' | 'busy';
   /** The Sybil Farm's later cousins; your clone; a unit whose factory face Window 7 registered; a registrant back in a hat. */
   duplicate: 'farm' | 'clone' | 'unit' | 'back-in-a-hat';
-  /** Born before 1900; a version number for a year; a typo in the year; no blink. */
-  living: 'ancient' | 'version' | 'year-typo' | 'no-blink';
+  /** Born before 1900; a version number for a year; a typo in the year; no blink; the Cutout, a picture held up; the Agent, a generated video. */
+  living: 'ancient' | 'version' | 'year-typo' | 'no-blink' | 'printed' | 'generated';
 };
 
 /** Every kind of valid applicant built to look like they break a rule. */
 export type LookAlikes = {
-  /** Dave, a man in a robot costume, its head under his arm. */
-  human: 'costume';
   phrase: never;
-  photo: 'new-look';
+  /** A new haircut or glasses since the photo; Dave, a man in a robot costume, its head under his arm. */
+  face: 'new-look' | 'costume';
   /**
    * One character wrong; the address on a phone's screen. Since about half of everyone holds a phone
    * up (day.ts papersForSign), `phone` looks like anyone and tests nothing; it stays so the week's

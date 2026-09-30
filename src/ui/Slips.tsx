@@ -17,11 +17,11 @@ export const pick = <T,>(pool: readonly T[], n: number) => pool[Math.abs(n) % po
  * Printed the moment a fake is registered. The day's first is a warning; the rest are fines. On the night
  * shift (`night`, the citation's number) there is no pay to fine, only a count to three.
  */
-export function CitationSlip({ decided, caseNo, video, night }: { decided: Decided; caseNo: string; /** The video on the papers stamped: a Rule 0 citation reprints it. */ video: Video; night?: number }) {
+export function CitationSlip({ decided, caseNo, video, night }: { decided: Decided; caseNo: string; /** The video on the papers stamped: a citation for a fault in it reprints it. */ video: Video; night?: number }) {
   const warning = decided.citation === 'warning' && night === undefined;
-  const title = night !== undefined ? NIGHT.citation.replace('{n}', String(night)) : warning ? 'Citation · Warning' : 'Citation';
+  const title = night !== undefined ? NIGHT.citation.replace('{n}', String(night)) : 'Citation';
   return (
-    <Slip kind="citation" variant={warning ? 'warning' : 'fine'} title={title} number={`No. ${caseNo}`}>
+    <Slip kind="citation" variant={warning ? 'warning' : 'fine'} title={title} mark={warning ? 'Warning' : undefined} number={`No. ${caseNo}`}>
       <p>Issued to: Clerk, Registry Window 3</p>
       {decided.outcome.violations.map((v) => (
         <Breach key={v.rule} lead="Offence: registered an applicant who broke" violation={v} video={video} />
@@ -75,11 +75,13 @@ export function FilingSlip({ name, caseNo, evidence }: { name: string; caseNo: s
   );
 }
 
-function Slip({ kind, variant, title, number, children }: { kind: string; variant?: string; title: string; number: string; children: ReactNode }) {
+/** A slip from the printer: its title, a stamp beside it if it has one (a warning), and its number. */
+function Slip({ kind, variant, title, mark, number, children }: { kind: string; variant?: string; title: string; mark?: string; number: string; children: ReactNode }) {
   return (
     <article className={`slip slip-${kind}${variant ? ` slip-${variant}` : ''}`} data-testid={kind} data-variant={variant}>
       <header>
         <strong>{title}</strong>
+        {mark && <em className="slip-mark">{mark}</em>}
         <span>{number}</span>
       </header>
       {children}
@@ -89,7 +91,7 @@ function Slip({ kind, variant, title, number, children }: { kind: string; varian
 
 /**
  * Names the broken rule and shows the evidence: the two things that disagree, with the difference marked.
- * Given the `video`, a Rule 0 breach reprints it.
+ * Given the `video`, a fault in the video itself reprints it.
  */
 export function Breach({ lead, violation: v, video }: { lead: string; violation: Violation; video?: Video }) {
   const rule = RULEBOOK[v.rule];
@@ -125,15 +127,19 @@ export function Breach({ lead, violation: v, video }: { lead: string; violation:
           <p className="evidence-line">
             <mark>{capitalise(evidenceLine(v))}</mark>
           </p>
-          {v.rule === 'human' && video && <CitationFilm video={video} named={v.problem === 'machine' || v.problem === 'changes' ? v.frame : null} />}
+          {filmed(v) && video && <CitationFilm video={video} named={v.rule === 'face' && (v.problem === 'machine' || v.problem === 'changes') ? v.frame : null} />}
         </>
       )}
     </>
   );
 }
 
+/** A fault that is in the video itself: a light, a face that turns into another, a picture held up, a generator's mark. */
+const filmed = (v: Violation) =>
+  (v.rule === 'face' && (v.problem === 'machine' || v.problem === 'changes')) || (v.rule === 'living' && (v.problem === 'picture' || v.problem === 'generated'));
+
 /**
- * A Rule 0 citation reprints the video as the desk showed it, the frame its evidence names outlined: the papers
+ * A citation for a fault in the video reprints it as the desk showed it, the frame its evidence names outlined: the papers
  * have gone back through the slot, so the evidence comes back on the slip. Nothing on it can be pointed at: no
  * Inspectable, no frame test ids, no frame names (the desk's papers are still in the DOM while they leave).
  */
@@ -144,7 +150,7 @@ function CitationFilm({ video, named }: { video: Video; named: number | null }) 
         {FRAME_TIMES.map((time, i) => (
           <figure key={time} className={`frame${video.with ? ' pair' : ''}${named === i + 1 ? ' named' : ''}`}>
             <FramePicture video={video} frame={i + 1} />
-            <figcaption>{named === i + 1 ? CITATION_FILM.named.replace('{n}', String(i + 1)).replace('{time}', time) : time}</figcaption>
+            <figcaption>{named === i + 1 ? CITATION_FILM.named.replace('{n}', String(i + 1)) : time}</figcaption>
           </figure>
         ))}
       </div>

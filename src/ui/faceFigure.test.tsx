@@ -8,6 +8,7 @@ import {
   DEEPFAKE_SLIP,
   figureLamp,
   FIRST_APPLICANT_PORTRAIT,
+  FIRST_SLIP_PORTRAIT,
   INFLUENCER_PHOTO,
   SPECIMEN,
   TWIN_TWO,
@@ -25,7 +26,7 @@ import type { Applicant, RuleId } from '../rules/types';
 import { FIGURE_CROP, RulebookCard } from './Documents';
 import { PixelPortrait } from './PixelPortrait';
 
-// Rule 0's page shows what its lamp check means: Fig. 0, one specimen face with its eyes shut, without
+// Rule 2's page shows what its light check means: Fig. 2, one specimen face with its eyes shut, without
 // and with a light as big as the day's unit's. The figure shows what to look for, never who.
 
 const inCrop = (x: number, y: number) =>
@@ -35,7 +36,7 @@ const inCrop = (x: number, y: number) =>
 const differences = (a: PixelImage, b: PixelImage) =>
   a.pixels.flatMap((pixel, i) => (pixel === b.pixels[i] ? [] : [{ x: i % PORTRAIT_WIDTH, y: Math.floor(i / PORTRAIT_WIDTH) }]));
 
-/** The part of a drawing Fig. 0 prints. */
+/** The part of a drawing Fig. 2 prints. */
 const cropped = (img: PixelImage) => {
   const out: (string | null)[] = [];
   for (let y = FIGURE_CROP.y; y < FIGURE_CROP.y + FIGURE_CROP.height; y++)
@@ -54,9 +55,10 @@ const painted = (svg: string, colour: string) => {
   return [...d.matchAll(/M\d+ \d+h(\d+)/g)].reduce((sum, m) => sum + Number(m[1]), 0);
 };
 
-describe("Rule 0's Fig. 0", () => {
-  it("lights Fig. 0-2 as the day's unit is lit, and with the smallest lamp on a day without one", () => {
-    expect([1, 2, 3, 4, 5, 6, 7].map(figureLamp)).toEqual(['bloom', 'glow', 'glow', 'small', 'small', 'small', 'slit']);
+describe("Rule 2's Fig. 2", () => {
+  it("lights Fig. 2-2 as the day's unit is lit, and with the smallest lamp on a day without one", () => {
+    // Day 1's book has no Rule 2, so its figure is never printed.
+    expect([2, 3, 4, 5, 6, 7].map(figureLamp)).toEqual(['glow', 'glow', 'small', 'small', 'small', 'slit']);
   });
 
   it('differs between its plates by the lamp alone, all of it inside the crop, whatever the size', () => {
@@ -98,6 +100,7 @@ describe("Rule 0's Fig. 0", () => {
       DEEPFAKE_SLIP,
       TWIN_TWO,
       FIRST_APPLICANT_PORTRAIT,
+      FIRST_SLIP_PORTRAIT,
     ];
     const queued: Portrait[] = [];
     // The registry's faces too: from day 5 the face search shows them.
@@ -114,7 +117,7 @@ describe("Rule 0's Fig. 0", () => {
     let checked = 0;
     for (const face of [...cast, ...queued, ...onFile]) {
       expect(sameFace(face, SPECIMEN), JSON.stringify(face.face)).toBe(false);
-      // Drawn as Fig. 0 draws it: eyes shut, nothing held up, no generator's mark and no lamp.
+      // Drawn as Fig. 2 draws it: eyes shut, nothing held up, no generator's mark and no lamp.
       const shut = drawPortrait({ ...face, board: undefined, mark: undefined, lamp: undefined }, { eyes: 'closed' });
       expect(cropped(shut) === plate, JSON.stringify(face)).toBe(false);
       checked++;
@@ -124,7 +127,7 @@ describe("Rule 0's Fig. 0", () => {
 
   // Hair is not the face (sameFace leaves it out), but it is most of what the plate shows. The specimen had
   // short dark-brown hair, and so has every week's day 2 unit: on day 2 the only applicant who looked like
-  // Fig. 0 was the fake. Both plates wear the hair, but a clerk who thinks "that is the man in Fig. 0"
+  // the figure was the fake. Both plates wear the hair, but a clerk who thinks "that is the man in Fig. 2"
   // must not be pointed at anyone by it.
   it("wears no fake's hair: no unit or scripted fake shares it, and a look-alike is no likelier a fake than anyone", () => {
     const look = (p: Portrait) => `${p.hair} ${p.hairColor}`;
@@ -152,23 +155,25 @@ describe("Rule 0's Fig. 0", () => {
     expect(alikeFakes / alike).toBeLessThanOrEqual(fakes / everyone);
   }, 60_000);
 
-  it("is printed on Rule 0's page only, inside its first check and its inspect target, dark and then lit as the day's unit", () => {
-    for (const day of [1, 2, 6]) {
-      const html = renderToStaticMarkup(<RulebookCard rulebook={rulebookForDay(day)} day={day} page="human" onPage={() => {}} />);
+  it("is printed on Rule 2's page only, inside its light check and its inspect target, dark and then lit as the day's unit", () => {
+    const figure = RULEBOOK.face.figure!;
+    for (const day of [2, 3, 6, 7]) {
+      const html = renderToStaticMarkup(<RulebookCard rulebook={rulebookForDay(day)} day={day} page="face" onPage={() => {}} />);
       expect(html.match(/class="rule-figure"/g), `day ${day}`).toHaveLength(1);
 
-      const page = html.slice(html.indexOf('data-inspect="rule-human"'), html.indexOf('data-inspect="rule-phrase"'));
-      const first = page.slice(page.indexOf('<li>'), page.indexOf('</li>') + '</li>'.length);
-      const figure = RULEBOOK.human.figure!;
-      expect(first).toContain(RULEBOOK.human.checks![0]);
-      expect(first).toContain(`<figure class="rule-figure" role="img" aria-label="${figure.label}">`);
-      expect(first.match(/viewBox="9 7 22 22"/g)).toHaveLength(2);
-      expect(first).toContain('rule-mark-ok');
-      expect(first).toContain('rule-mark-not');
+      const start = html.indexOf('data-inspect="rule-face"');
+      const page = html.slice(start, html.indexOf('</article>', start));
+      const checks = page.split('<li>').slice(1).map((item) => item.slice(0, item.indexOf('</li>')));
+      const at = checks[figure.under];
+      expect(at).toContain(RULEBOOK.face.checks![figure.under]);
+      expect(at).toContain(`<figure class="rule-figure" role="img" aria-label="${figure.label}">`);
+      expect(at.match(/viewBox="9 7 22 22"/g)).toHaveLength(2);
+      expect(at).toContain('rule-mark-ok');
+      expect(at).toContain('rule-mark-not');
 
       // What the stills draw: the specimen with its eyes shut, as the renderer draws it on the film's grey,
       // dark on ✓ and lit on ✗ with the day's lamp. Not the eyes open, not another face, not another lamp.
-      const stills = first.match(/<svg viewBox="9 7 22 22"[\s\S]*?<\/svg>/g)!;
+      const stills = at.match(/<svg viewBox="9 7 22 22"[\s\S]*?<\/svg>/g)!;
       const still = (portrait: Portrait) =>
         renderToStaticMarkup(<PixelPortrait portrait={portrait} eyes="closed" scale={2} background="#8f9b9e" crop={FIGURE_CROP} />);
       const lamp = figureLamp(day);
@@ -180,8 +185,11 @@ describe("Rule 0's Fig. 0", () => {
       expect(painted(lit, PROPS.lamp.core), `day ${day}`).toBe(art.split('c').length - 1);
       expect(painted(lit, PROPS.lamp.ring), `day ${day}`).toBe(art.split('r').length - 1);
     }
+    // Day 1's book has no Rule 2 and no figure.
+    const day1 = renderToStaticMarkup(<RulebookCard rulebook={rulebookForDay(1)} day={1} page="phrase" onPage={() => {}} />);
+    expect(day1).not.toContain('rule-figure');
 
-    const others = (Object.keys(RULEBOOK) as RuleId[]).filter((id) => id !== 'human');
+    const others = (Object.keys(RULEBOOK) as RuleId[]).filter((id) => id !== 'face');
     expect(others.map((id) => RULEBOOK[id].figure)).toEqual(others.map(() => undefined));
   });
 });

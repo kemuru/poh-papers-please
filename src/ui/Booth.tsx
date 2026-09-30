@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { GeneratedApplicant } from '../gen/applicant';
+import { CALENDAR, DeskSprite, PERSON } from './DeskArt';
 import { PixelPortrait } from './PixelPortrait';
 import { blip } from './sound';
 
@@ -36,17 +37,19 @@ export function Booth(p: Props) {
   const own = p.applicant?.cast === 'clerk';
   return (
     <section className="booth" aria-label="Window">
-      <div className={own && !p.leaving ? 'booth-glass reflecting' : 'booth-glass'}>
-        <div className="booth-room" />
-        {p.applicant && (
-          <div key={p.visit} className={['visitor', own ? 'reflection' : '', p.leaving ? 'leaving' : ''].filter(Boolean).join(' ')}>
-            <PixelPortrait portrait={p.applicant.photo} scale={5} title={own ? 'Your reflection in the glass' : `${p.applicant.name}, at the window`} />
+      <div className="booth-frame">
+        <div className={own && !p.leaving ? 'booth-glass reflecting' : 'booth-glass'}>
+          <div className="booth-room" />
+          {p.applicant && (
+            <div key={p.visit} className={['visitor', own ? 'reflection' : '', p.leaving ? 'leaving' : ''].filter(Boolean).join(' ')}>
+              {/* Three art pixels to a portrait pixel: the face at the window, on the desk's grid. */}
+              <PixelPortrait portrait={p.applicant.photo} scale={6} title={own ? 'Your reflection in the glass' : `${p.applicant.name}, at the window`} />
+            </div>
+          )}
+          <div className="glare" />
+          <div className={shutterDown ? (p.over ? 'shutter down closing' : 'shutter down') : 'shutter'} aria-hidden={!shutterDown}>
+            <span>{p.over ? 'Closed' : 'Window 3'}</span>
           </div>
-        )}
-        <div className="glare" />
-        <div className="grille" aria-hidden="true" />
-        <div className={shutterDown ? (p.over ? 'shutter down closing' : 'shutter down') : 'shutter'} aria-hidden={!shutterDown}>
-          <span>{p.over ? 'Closed' : `Window 3 · Day ${p.day}`}</span>
         </div>
       </div>
       <div className="counter" aria-hidden="true">
@@ -55,19 +58,22 @@ export function Booth(p: Props) {
 
       <Speech key={`${p.visit}-${p.speech}`} text={p.speech} voice={p.applicant && !p.over && !own ? voiceOf(p.applicant) : null} />
 
+      {/* The counters under the glass: the day, the Ministry's clock (lit while the shift is on the clock), those seen. */}
       <div className="hud">
-        <div className="hud-cell">
-          <span className="hud-label">Day</span>
+        <div className="hud-cell hud-day">
+          <DeskSprite sprite={CALENDAR} />
+          <span className="sr-only">Day</span>
           <span className="hud-value">{p.day}</span>
         </div>
-        <div className={p.secondsLeft !== null && p.secondsLeft <= 60 && !p.over ? 'hud-cell hud-clock hurry' : 'hud-cell hud-clock'}>
-          <span className="hud-label">{p.timed ? 'Time' : 'Time · no limit'}</span>
+        <div className={['hud-cell', 'hud-clock', p.timed ? 'timed' : '', p.secondsLeft !== null && p.secondsLeft <= 60 && !p.over ? 'hurry' : ''].filter(Boolean).join(' ')}>
+          <span className="sr-only">{p.timed ? 'Time' : 'Time, no limit today'}</span>
           <span className="hud-value" data-testid="clock">
             {p.clock}
           </span>
         </div>
-        <div className="hud-cell">
-          <span className="hud-label">Seen</span>
+        <div className="hud-cell hud-seen">
+          <DeskSprite sprite={PERSON} />
+          <span className="sr-only">Seen</span>
           <span className="hud-value">
             {p.served}/{p.total}
           </span>
@@ -77,15 +83,15 @@ export function Booth(p: Props) {
       <div className="booth-actions">
         {!p.opened ? (
           <button className="lever open" onClick={p.onOpen}>
-            Open the window <kbd>Space</kbd>
+            <span className="lever-label">Open the window</span> <kbd>Space</kbd>
           </button>
         ) : p.over ? (
           <button className="lever end" onClick={p.onEnd}>
-            End shift <kbd>Space</kbd>
+            <span className="lever-label">End shift</span> <kbd>Space</kbd>
           </button>
         ) : (
           <button className="lever call" onClick={p.onCall} disabled={!p.canCall} aria-label="Call next applicant">
-            Next <kbd>Space</kbd>
+            <span className="lever-label">Next</span> <kbd>Space</kbd>
           </button>
         )}
       </div>

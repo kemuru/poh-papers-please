@@ -2,7 +2,7 @@
 // It only records player actions; judgments come from src/rules, hearings from src/court, money
 // from src/economy and the words from src/content through src/gen.
 import { CLERK, PAT } from '../content/cast';
-import { CAST_RULINGS, CITATION_MEMOS, CLERK_MEMO, DISMISSED_NOTES, UNIT_MEMOS, UPHELD_NOTES } from '../content/verdicts';
+import { CAST_RULINGS, CITATION_MEMOS, CLERK_MEMO, DISMISSED_NOTES, FIRST_UNIT_DISMISSED, UNIT_MEMOS, UPHELD_NOTES, YEAR_MEMOS } from '../content/verdicts';
 import { stamp } from '../court/court';
 import { citationFor, endDay, OFFER, STARTING_SAVINGS, type Citation, type Credit, type DayEnd } from '../economy/economy';
 import { endingTonight, gradeOf, type EndingId } from '../economy/endings';
@@ -11,7 +11,8 @@ import { DAYS, LAST_DAY, morning, morningRegistry, PAT_DAYS } from '../gen/day';
 import { writeGazette, type Gazette, type WeekInNumbers, type Yesterday } from '../gen/gazette';
 import type { WeekEnd } from '../gen/letters';
 import { freshLine } from '../gen/lines';
-import type { Decision, Outcome } from '../rules/judge';
+import { RULE_DAYS, type Decision, type Outcome } from '../rules/judge';
+import { sameName } from '../rules/registry';
 import type { Registry } from '../rules/types';
 import { appealCase, canAppeal, hearCase, isUpheld, settle, type CourtCase, type Evidence } from './court';
 
@@ -201,7 +202,7 @@ export function reduce(s: GameState, action: Action): GameState {
       const day = s.day + 1;
       const gazette = writeGazette(day, yesterday(s, action.queue), s.shown, { handedIn: s.day === OFFER.day && s.offer === 'handed-in' });
       // Signed, Likeness pays for every unit stamped in: an envelope on the desk in the morning.
-      const paid = s.offer === 'signed' ? log.registered.filter((r) => r.unit && r.by === 'stamp').map((r) => r.name) : [];
+      const paid = s.offer === 'signed' ? log.registered.filter((r) => r.unit && r.broke && r.by === 'stamp').map((r) => r.name) : [];
       return {
         ...startWeek(s.seed, day),
         savings: s.end.after,
@@ -266,8 +267,9 @@ function dayLog(s: GameState, queue: GeneratedApplicant[]): DayLog {
 }
 
 /** Likeness units the clerk stamped in this week, in order, with the day. */
+/** Units the clerk's own stamp let in against the rulebook. Day 1's broke no rule, and does not count. */
 export const unitsStamped = (history: readonly DayLog[]) =>
-  history.flatMap((d) => d.registered.filter((r) => r.unit && r.by === 'stamp').map((r) => ({ name: r.name, day: d.day })));
+  history.flatMap((d) => d.registered.filter((r) => r.unit && r.broke && r.by === 'stamp').map((r) => ({ name: r.name, day: d.day })));
 
 /** The first person the clerk stamped in this week, if the week began on day 1 and anyone was. */
 const firstStamped = (history: readonly DayLog[]) => (history[0]?.day === 1 ? (history[0].registered.find((r) => r.by === 'stamp')?.name ?? '') : '');
@@ -297,7 +299,8 @@ export function weekEnd(s: GameState): { end: WeekEnd; numbers: WeekInNumbers } 
       offer: s.offer,
     },
     numbers: {
-      registered: s.history.flatMap((d) => d.registered.map((r) => ({ name: r.name, day: d.day, unit: r.unit, by: r.by }))),
+      // A unit here is one let in against the rulebook: day 1's broke no rule, and left the next morning.
+      registered: s.history.flatMap((d) => d.registered.map((r) => ({ name: r.name, day: d.day, unit: r.unit && r.broke, by: r.by }))),
       challenged: s.history.reduce((n, d) => n + d.challenged, 0),
       upheld: s.history.reduce((n, d) => n + d.upheld, 0),
       patDay: pat.length > 0 ? Math.min(...pat) : null,
@@ -311,32 +314,40 @@ export function weekEnd(s: GameState): { end: WeekEnd; numbers: WeekInNumbers } 
 function citationMemo(s: GameState, applicant: GeneratedApplicant, outcome: Outcome): string | null {
   if (applicant.cast === 'clerk' && !s.shown.includes(CLERK_MEMO)) return CLERK_MEMO;
   if (applicant.cast === 'unit') {
-    const line = UNIT_MEMOS[s.day - 1];
+    const line = UNIT_MEMOS[s.day];
     if (line && !s.shown.includes(line)) return line;
   }
-  const rule = outcome.violations[0]?.rule;
-  return rule ? freshLine(CITATION_MEMOS[rule], s.shown, s.decided.length + s.day) : null;
+  const v = outcome.violations[0];
+  if (!v) return null;
+  return freshLine(v.rule === 'living' && v.problem === 'born' ? YEAR_MEMOS : CITATION_MEMOS[v.rule], s.shown, s.decided.length + s.day);
 }
 
 /** The court's closing line: what it adds for someone it has met before, or the general run of them. */
 function courtNote(day: number, a: GeneratedApplicant, upheld: boolean, index: number, shown: readonly string[]): string | null {
+  // Day 1's unit, challenged on a hunch: the court finds nothing it may find, and says so.
+  if (a.cast === 'unit' && day < RULE_DAYS.face && !upheld && !shown.includes(FIRST_UNIT_DISMISSED)) return FIRST_UNIT_DISMISSED;
   const cast = a.cast ? CAST_RULINGS[a.cast][upheld ? 'upheld' : 'dismissed'] : undefined;
   const from = a.cast === 'unit' ? day - 1 : index + day;
   return (cast && freshLine(cast, shown, from)) ?? freshLine(upheld ? UPHELD_NOTES : DISMISSED_NOTES, shown, index + day);
 }
 
-/** What the Gazette's reporter saw at Window 3 today. */
+/** What the Gazette's reporter saw at Window 3 today. A voucher removed at five is photographed as the registry had them at the window. */
 function yesterday(s: GameState, queue: GeneratedApplicant[]): Yesterday {
   const rulingAt = new Map(s.rulings.map((r) => [r.index, r]));
+  const onFile = (name: string) => (s.bench?.registry ?? s.registry).find((r) => sameName(r.name, name))?.face ?? null;
   return {
     day: s.day,
-    cases: s.decided.map((d, i) => ({
-      name: queue[i].name,
-      unit: queue[i].cast === 'unit',
-      decision: d.decision,
-      broke: d.outcome.violations.map((v) => v.rule),
-      ...(d.decision === 'challenge' ? { upheld: rulingAt.get(i)?.upheld ?? false, removed: rulingAt.get(i)?.removed ?? null } : {}),
-    })),
-    unprocessed: queue.length - s.decided.length,
+    cases: s.decided.map((d, i) => {
+      const removed = d.decision === 'challenge' ? (rulingAt.get(i)?.removed ?? null) : null;
+      return {
+        name: queue[i].name,
+        face: queue[i].photo,
+        unit: queue[i].cast === 'unit',
+        decision: d.decision,
+        broke: d.outcome.violations.map((v) => v.rule),
+        ...(d.decision === 'challenge' ? { upheld: rulingAt.get(i)?.upheld ?? false, removed, removedFace: removed ? onFile(removed) : null } : {}),
+      };
+    }),
+    sentHome: queue.slice(s.decided.length).map((a) => ({ name: a.name, face: a.photo })),
   };
 }

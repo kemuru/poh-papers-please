@@ -12,6 +12,7 @@ import type { Finished } from './record';
 import { backTo, browserStorage, canSave, dayAgain, dayBegun, fingerprint, newRun, saveOf, stepOf, writeSave, type Run, type Step } from './save';
 import { useSettings } from './settings';
 import { Court, Ending, Statement } from './Screens';
+import { DeskSprite, NOTE, NOTE_OFF, PAUSE, SPEAKER, SPEAKER_OFF } from './DeskArt';
 import { Shift } from './Shift';
 import { isMusicMuted, setMusicMuted, setMusicScene, stopMusic, type Scene } from './music';
 import { isMuted, setMuted } from './sound';
@@ -135,15 +136,23 @@ export function Game({ run, today, onRestart, onFinished, onBoard }: Props) {
     });
   });
 
+  // The accounts are settled on the statement: from its first line the rail's tally, and the menu, show what
+  // the roll carries forward, not the morning's figure it was brought forward from.
+  const savings = state.phase === 'statement' && state.end ? state.end.after : state.savings;
+
   return (
     <div className={`game phase-${state.phase}`}>
+      {/* The desk rail: the window's nameplate, the savings on a tally, and the switches. */}
       <header className="topbar">
-        <h1>Ministry of Humanity</h1>
-        <p>
-          Registry Window 3 · Clerk <span data-testid="clerk">{CLERK.name}</span>
+        <h1 className="sr-only">Ministry of Humanity</h1>
+        <p className="nameplate">
+          <span className="nameplate-window">Window 3</span>
+          <span className="nameplate-clerk">
+            Clerk <span data-testid="clerk">{CLERK.name}</span>
+          </span>
         </p>
         <p className="topbar-savings">
-          Savings <strong data-testid="topbar-savings">{state.savings}</strong> PNK
+          Savings <strong data-testid="topbar-savings">{savings}</strong> PNK
         </p>
         <AudioSwitches onMenu={openMenu} />
       </header>
@@ -186,7 +195,7 @@ export function Game({ run, today, onRestart, onFinished, onBoard }: Props) {
           where={whereNow(state, clockToday)}
           day={state.day}
           days={state.day - run.startDay + 1}
-          savings={state.savings}
+          savings={savings}
           dayBegun={dayBegun(steps, state)}
           earlier={earlier}
           backDay={backDay}
@@ -238,19 +247,21 @@ export function AudioSwitches({ onMenu }: { onMenu: () => void }) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+  // Three switches on the rail, each drawn with what it does and a lamp that is lit while it is on.
   return (
     <div className="audio-switches">
-      <button className="mute" aria-pressed={muted} aria-label="Sound" title={settings.shortcuts ? 'Sound on or off (M)' : 'Sound on or off'} onClick={toggleSound} onMouseDown={keepFocus}>
-        <span className="mute-label">Sound</span>
-        {muted ? 'Off' : 'On'}
+      <button className="switch" aria-pressed={muted} aria-label="Sound" title={settings.shortcuts ? 'Sound on or off (M)' : 'Sound on or off'} onClick={toggleSound} onMouseDown={keepFocus}>
+        <DeskSprite sprite={muted ? SPEAKER_OFF : SPEAKER} />
+        <span className="switch-lamp" aria-hidden="true" />
+        <kbd>M</kbd>
       </button>
-      <button className="mute" aria-pressed={musicMuted} aria-label="Music" title="Music on or off" onClick={toggleMusic} onMouseDown={keepFocus}>
-        <span className="mute-label">Music</span>
-        {musicMuted ? 'Off' : 'On'}
+      <button className="switch" aria-pressed={musicMuted} aria-label="Music" title="Music on or off" onClick={toggleMusic} onMouseDown={keepFocus}>
+        <DeskSprite sprite={musicMuted ? NOTE_OFF : NOTE} />
+        <span className="switch-lamp" aria-hidden="true" />
       </button>
-      <button className="mute menu-button" aria-label={MENU.button} title={`${MENU.button} (${MENU.key})`} onClick={onMenu} onMouseDown={keepFocus}>
-        <span className="mute-label">{MENU.button}</span>
-        {MENU.key}
+      <button className="switch menu-button" aria-label={MENU.button} title={`${MENU.button} (${MENU.key})`} onClick={onMenu} onMouseDown={keepFocus}>
+        <DeskSprite sprite={PAUSE} />
+        <kbd>{MENU.key}</kbd>
       </button>
     </div>
   );
