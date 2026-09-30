@@ -90,7 +90,7 @@ export function Menu(p: Props) {
               <button className="screen-button" data-safe onClick={p.onClose}>
                 {MENU.keep}
               </button>
-              <button className="screen-button menu-destroy" onClick={yes}>
+              <button className="red-key" onClick={yes}>
                 {fill(question.yes)}
               </button>
             </div>

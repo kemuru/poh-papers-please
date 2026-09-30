@@ -23,7 +23,7 @@ import { pick } from './Slips';
 import { weekEnd, type GameState, type Ruling } from './week';
 import { PixelPortrait, pixelPaths } from './PixelPortrait';
 import { CREST, DeskSprite, GAVEL, KNOB, LIKENESS_MARK, MASTHEAD, PAPERCLIP } from './DeskArt';
-import { ADDING_MACHINE, BILL_SPIKE, CREST_BRASS, EMPTY_SEAT, OUT_TRAY } from './ScreenArt';
+import { ADDING_MACHINE, BILL_SPIKE, CREST_BRASS, EMPTY_SEAT, FOLDED_GAZETTE, OUT_TRAY } from './ScreenArt';
 import { caseNumber } from './Shift';
 import { thunk, tick } from './sound';
 
@@ -348,10 +348,10 @@ function Hearing({
                 Rule {RULEBOOK[v.rule].number}: {evidenceLine(asPointed(v, court.evidence, a.video), 'court')}
               </p>
             ))}
-          {r.removed && <p className="hearing-evidence">Removed from the registry with them: {r.removed}, who vouched for them.</p>}
+          {r.removed && <p className="hearing-removed">Removed from the registry with them: {r.removed}, who vouched for them.</p>}
           {r.note && <p className="court-note">{r.note}</p>}
           {fee !== null && (
-            // APPEAL: the court's one decision, a key of its own, with its fee on a tag tied to it.
+            // APPEAL: the court's one decision, the red key (it costs PNK), with its fee on a tag tied to it.
             <button
               ref={next}
               className="appeal-key"
@@ -361,7 +361,7 @@ function Hearing({
                 onAppeal();
               }}
             >
-              <span className="appeal-face">
+              <span className="appeal-face red-key">
                 <b>{APPEAL_BUTTON.word}</b>
                 {APPEAL_BUTTON.jury.replace('{size}', String(JURY_SIZES[court.rounds.length]))}
                 <span className="sr-only">{APPEAL_BUTTON.join}</span>
@@ -457,9 +457,12 @@ export function Statement({ day, end, unprocessed, onNext }: { day: number; end:
   return (
     <main className="screen statement-screen">
       <div className="till">
-        {/* The day's forms in the out tray, and its bills on the spike, either side of the machine. */}
+        {/* On the blotter either side of the machine: the day's forms in the out tray and the stamps put down in
+            front of it; the day's bills on the spike, and the morning's Gazette folded in front of that. */}
         <DeskSprite sprite={OUT_TRAY} className="till-tray" />
+        <ReturnedStamps className="till-stamps" />
         <DeskSprite sprite={BILL_SPIKE} className="till-spike" />
+        <DeskSprite sprite={FOLDED_GAZETTE} className="till-paper" />
         {/* The adding machine at the back of the desk; the roll comes out of the slot along its foot. */}
         <DeskSprite sprite={ADDING_MACHINE} className="till-machine" />
         <div className="till-roll" style={{ animationDuration: `${printed + 0.3}s` }}>
@@ -552,18 +555,19 @@ export function Ending({ state, card, earlier, onNewWeek, onBack, onBoard }: End
               <span className="hr-ministry">{LETTER_HEAD.ministry}</span>
               <span className="hr-dept">{LETTER_HEAD.dept}</span>
             </header>
-            <h2 className="letter-subject">{letter.title}</h2>
+            {/* The subject, and HR's stamp beside it across the head of the notice: the verdict is read first. */}
+            <div className="hr-verdict">
+              <h2 className="letter-subject">{letter.title}</h2>
+              <p className="hr-stamp">{letter.stamp}</p>
+            </div>
             {letter.lines.map((line) => (
               <p key={line}>{line}</p>
             ))}
             {letter.note && <p className="hr-note">{letter.note}</p>}
-            {/* What HR typed in at the foot, and its stamp beside it. */}
-            <div className="hr-foot">
-              <div className="hr-typed">
-                {letter.grade && <p data-testid="grade">{letter.grade}</p>}
-                <p>Final savings: {state.savings} PNK</p>
-              </div>
-              <p className="hr-stamp">{letter.stamp}</p>
+            {/* What HR typed in at the foot. */}
+            <div className="hr-typed">
+              {letter.grade && <p data-testid="grade">{letter.grade}</p>}
+              <p>Final savings: {state.savings} PNK</p>
             </div>
           </article>
           {clip && (
@@ -620,10 +624,13 @@ export function Ending({ state, card, earlier, onNewWeek, onBack, onBoard }: End
   );
 }
 
-/** The clerk's two stamps, put out on the desk to go back as the letter asks: the green one first. */
-function ReturnedStamps() {
+/**
+ * The clerk's two stamps, put down on the desk: at the end of the day, beside the adding machine; at the end of
+ * a fired clerk's week, put out to go back as the letter asks, the green one first.
+ */
+function ReturnedStamps({ className = 'returned-stamps' }: { className?: string }) {
   return (
-    <div className="returned-stamps" aria-hidden="true">
+    <div className={className} aria-hidden="true">
       {(['accept', 'challenge'] as const).map((kind) => (
         <span key={kind} className={`returned-stamp returned-${kind}`}>
           <DeskSprite sprite={KNOB} />

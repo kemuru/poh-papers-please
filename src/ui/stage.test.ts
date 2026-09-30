@@ -26,8 +26,8 @@ describe('the stage', () => {
   });
 
   // A small laptop's window, narrow and short: a crisp step that lays the stage out shorter than designed is
-  // taken only if the desk's tallest state (a voucher's form over a phone, Rule 2's page under the registry's
-  // tab) still fits under the shortest hall. Until 30 Sep 2026 these took scale 1 and lost up to 58px of it.
+  // taken only if the desk's tallest state (an applicant's papers: a voucher's form over a phone held up in
+  // the video) still fits under the shortest hall. Until 30 Sep 2026 these took scale 1 and lost up to 58px of it.
   it.each([
     [1240, 760, 1],
     [1240, 760, 2],

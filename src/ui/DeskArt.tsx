@@ -19,8 +19,9 @@ export const SPEAKER_OFF: Sprite = {
   palette: { a: DIM, r: RED },
 };
 
+/** Eight rows, the last one bare, as tall as the speaker: centred on its switch, it lands on the grid. */
 export const NOTE: Sprite = {
-  rows: ['...aaaaa', '...aaaaa', '...a...a', '...a...a', '...a...a', '.aaa.aaa', 'aaa.aaa.'],
+  rows: ['...aaaaa', '...aaaaa', '...a...a', '...a...a', '...a...a', '.aaa.aaa', 'aaa.aaa.', '........'],
   palette: { a: LIGHT },
 };
 
@@ -32,15 +33,18 @@ export const PAUSE: Sprite = {
   palette: { a: LIGHT },
 };
 
-/** Beside the count of those seen today, on the booth's counter. */
+/**
+ * Beside the count of those seen today, on the booth's counter. Eight rows, the last one bare: centred in its
+ * cell it lands on the grid, standing on the counter's baseline as the figures do.
+ */
 export const PERSON: Sprite = {
-  rows: ['..aa..', '.aaaa.', '.aaaa.', '..aa..', '.aaaa.', 'aaaaaa', 'aaaaaa'],
+  rows: ['..aa..', '.aaaa.', '.aaaa.', '..aa..', '.aaaa.', 'aaaaaa', 'aaaaaa', '......'],
   palette: { a: '#8a5f22' },
 };
 
-/** Beside the day, on the booth's counter: a page off the calendar. */
+/** Beside the day, on the booth's counter: a page off the calendar, eight rows as the person is. */
 export const CALENDAR: Sprite = {
-  rows: ['.a...a.', 'aaaaaaa', 'aaaaaaa', 'a.....a', 'a.a.a.a', 'a.....a', 'aaaaaaa'],
+  rows: ['.a...a.', 'aaaaaaa', 'aaaaaaa', 'a.....a', 'a.a.a.a', 'a.....a', 'aaaaaaa', '.......'],
   palette: { a: '#8a5f22' },
 };
 

@@ -75,7 +75,7 @@
   position: absolute;
   z-index: 2;
   top: -6px;
-  left: calc(50% - 10px);
+  left: round(down, 50% - 10px, 2px);
 }
 
 /* ------------------------------------------------------------ the poster */

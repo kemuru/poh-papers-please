@@ -602,8 +602,18 @@ function Drip({ to }: { to: number }) {
 const ANNOUNCEMENT_MS = 9000;
 /** The loudspeaker, on a bracket from the ceiling over the clock at the end of the queue, facing up the queue. */
 const SPEAKER = { x: 386, y: 5 };
-/** Characters that fit one line of the PA's bubble, in the hall's own lettering. */
-const BUBBLE_LINE = 52;
+/**
+ * The PA's bubble runs back from just short of the horn's mouth towards the banner, which hangs as high, and
+ * stops four hall pixels short of its cloth: both may start "WELCOME", and they must not read as one strip.
+ */
+const BUBBLE_RIGHT = SPEAKER.x - 4;
+const BUBBLE_LEFT = BANNER_X + CLOTH.width + 4;
+/**
+ * Characters that fit one line of the bubble, in the hall's own lettering (four hall pixels a letter, less the
+ * last one's gap), inside its three-pixel margins and its ink: 50, which wraps no announcement onto more lines
+ * than 52 did, so the bubble covers no more of the queue's heads than it did.
+ */
+const BUBBLE_LINE = Math.floor((BUBBLE_RIGHT - BUBBLE_LEFT - 2 - 6 + 1) / 4);
 const PA_INK = '#1d1f1a';
 
 /**
@@ -640,7 +650,7 @@ function PublicAddress({ day, opened, decided, total, over, hang }: { day: numbe
   const x = SPEAKER.x;
   const y = SPEAKER.y + hang;
   // The bubble's right edge, just short of the horn's mouth.
-  const edge = x - 4;
+  const edge = BUBBLE_RIGHT;
   return (
     <g className="pa" role="status" aria-label="Announcements" aria-live="polite">
       {/* A horn loudspeaker on a bracket, its mouth towards the queue. */}

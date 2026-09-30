@@ -1,6 +1,7 @@
 // What the desk says while the clerk works: on the magnifier's tag while Inspect is on, on the Inspect slip
-// at the foot of the blotter once two things have been compared, and, for the one guided inspection of day 1
-// and each registry tool the day it arrives, on a second note from the supervisor.
+// at the foot of the blotter once two things have been compared; for the one guided inspection of day 1, on a
+// note from the supervisor stuck at the foot of the blotter; and for each registry tool the day it arrives, on
+// a second note from the supervisor stuck on the day's.
 
 export const INSPECT_LINES = {
   /** "{rule}" is the rule's name: "Rule 1: The phrase". The slip stamps its first word, in red. */
@@ -23,7 +24,7 @@ export const NEW_TOOL_TIPS = {
   duplicate: { tool: 'face', text: 'New today: the face search. Press F, or Search this face, to see who is on file with it.' },
 } as const;
 
-/** The supervisor's second note, stuck on the day's: the guided look, or a new tool. What a screen reader calls it. */
+/** The supervisor's second note, on the blotter (the guided look) or on the day's (a new tool). What a screen reader calls it. */
 export const TIP_NOTE_LABEL = 'Another note from your supervisor';
 
 /** The registry terminal's keys: its return key (only its arrow is printed on it), and one for each lookup. */

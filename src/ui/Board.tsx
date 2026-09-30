@@ -160,7 +160,7 @@ export function Board({ saved, setAside, record, today, onContinue, onNewWeek, o
                 <button ref={keep} className="screen-button" onClick={() => setAsking(null)}>
                   {BOARD.confirm.keep}
                 </button>
-                <button className="screen-button menu-destroy" onClick={asking === 'new' ? onNewWeek : onToday}>
+                <button className="red-key" onClick={asking === 'new' ? onNewWeek : onToday}>
                   {BOARD.confirm.yes}
                 </button>
               </div>

@@ -35,8 +35,13 @@ describe('the look', () => {
     for (const { where, value } of declarations('font-size')) expect(['20px', '30px', '40px', 'inherit', '1px'], where).toContain(value);
   });
 
-  it('keeps line heights and letter spacing on the grid', () => {
-    for (const { where, value } of declarations('line-height')) expect(value, where).toMatch(/^(0|[1-9]\d*[02468]px|[02468]px)$/);
+  it('keeps every line of type, and letter spacing, on the grid', () => {
+    // A line height less its font size (20px or 40px) that is a multiple of 4 leaves whole art pixels above
+    // the ink: on a 22px line every row of ink starts half an art pixel down.
+    for (const { where, value } of declarations('line-height')) {
+      expect(value, where).toMatch(/^(0|\d+px)$/);
+      expect(parseInt(value, 10) % 4, where).toBe(0);
+    }
     for (const { where, value } of declarations('letter-spacing')) expect(value, where).toMatch(/^0(px)?$/);
   });
 

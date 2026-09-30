@@ -17,19 +17,20 @@ export const RAIL = 40;
 /**
  * The most the booth and the desk ever need below the hall, by stage width (design pixels): the tallest of every
  * applicant's papers, rulebook page, registry answer and note of the week, measured with the station at its
- * content height, the most of seeds 1 to 4. On a narrow stage the tallest is Rule 2's page under the registry's
- * tab (day 4 on), with a voucher's form over a phone held up in the video as tall; from 1366 wide, the form and
- * the phone (at 1366, seed 4's day 4 has a voucher long enough to put Look up under the name). Between two
- * widths, the narrower one's.
+ * content height, the most of seeds 1 to 4 over all seven days. Since the narrow book is set a line to every 20px,
+ * the tallest at every width is an applicant's papers: a voucher's form over a phone held up in the video (day 4
+ * on; at 1366, seed 4's day 4 has a voucher long enough to put Look up under the name), and from 1640 a day 1 or
+ * day 2 applicant's as tall; Rule 2's page under the registry's tab comes next. Between two widths, the narrower
+ * one's.
  */
 export const DESK_NEEDS: readonly (readonly [width: number, height: number])[] = [
-  [1240, 658],
-  [1280, 658],
-  [1366, 634],
-  [1400, 614],
-  [1440, 610],
-  [1540, 586],
-  [1640, 568],
+  [1240, 650],
+  [1280, 650],
+  [1366, 630],
+  [1400, 606],
+  [1440, 606],
+  [1540, 582],
+  [1640, 564],
 ];
 
 export const deskNeeds = (width: number) => DESK_NEEDS.reduce((need, [w, h]) => (width >= w ? h : need), DESK_NEEDS[0][1]);

@@ -224,6 +224,52 @@ export const BILL_SPIKE: Sprite = (() => {
 })();
 
 /**
+ * The morning's Gazette, folded in half and put down on the desk once read: grey newsprint, the masthead's black
+ * letters and the paper's rules at the top, the headline's two lines under them, a photograph in its halftone and
+ * the columns beside it; the half under the fold a shade darker. 100 by 64 art pixels.
+ */
+export const FOLDED_GAZETTE: Sprite = (() => {
+  const c = canvas(100, 64);
+  c.box(0, 0, 100, 64, { fill: 'n', edge: 'e' });
+  // The half under the fold, a shade darker, and the crease.
+  c.rect(1, 33, 98, 30, 'N');
+  c.rect(1, 32, 98, 1, 'e');
+  // The masthead: the textura's black letters, tall and short, in three words.
+  const letters = [3, 2, 2, 0, 3, 2, 2, 2, 2, 2, 2, 2, 0, 3, 2, 2, 2, 2, 2, 2];
+  let x = 18;
+  for (const tall of letters) {
+    if (tall === 0) {
+      x += 3;
+      continue;
+    }
+    c.rect(x, tall === 3 ? 3 : 4, 2, tall === 3 ? 6 : 5, 'k');
+    x += 3;
+  }
+  // The rules under it, a thick one and a thin one.
+  c.rect(4, 11, 92, 2, 'k');
+  c.rect(4, 14, 92, 1, 'k');
+  // The headline, two lines of the big print.
+  for (const [line, width] of [
+    [17, 80],
+    [21, 56],
+  ]) {
+    for (let word = 10; word < 10 + width; word += 12) c.rect(word, line, Math.min(9, 10 + width - word), 3, 'k');
+  }
+  // The photograph in its halftone, framed, and the columns of the story beside it.
+  c.box(6, 26, 22, 26, { fill: 'h', edge: 'k' });
+  for (let y = 27; y < 51; y += 2) for (let dot = 7 + (y % 4 === 1 ? 1 : 0); dot < 27; dot += 2) c.put(dot, y, 'H');
+  for (let line = 27; line < 60; line += 3) {
+    if (line > 30 && line < 36) continue;
+    c.rect(32, line, 28 - ((line * 5) % 7), 1, 't');
+    c.rect(64, line, 30 - ((line * 3) % 5), 1, 't');
+  }
+  return {
+    rows: c.rows(),
+    palette: { n: '#c8c6bb', N: '#b8b6ab', e: '#7d7c73', k: '#161512', t: '#6e6c63', h: '#a3a197', H: '#7d7c73' },
+  };
+})();
+
+/**
  * The day's papers in the out tray: a steel wire tray, and in it the forms of everyone seen today, Form 1's
  * green-grey stock, squared into a stack, the top one's printed lines showing. 88 by 48 art pixels.
  */

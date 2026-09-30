@@ -22,7 +22,9 @@
   --pen: #2b3f7a;
   --accept: #2e7443;
   --challenge: #b0302a;
+  --challenge-deep: #4a120f;
   --marker: #f2c94c;
+  --marker-deep: #3a2f0c;
   --amber: #ffb347;
   --amber-dim: #8a5f22;
   --led: #ff5a3a;
@@ -161,11 +163,14 @@ body {
   white-space: nowrap;
 }
 
-/* A key cap: a small pixel key, its face and its front edge, on whatever it works. */
+/*
+ * A key cap: a small pixel key, its face and its front edge, on whatever it works. As tall as a line, so it sits
+ * on the grid in a line or a row; its capitals stand an art pixel clear of its top edge and of its front edge.
+ */
 kbd {
   display: inline-block;
-  min-width: 22px;
-  height: 22px;
+  min-width: 24px;
+  height: 24px;
   padding: 0 4px;
   border: 2px solid #2a2c2c;
   background: #e2dfd6;
@@ -175,7 +180,7 @@ kbd {
   font-size: 20px;
   font-style: normal;
   font-weight: normal;
-  line-height: 18px;
+  line-height: 20px;
   text-align: center;
   vertical-align: top;
 }
@@ -211,9 +216,9 @@ kbd {
   flex: none;
   align-items: center;
   gap: 16px;
-  /* Set by the stage (RAIL, room.ts), which lays the shift out below it. */
+  /* Set by the stage (RAIL, room.ts), which lays the shift out below it. Its plates sit on the grid: centred in 36px, above its lower edge. */
   height: var(--rail);
-  padding: 0 14px;
+  padding: 0 14px 2px;
   background: var(--steel-dark);
   border-bottom: 2px solid var(--black);
   box-shadow:
@@ -330,10 +335,11 @@ kbd {
   display: block;
 }
 
+/* Centred as if it were 8px tall, so the 6px lamp lands on the grid, an art pixel above the middle. */
 .switch-lamp {
   width: 6px;
   height: 6px;
-  margin-right: 2px;
+  margin: 0 2px 2px 0;
   background: var(--lamp-green);
   box-shadow: 0 0 0 2px var(--black);
 }
@@ -649,7 +655,7 @@ kbd {
   color: var(--brass-deep);
   font: inherit;
   font-family: var(--stamp);
-  line-height: 22px;
+  line-height: 24px;
   text-align: center;
   cursor: pointer;
 }
@@ -749,7 +755,7 @@ kbd {
 
 /*
  * The blotter: dark green leather with a leather pocket in each corner. The papers land on it; the day
- * starts with it bare. Its foot is kept for the Inspect strip, which never lies over a paper.
+ * starts with it bare. Its foot is kept for the Inspect slip (and day 1's hint), which never lies over a paper.
  */
 .desk-papers {
   position: relative;
@@ -1084,7 +1090,7 @@ kbd {
   margin-top: 0;
   color: var(--ink);
   font-family: var(--type);
-  line-height: 22px;
+  line-height: 20px;
   text-align: center;
 }
 
@@ -1113,7 +1119,7 @@ kbd {
   color: var(--ink);
   font-family: var(--print);
   font-style: italic;
-  line-height: 22px;
+  line-height: 20px;
   white-space: nowrap;
 }
 
@@ -1273,20 +1279,20 @@ kbd {
 
 /*
  * Today's page is flagged: a red page flag stuck on its top corner, standing up into the margin above it,
- * clear of the heading, which stays on one line.
+ * clear of the heading, which stays on one line. Its capitals sit an art pixel clear of its edges, on the grid.
  */
 .rule-flag {
   position: absolute;
   z-index: 1;
   top: -14px;
   right: 10px;
-  padding: 0 6px;
-  border: 2px solid #4a120f;
+  padding: 2px 6px 0;
+  border: 2px solid var(--challenge-deep);
   background: var(--challenge);
   box-shadow: 2px 2px 0 var(--baize-deep);
   color: #fff1ee;
   font-family: var(--stamp);
-  line-height: 18px;
+  line-height: 16px;
   pointer-events: none;
 }
 
@@ -1383,7 +1389,7 @@ kbd {
 
 .rule-caption {
   font-style: italic;
-  line-height: 22px;
+  line-height: 20px;
   white-space: nowrap;
 }
 
@@ -1399,17 +1405,23 @@ kbd {
 /*
  * In a narrow book (on a stage up to about 1460 wide) Rule 2's page, set as on a wide one, would be the
  * tallest thing on the desk, and the hall is only as tall as the desk's tallest papers let it be (Hall.tsx):
- * so the page is set close, and Fig. 2's two stills stand side by side with their captions under them.
+ * so the page is set close, a line to every 20px, and Fig. 2's two stills stand side by side with their
+ * captions under them.
  */
 @container book (max-width: 440px) {
   .rulebook {
     padding-right: 10px;
     padding-left: 24px;
-    line-height: 22px;
+    line-height: 20px;
   }
 
   .rule-checks {
     padding-left: 14px;
+  }
+
+  /* Each check's square, level with the middle of its first line's small letters. */
+  .rule-checks li::before {
+    top: 8px;
   }
 
   .rule p {
@@ -1543,7 +1555,7 @@ kbd {
   align-items: center;
   gap: 6px;
   min-width: 0;
-  height: 38px;
+  height: 40px;
   padding: 0 6px;
   border: 2px solid var(--black);
   background: var(--screen);
@@ -1584,7 +1596,7 @@ kbd {
   flex: none;
   place-items: center;
   width: 42px;
-  height: 38px;
+  height: 40px;
   padding: 0 0 2px;
 }
 
@@ -1653,12 +1665,13 @@ kbd {
     inset 0 -2px 0 var(--steel);
 }
 
+/* The small key caps, the switches' size: their capitals fill the face down to its front edge. */
 .lookup-chip kbd,
 .inspect-glass kbd {
-  min-width: 18px;
-  height: 18px;
+  min-width: 20px;
+  height: 20px;
   padding: 0 2px;
-  line-height: 14px;
+  line-height: 16px;
 }
 
 .doc-head .lookup-chip {
@@ -1738,7 +1751,7 @@ kbd {
   position: absolute;
   z-index: 60;
   top: -12px;
-  left: calc(50% - 90px);
+  left: round(down, 50% - 90px, 2px);
   width: 180px;
   height: 22px;
   box-sizing: border-box;
@@ -1759,7 +1772,7 @@ kbd {
   position: absolute;
   z-index: 59;
   top: 6px;
-  left: calc(50% - 60px);
+  left: round(down, 50% - 60px, 2px);
   width: 120px;
   height: 8px;
   background: var(--px-torn);
@@ -1798,7 +1811,8 @@ kbd {
 }
 
 .printer .slip {
-  width: round(down, min(520px, 100% - 24px), 2px);
+  /* As wide as the blotter allows, up to 520px, and centred on an art pixel: its margins are whole art pixels. */
+  width: calc(100% - 2 * round(up, max(12px, (100% - 520px) / 2), 2px));
   pointer-events: auto;
 }
 
@@ -1838,14 +1852,16 @@ kbd {
   white-space: nowrap;
 }
 
-/* A warning is stamped on the citation beside its title, in the citation's red. */
+/* A warning is stamped on the citation beside its title, in the citation's red: capitals an art pixel clear of its frame. */
 .slip-mark {
-  padding: 0 4px;
+  /* At the top of the title's line, so its capitals stand on the title's baseline. */
+  align-self: flex-start;
+  padding: 2px 4px 0;
   border: 2px solid currentColor;
   color: var(--challenge);
   font-family: var(--stamp);
   font-style: normal;
-  line-height: 18px;
+  line-height: 16px;
 }
 
 .slip p {
@@ -2005,12 +2021,13 @@ mark {
   background: var(--wood-dark);
 }
 
+/* Its word, in the middle of the block below the rubber's lit edge, on the grid. */
 .stamp-face {
   display: grid;
   place-items: center;
   width: 100%;
   height: 42px;
-  padding-top: 4px;
+  padding-top: 6px;
   border: 2px solid var(--stamp-deep);
   background: var(--stamp-ink);
   box-shadow:
@@ -2078,7 +2095,7 @@ mark {
 /* On: pressed in, and lit in the highlighter's yellow. */
 .inspect-tool.on {
   translate: 0 2px;
-  border-color: #3a2f0c;
+  border-color: var(--marker-deep);
   background: #7a6a25;
   box-shadow:
     inset 0 2px 0 #968536,
@@ -2134,11 +2151,12 @@ mark {
 .tray-plate {
   position: relative;
   height: 24px;
+  padding-top: 2px;
   border-bottom: 2px solid var(--brass-deep);
   background: var(--brass);
   box-shadow: inset 0 2px 0 var(--brass-light);
   color: var(--brass-deep);
-  line-height: 22px;
+  line-height: 20px;
   text-align: center;
 }
 
@@ -2188,17 +2206,19 @@ mark {
 .tray-count {
   min-width: 26px;
   height: 26px;
+  padding-top: 2px;
   border: 2px solid var(--black);
   background: var(--charcoal-deep);
   color: var(--amber);
   font-family: var(--stamp);
-  line-height: 22px;
+  line-height: 20px;
   text-align: center;
 }
 
-/* The supervisor's note, in pen, on a yellow sticky note with a curling corner, written close to its edges. */
+/* The supervisor's notes, in pen, on a yellow sticky note with a curling corner, written close to its edges. */
 .sticky,
-.sticky-tip {
+.sticky-tip,
+.hint-note {
   position: relative;
   padding: 4px 8px 8px;
   border: 2px solid var(--sticky-edge);
@@ -2210,11 +2230,12 @@ mark {
   font-family: var(--print);
   font-size: 20px;
   font-style: italic;
-  line-height: 22px;
+  line-height: 24px;
 }
 
 .sticky::after,
-.sticky-tip::after {
+.sticky-tip::after,
+.hint-note::after {
   content: '';
   position: absolute;
   right: -2px;
@@ -2255,21 +2276,49 @@ mark {
   outline: 2px solid var(--marker);
 }
 
-.inspectable.picked {
-  outline: 4px solid var(--marker) !important;
-  background-color: rgb(242 201 76 / 22%);
+/*
+ * What the clerk has pointed at is framed, and nothing is tinted: a hard frame an art pixel out, the paper
+ * showing between it and the thing as it was, its colour edged outside with its darkest shade, so it reads on
+ * every stock, the rulebook's buff included. The first of two in the highlighter's yellow; two that disagree
+ * under a rule in force in the citation's red; two that disagree where no rule in force reads it (.desk.noted)
+ * stay in the yellow, noted, since a challenge on them would lose the deposit.
+ */
+.inspectable.picked,
+.desk.noted .inspectable.flagged {
+  --ring: var(--marker);
+  --ring-deep: var(--marker-deep);
 }
 
 .inspectable.flagged {
-  outline: 4px solid var(--challenge) !important;
-  background-color: rgb(176 48 42 / 14%);
+  --ring: var(--challenge);
+  --ring-deep: var(--challenge-deep);
+}
+
+.inspectable.picked::after,
+.inspectable.flagged::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border: 2px solid var(--ring-deep);
+  box-shadow: inset 0 0 0 4px var(--ring);
+  pointer-events: none;
+}
+
+/* Found, the frame knocks out an art pixel and back. */
+.inspectable.flagged::after {
   animation: flag 0.3s steps(3);
 }
 
 @keyframes flag {
   33% {
-    outline-offset: 6px;
+    inset: -10px;
   }
+}
+
+/* Framed, the dashed mark of a thing that can be pointed at gives way to the frame; a key's focus still shows. */
+.desk.inspecting .inspectable.on.picked:not(:focus-visible),
+.desk.inspecting .inspectable.on.flagged:not(:focus-visible) {
+  outline-color: transparent;
 }
 
 /* Inspecting stops the papers sliding about under the magnifier. */
@@ -2315,7 +2364,7 @@ mark {
   left: 18px;
   max-width: min(468px, 100% - 36px);
   margin: 0;
-  padding: 6px 10px 6px;
+  padding: 4px 10px;
   border: 2px solid var(--slip-edge);
   border-top: 0;
   /* Torn off a pad along its perforation. */
@@ -2325,7 +2374,7 @@ mark {
   box-shadow: 4px 4px 0 var(--baize-deep);
   color: var(--ink);
   font-family: var(--print);
-  line-height: 22px;
+  line-height: 24px;
   pointer-events: none;
   animation: print 0.3s steps(4) both;
 }
@@ -2335,14 +2384,14 @@ mark {
   color: var(--challenge);
 }
 
-/* Its first word, stamped in a frame of the same red. */
+/* Its first word, stamped in a frame of the same red, at the top of its line: its capitals on the line's baseline. */
 .inspect-slip-stamp {
   display: inline-block;
-  padding: 0 4px;
+  padding: 2px 4px 0;
   border: 2px solid currentColor;
   font-family: var(--stamp);
   font-weight: normal;
-  line-height: 18px;
+  line-height: 16px;
   vertical-align: top;
 }
 
@@ -2364,7 +2413,7 @@ mark {
   box-shadow: 4px 4px 0 var(--baize-deep);
   color: var(--ink);
   font-family: var(--print);
-  line-height: 22px;
+  line-height: 24px;
   pointer-events: none;
 }
 
@@ -2391,7 +2440,7 @@ mark {
   box-shadow: 0 0 0 2px var(--steel-light);
 }
 
-/* A second note from the supervisor, stuck on the first a line down: the day's guided look, or a new tool. */
+/* A second note from the supervisor, stuck on the first a line down: how to use a registry tool, the day it comes. */
 .sticky-spot {
   position: relative;
 }
@@ -2416,6 +2465,41 @@ mark {
   }
 }
 
+/*
+ * Day 1's one guided look: the supervisor's note, stuck on the foot of the blotter under the papers it is
+ * about, where the Inspect slip prints once two things have been compared. On the dark leather its yellow is
+ * the brightest thing on the desk; it is stuck down as the papers land (Desk.tsx sets the delay), where the
+ * eye already is. Two lines, so it stays clear of the tallest papers day 1 brings on the shortest desk.
+ */
+.hint-note {
+  position: absolute;
+  z-index: 100000;
+  bottom: 8px;
+  left: 18px;
+  width: 236px;
+  pointer-events: none;
+  animation: stick-down 0.16s steps(2) both;
+}
+
+.hint-note p {
+  display: inline;
+  margin: 0;
+}
+
+/* Initialled at the end of its last line. */
+.hint-note .sticky-sign {
+  float: right;
+  margin-left: 8px;
+}
+
+/* Out of sight until it is stuck down, then down in two frames. */
+@keyframes stick-down {
+  from {
+    visibility: hidden;
+    translate: 0 -8px;
+  }
+}
+
 /* The clerk's own note, where Likeness's letter lay: in the clerk's hand, on a scrap of the Ministry's paper. */
 .own-note {
   position: absolute;
@@ -2430,7 +2514,7 @@ mark {
   box-shadow: 4px 4px 0 var(--baize-deep);
   color: var(--ink-soft);
   font-family: var(--hand);
-  line-height: 22px;
+  line-height: 24px;
   pointer-events: none;
 }
 
@@ -2497,7 +2581,7 @@ mark {
 /* ---------------------------------------------- the Registry Gazette's front page */
 
 /*
- * Grey newsprint, black ink, a masthead in the paper's own textura, set close as papers are (22px leading):
+ * Grey newsprint, black ink, a masthead in the paper's own textura, set close as papers are (20px leading):
  * read at a glance, before the window opens, and never taller than the blotter.
  */
 .front-page {
@@ -2513,7 +2597,7 @@ mark {
   color: var(--news-ink);
   font-family: var(--print);
   font-size: 20px;
-  line-height: 22px;
+  line-height: 20px;
   animation: land 0.32s steps(8) both;
 }
 
@@ -2576,7 +2660,7 @@ mark {
   font-family: var(--stamp);
   font-size: 30px;
   font-weight: normal;
-  line-height: 30px;
+  line-height: 32px;
   text-align: center;
 }
 
@@ -2605,15 +2689,15 @@ mark {
   min-width: 0;
 }
 
-/* The stamp, as it came down: its word in a frame, on the paper's white, over any ring. */
+/* The stamp, as it came down: its word in a frame, on the paper's white, over any ring, an art pixel clear of the frame. */
 .wall-stamp {
   position: relative;
   z-index: 2;
-  padding: 0 6px;
+  padding: 2px 6px 0;
   border: 2px solid var(--news-ink);
   background: var(--news-light);
   font-family: var(--stamp);
-  line-height: 18px;
+  line-height: 16px;
   white-space: nowrap;
 }
 
@@ -2853,11 +2937,11 @@ mark {
   line-height: 0;
 }
 
-/* On the flap's point. */
+/* On the flap's point: fifteen art pixels wide on a point two wide, so half an art pixel to its right, on the grid. */
 .envelope-seal {
   position: absolute;
   top: 18px;
-  left: 139px;
+  left: 140px;
   padding: 2px;
   border: 2px solid var(--coral-deep);
   background: var(--bond);

@@ -28,9 +28,10 @@ export type InspectView = {
   message: string | null;
   /**
    * Who says it, and so where it is: `point`, the magnifier's tag while Inspect is on; `found`, `none` and
-   * `agree`, the Inspect slip at the foot of the blotter, once two things have been compared; `hint` and `tip`,
-   * a second note from the supervisor on the first (a hint also points at Inspect, a tip teaches a tool);
-   * `drawer`, the clerk's own note about Likeness's letter.
+   * `agree`, the Inspect slip at the foot of the blotter, once two things have been compared; `hint`, day 1's
+   * guided look, a note from the supervisor stuck on the blotter's foot (and Inspect ringed); `tip`, a second
+   * note from the supervisor stuck on the day's, on how to use a tool; `drawer`, the clerk's own note about
+   * Likeness's letter.
    */
   tone: 'point' | 'found' | 'none' | 'agree' | 'hint' | 'tip' | 'drawer';
 };
@@ -82,9 +83,14 @@ export function Desk(p: Props) {
   const keepFocus = (e: { preventDefault: () => void }) => e.preventDefault();
   // What the desk is saying, if anything, and so which of its things says it: one at a time, and that one is the status.
   const { message: say, tone } = p.inspect;
+  // Two things that disagree where no rule in force reads it are ringed as noted, never in the challenge's red.
+  const noted = tone === 'none' && p.inspect.flagged.length > 0;
+  // When these papers were called to the desk: day 1's hint is stuck down once they have landed.
+  const [called, setCalled] = useState({ visit: p.visit, at: 0 });
+  if (called.visit !== p.visit) setCalled({ visit: p.visit, at: performance.now() });
   return (
     <InspectContext.Provider value={{ on: p.inspect.on, picked: p.inspect.picked, flagged: p.inspect.flagged, pick: p.onPick }}>
-      <section className={`desk${p.decided ? ' thunked' : ''}${p.inspect.on ? ' inspecting' : ''}`} aria-label="Desk">
+      <section className={`desk${p.decided ? ' thunked' : ''}${p.inspect.on ? ' inspecting' : ''}${noted ? ' noted' : ''}`} aria-label="Desk">
         <div
           className={[
             'desk-papers',
@@ -143,6 +149,7 @@ export function Desk(p: Props) {
             )}
           </div>
           {say && (tone === 'found' || tone === 'none' || tone === 'agree') && <InspectSlip key={say} tone={tone} text={say} />}
+          {say && tone === 'hint' && <HintNote key={say} text={say} since={called.at} />}
           {say && tone === 'drawer' && (
             // Where the letter lay: a note in the clerk's own hand.
             <p key={say} className="own-note" role="status" data-testid="inspector">
@@ -250,8 +257,11 @@ export function Desk(p: Props) {
               {SUPERVISOR_NOTES[p.day - 1]}
               <span className="sticky-sign">S.</span>
             </aside>
-            {/* A second note, stuck on the first: the day's one guided look, or how to use a tool the day it comes. */}
-            {say && (tone === 'hint' || tone === 'tip') && (
+            {/*
+              A second note, stuck on the first: how to use a registry tool the day it comes. It teaches the key the
+              day's note names, and the tallest papers of the week leave the blotter's foot no room for it.
+            */}
+            {say && tone === 'tip' && (
               <aside key={say} className="sticky-tip" aria-label={TIP_NOTE_LABEL}>
                 <p role="status" data-testid="inspector">
                   {say}
@@ -287,6 +297,26 @@ function InspectSlip({ tone, text }: { tone: 'found' | 'none' | 'agree'; text: s
 }
 
 
+/** When the video printout has landed after a call: its slide (.paper-video in desk.css) starts at 0.7s and takes 0.32s. */
+const LANDED_MS = 1040;
+
+/**
+ * Day 1's one guided look: a note from the supervisor, stuck on the foot of the blotter under the papers it is
+ * about, where the Inspect slip prints once two things are compared. Stuck down as the papers land, where the
+ * eye already is; brought back later (Inspect put down again), it is simply there.
+ */
+function HintNote({ text, since }: { text: string; since: number }) {
+  const [delay] = useState(() => Math.max(0, Math.round(LANDED_MS - (performance.now() - since))));
+  return (
+    <aside className="hint-note" aria-label={TIP_NOTE_LABEL} style={{ animationDelay: `${delay}ms` }}>
+      <p role="status" data-testid="inspector">
+        {text}
+      </p>
+      <span className="sticky-sign">S.</span>
+    </aside>
+  );
+}
+
 /** The night shift's clock card on the blotter, where the morning paper would be: the Ministry never closes. */
 function NightCard({ night }: { night: NightView }) {
   const fill = (line: string) => line.replace('{n}', String(night.shift)).replace('{right}', String(night.right)).replace('{citations}', String(night.citations));
@@ -312,11 +342,11 @@ function NightCard({ night }: { night: NightView }) {
 /** Sheets the clerk has picked up stack from here: above the printer (z-index 60 in desk.css) and its slips (50). */
 let topPaper = 100;
 
-/** However far a sheet is pushed, its head stays on the blotter, this tall at least (design pixels), with a third of it. */
-const HEADER = 48;
-
 /** Where a sheet may be moved to, as its offset from where it lies: its bounds on each axis. */
 type Reach = { x: [number, number]; y: [number, number] };
+
+/** Moved an art pixel at a time, within its reach: a paper between the desk's pixels would blur its print. */
+const clamp = (v: number, [low, high]: [number, number]) => Math.max(Math.ceil(low / 2) * 2, Math.min(Math.floor(high / 2) * 2, Math.round(v / 2) * 2));
 
 /** A sheet on the desk. Drag it with the mouse to move it; it comes to the top of the pile. Not while inspecting. */
 function Paper({ label, className, hidden, children }: { label: string; className: string; hidden?: boolean; children: ReactNode }) {
@@ -331,26 +361,41 @@ function Paper({ label, className, hidden, children }: { label: string; classNam
     if ((e.target as HTMLElement).closest('button, a, input, [role="button"]')) return;
     const sheet = e.currentTarget;
     sheet.setPointerCapture(e.pointerId);
-    // It stays on what it lies on (the blotter, or the desk for the book): its head, and a third of it across and down,
-    // so it can always be taken back by its head, whatever the size of the stage. Its head may go up over the printer
-    // at the blotter's top edge, as far as the desk's; it never goes over the booth.
+    // Grabbed while it is still sliding in, it stops where it is, in the hand: what was left of its slide is taken
+    // as moved by hand, and its reach below is worked out from where it lies, not from where the slide had got to.
+    const slide = new DOMMatrixReadOnly(getComputedStyle(sheet).transform);
+    sheet.getAnimations().forEach((animation) => animation.finish());
+    // It stays on what it lies on (the blotter, or the desk for the book), so it can always be taken back and every
+    // key on it stays in reach, whatever the size of the stage: a third of it across the blotter at least, and all
+    // of it on the desk, never over the booth nor off the stage; its head may go up over the printer at the
+    // blotter's top edge, as far as the desk's, and its foot no lower than the blotter's.
     const desk = (sheet.closest('.desk') ?? sheet).getBoundingClientRect();
     const under = (sheet.closest('.desk-papers') ?? sheet.closest('.desk') ?? sheet).getBoundingClientRect();
     const at = sheet.getBoundingClientRect();
-    const [width, height] = [at.width / scale, at.height / scale];
-    const left = Math.max((under.left - at.left) / scale - (2 * width) / 3, (desk.left - at.left) / scale);
-    const reach: Reach = {
-      x: [place.x + left, place.x + (under.right - at.right) / scale + (2 * width) / 3],
-      y: [place.y + (desk.top - at.top) / scale, place.y + (under.bottom - at.top) / scale - Math.max(HEADER, height / 3)],
+    // Where it lies, in design pixels: where it is, less how far it has been moved.
+    const rest = {
+      left: at.left / scale - place.x,
+      right: at.right / scale - place.x,
+      top: at.top / scale - place.y,
+      bottom: at.bottom / scale - place.y,
     };
-    grab.current = { x: e.clientX / scale - place.x, y: e.clientY / scale - place.y, reach };
-    setPlace((s) => ({ ...s, z: ++topPaper, lifted: true }));
+    const third = at.width / scale / 3;
+    const bounds = (low: number, high: number): [number, number] => [Math.min(0, low), Math.max(0, high)];
+    const reach: Reach = {
+      x: bounds(
+        Math.max(under.left / scale - 2 * third, desk.left / scale) - rest.left,
+        Math.min(under.right / scale + 2 * third, desk.right / scale) - rest.right,
+      ),
+      y: bounds(desk.top / scale - rest.top, under.bottom / scale - rest.bottom),
+    };
+    const x = clamp(place.x + slide.e, reach.x);
+    const y = clamp(place.y + slide.f, reach.y);
+    grab.current = { x: e.clientX / scale - x, y: e.clientY / scale - y, reach };
+    setPlace({ x, y, z: ++topPaper, lifted: true });
   };
   const move = (e: PointerEvent<HTMLElement>) => {
     const from = grab.current;
     if (!from) return;
-    // Moved an art pixel at a time, within its reach: a paper between the desk's pixels would blur its print.
-    const clamp = (v: number, [low, high]: [number, number]) => Math.max(Math.ceil(low / 2) * 2, Math.min(Math.floor(high / 2) * 2, Math.round(v / 2) * 2));
     setPlace((s) => ({ ...s, x: clamp(e.clientX / scale - from.x, from.reach.x), y: clamp(e.clientY / scale - from.y, from.reach.y) }));
   };
   const up = () => {
