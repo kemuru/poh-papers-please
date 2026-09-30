@@ -29,7 +29,7 @@ test('a reload finds the desk as it was left, behind a card that holds the queue
 
   // The card is the notice board, which holds the week and says where it stands; Continue has the focus.
   await page.reload();
-  await expect(page.getByTestId('board-continue')).toContainText('Day 1 · At the window');
+  await expect(page.getByTestId('board-continue')).toContainText('Day 1, at the window');
   await expect(page.getByRole('button', { name: 'Continue' })).toBeFocused();
   await shot(page, 'welcome-back.png');
 
@@ -51,7 +51,7 @@ test('the shift clock stops for the menu, and a reload picks it up where it stop
 
   await page.keyboard.press('Escape');
   await expect(menu(page)).toContainText('Paused');
-  await expect(menu(page)).toContainText(/Day 2 · At the window · 5:0\d left/);
+  await expect(menu(page)).toContainText(/Day 2, at the window, 5:0\d left/);
   await shot(page, 'paused.png');
   // Nothing is read or stamped on a break.
   await page.keyboard.press('a');
@@ -66,7 +66,7 @@ test('the shift clock stops for the menu, and a reload picks it up where it stop
 
   // A plain address opens at the notice board, where the saved week waits, the link's week included.
   await page.goto('/');
-  await expect(page.getByTestId('board-continue')).toContainText(/Day 2 · At the window · 5:0\d left/);
+  await expect(page.getByTestId('board-continue')).toContainText(/Day 2, at the window, 5:0\d left/);
   await page.getByRole('button', { name: 'Continue' }).click();
   expect((await game(page)).seed).toBe(3);
 });

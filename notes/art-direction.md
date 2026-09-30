@@ -29,7 +29,7 @@ Every object gets at most three or four shades, picked from one master list, and
 - Form 1: pale Ministry green-grey paper with dark green print. The video printout: continuous printer paper, white with pale green bands, sprocket holes down the sides. The rulebook: buff pages, black print, red rule numbers. The Gazette: grey newsprint, black ink. The letters: cool white Ministry letterhead. The citation: pink carbon. The case slip: pale blue. The statement: a till roll. The sticky note: yellow.
 - Inks: black, Ministry green, pen blue, stamp green (Accept, Registered) and stamp red (Challenge, Refused, citations).
 - The unit's lamp keeps its violet, the only saturated colour on a face; nothing else on the desk may use violet.
-- Colour never tells the answer: nothing on the papers changes colour by whether the applicant is valid, until the clerk points at it with Inspect.
+- Colour never tells the answer: nothing on the papers changes colour by whether the applicant is valid, until the clerk points at it with Inspect. Once the court has ruled it may: UPHELD is printed in stamp green (the court agreed with the clerk) and DISMISSED in stamp red.
 
 ## Chrome: none that is not in the room
 - The top bar is the Ministry's desk rail: a nameplate (Window 3, the clerk's name), the savings as a tally, and three small pixel-drawn switches (sound, music, menu), with no tracked caps. Their accessible names stay.

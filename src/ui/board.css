@@ -355,7 +355,7 @@
   width: min(540px, 100%);
 }
 
-/* In the menu: the earlier mornings, and the settings under the ways to start again. */
+/* The earlier mornings, at the letter. (The menu's own, and its settings, are drawn in screens.css.) */
 .menu-mornings {
   display: flex;
   flex-wrap: wrap;
@@ -367,10 +367,6 @@
   font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-.menu-card .settings {
-  margin-top: 18px;
 }
 
 /* At the letter: the ways on, and the mornings, on the dark desk. */

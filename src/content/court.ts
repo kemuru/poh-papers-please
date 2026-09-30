@@ -34,3 +34,12 @@ export const BUBBLES: Record<Reason, readonly string[]> = {
 
 /** How a case came to court, above its jurors. */
 export const HUNCH_LINE = 'No evidence filed. The jury looked for itself.';
+
+/**
+ * A jury's label, and its count, which is printed after it once the last seat has sat. The sizes say
+ * which round it is: 3 first, then 7 and 15 on appeal.
+ */
+export const JURY_LABEL = { size: 'Jury of {size}', tally: ': {n} uphold' };
+
+/** The APPEAL button: the word stamped on it, then the next jury and its fee. */
+export const APPEAL_BUTTON = { word: 'Appeal', terms: ' to {size} jurors, {fee} PNK' };

@@ -109,7 +109,7 @@ test('where the browser keeps nothing, the board still holds the week the desk l
   await stamp(page);
   await page.getByRole('button', { name: 'Menu' }).click();
   await menu(page).getByRole('button', { name: 'Notice board' }).click();
-  await expect(page.getByTestId('board-continue')).toContainText('Day 1 · At the window');
+  await expect(page.getByTestId('board-continue')).toContainText('Day 1, at the window');
   // Another week asks first, and Escape keeps this one.
   await page.getByRole('button', { name: 'Start a new week' }).click();
   await expect(page.getByRole('dialog', { name: 'Start another week?' })).toContainText('1 day at the window');

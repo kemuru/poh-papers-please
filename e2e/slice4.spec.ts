@@ -101,7 +101,7 @@ test('a hunch dismissed by 3 jurors is appealed in place to 7, who uphold it; th
   expect(dismissedPay.wonOnAppeal).toBeUndefined();
 
   const appeal = ruling.getByTestId('appeal');
-  await expect(appeal).toHaveText('Appeal · 7 jurors · 10 PNK');
+  await expect(appeal).toHaveText('Appeal to 7 jurors, 10 PNK');
   await settled(page);
   await shot(page, 'court.png');
 
@@ -326,7 +326,7 @@ test('APPEAL by keyboard: the case keeps the focus, the next APPEAL takes it onc
   await expect(valid.getByTestId('round')).toHaveCount(2);
   await expect(valid).toBeFocused();
   // Once the new stamp is down, the next APPEAL has the focus: Enter again takes the case to 15.
-  await expect(valid.getByTestId('appeal')).toHaveText('Appeal · 15 jurors · 20 PNK');
+  await expect(valid.getByTestId('appeal')).toHaveText('Appeal to 15 jurors, 20 PNK');
   await expect(valid.getByTestId('appeal')).toBeFocused();
   expect((await game(page)).phase).toBe('court');
   await page.keyboard.press('Enter');
@@ -369,7 +369,7 @@ test('APPEAL clicked: the focus stays on the case, so a Space afterwards moves o
   await expect(valid.getByTestId('round')).toHaveCount(2);
   await expect(valid).toBeFocused();
   await settled(page);
-  await expect(valid.getByTestId('appeal')).toHaveText('Appeal · 15 jurors · 20 PNK');
+  await expect(valid.getByTestId('appeal')).toHaveText('Appeal to 15 jurors, 20 PNK');
   await expect(valid).toBeFocused();
   await page.keyboard.press('Space');
   await expect(page.getByRole('region', { name: 'Statement' })).toBeVisible();

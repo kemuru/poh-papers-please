@@ -9,7 +9,7 @@ export type MenuView = 'paused' | 'day' | 'week' | 'back';
 
 type Props = {
   view: MenuView;
-  /** Where the week stands, e.g. "Day 3 · At the window · 2:40 left". */
+  /** Where the week stands, e.g. "Day 3, at the window, 2:40 left". */
   where: string;
   day: number;
   /** Days at the window this week, and the savings a new week would throw away. */

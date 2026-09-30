@@ -221,7 +221,7 @@ describe('every ruling names every rule broken and the things that disagree', ()
       expect([...new Set([...valid, ...missed])], `after ${rounds} rounds`).toHaveLength(1);
     }
     // Missed fakes and valid applicants both reach the first and the second dismissal.
-    for (const [rounds, appeal] of [[1, 'Appeal · 7 jurors · 10 PNK'], [2, 'Appeal · 15 jurors · 20 PNK']] as const) {
+    for (const [rounds, appeal] of [[1, 'Appeal to 7 jurors, 10 PNK'], [2, 'Appeal to 15 jurors, 20 PNK']] as const) {
       const { valid, missed } = byRound.get(rounds)!;
       expect(valid).toEqual(missed);
       expect([...valid][0]).toBe(`Challenge dismissed. No rule broken; registered. Deposit: −${PAY.deposit} PNK.${appeal}Dismissed`);
@@ -336,9 +336,10 @@ describe("a jury's size shows at once, its tally only once the last seat has sat
       );
       h.ruling.court.rounds.forEach(({ size, seats }, n) => {
         const head = inner(printed[n], 'p', 'class="jury-head"')[0];
-        expect(text(head.slice(0, head.indexOf('<span'))), where).toBe(n === 0 ? `Jury of ${size}` : `Appeal ${n} · jury of ${size}`);
+        // The jury's size says which round it is: 3, then 7 and 15 on appeal.
+        expect(text(head.slice(0, head.indexOf('<span'))), where).toBe(`Jury of ${size}`);
         const [, style, tally] = head.match(/<span class="jury-tally" style="([^"]*)">([\s\S]*?)<\/span>/)!;
-        expect(text(tally), where).toBe(` · ${seats.filter((s) => s.vote === 'uphold').length} of ${size} uphold`);
+        expect(text(tally), where).toBe(`: ${seats.filter((s) => s.vote === 'uphold').length} uphold`);
         const sat = [...printed[n].matchAll(/<li [^>]*style="([^"]*)"/g)].map((m) => delay(m[1]));
         expect(sat, where).toHaveLength(size);
         expect(delay(style), where).toBeGreaterThan(Math.max(...sat));
