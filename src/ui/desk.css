@@ -1082,9 +1082,9 @@ kbd {
 }
 
 /*
- * The stamp's impression: the word drawn in pixels by stampImpression.ts, worn, turned a few degrees and nudged off
- * its place by the hand that set it down, in whole art pixels; the form's print shows through it. No frame, drawn or
- * bordered: a level box round a turned word read as a stray line.
+ * The stamp's impression: the word in its frame, drawn in pixels by stampImpression.ts, worn, turned a few degrees
+ * together and nudged off their place by the hand that set them down, in whole art pixels; the form's print shows
+ * through them. No box of its own: a level border round a turned stamp read as a stray line.
  */
 .stamp {
   position: absolute;

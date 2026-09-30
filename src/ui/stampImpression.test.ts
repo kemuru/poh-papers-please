@@ -4,20 +4,32 @@ import { handOf, impression, inkPath } from './stampImpression';
 const ink = (i: { inked: boolean[] }) => i.inked.filter(Boolean).length;
 
 describe('the stamp’s impression', () => {
-  it('is the word in the stamp face, in whole art pixels, with no frame round it', () => {
+  it('is the word in the stamp face, in its inked frame, in whole art pixels', () => {
     const flat = impression('Registered', 0);
-    // Ten capitals of the face with a blank column after each but the last, two art pixels a font pixel, and a
-    // margin of bare rubber.
-    expect(flat.height).toBe(7 * 2 + 2 * 2);
+    // Ten capitals of the face with a blank column after each but the last, two art pixels a font pixel, inside a
+    // frame two pixels thick with rubber between it and the word.
+    expect(flat.height).toBe(7 * 2 + 2 * (2 + 3));
     expect(flat.width).toBeGreaterThan(flat.height * 4);
-    // No frame: the margin all round is bare, top, bottom and both sides.
-    const bare = (x: number, y: number) => !flat.inked[y * flat.width + x];
-    for (let x = 0; x < flat.width; x++) for (const y of [0, 1, flat.height - 2, flat.height - 1]) expect(bare(x, y), `${x},${y}`).toBe(true);
-    for (let y = 0; y < flat.height; y++) for (const x of [0, 1, flat.width - 2, flat.width - 1]) expect(bare(x, y), `${x},${y}`).toBe(true);
-    // The word's first stroke: the R's stem, two font pixels (four art pixels) wide.
-    expect(flat.inked[3 * flat.width + 2]).toBe(true);
+    // The frame is inked all round, and the rubber inside it is bare.
+    const inked = (x: number, y: number) => flat.inked[y * flat.width + x];
+    for (let x = 0; x < flat.width; x++) for (const y of [0, 1, flat.height - 2, flat.height - 1]) expect(inked(x, y), `${x},${y}`).toBe(true);
+    for (let y = 0; y < flat.height; y++) for (const x of [0, 1, flat.width - 2, flat.width - 1]) expect(inked(x, y), `${x},${y}`).toBe(true);
+    for (let x = 2; x < flat.width - 2; x++) expect(inked(x, 2), `${x},2`).toBe(false);
+    // The word's first stroke: the R's stem, inside the rubber.
+    expect(inked(7, 5)).toBe(true);
     // Lowercase prints as capitals.
     expect(impression('registered', 0)).toEqual(flat);
+  });
+
+  it('turns the frame with the word: at every turn, the frame still runs round the whole of it', () => {
+    for (const degrees of [-7, -4, 3, 6]) {
+      const turned = impression('Challenged', degrees);
+      // Every row and every column across the turned impression meets ink at both of its ends: the frame's.
+      const row = (y: number) => turned.inked.slice(y * turned.width, (y + 1) * turned.width);
+      const middle = row(Math.floor(turned.height / 2));
+      expect(middle.indexOf(true), `${degrees}°`).toBeLessThan(turned.width / 8);
+      expect(middle.lastIndexOf(true), `${degrees}°`).toBeGreaterThan((turned.width * 7) / 8);
+    }
   });
 
   it('turns by the pixel: the same ink, give or take its stepped edges, never blurred', () => {

@@ -1,10 +1,9 @@
 // A rubber stamp's impression, drawn in pixels: the word in the Ministry's stamp face, from the face's own drawings
-// (scripts/fonts/stamp.txt), worn where the rubber took too little ink, and set down by hand, a few degrees off
-// level and a few pixels off its place, not twice alike. It is turned pixel by pixel (the nearest pixel of the level
-// impression, for each pixel of the turned one), so it stays on the art-pixel grid, with the stepped edges a stamp
-// would leave, where a CSS rotation would blur its lettering (notes/art-direction.md). The word has no frame: a
-// frame two pixels thick, turned a few degrees, can only be drawn as a staircase of two rows, and on a scaled stage
-// that read as two thin lines around the word (until 30 Sep 2026).
+// (scripts/fonts/stamp.txt), in its inked frame, worn where the rubber took too little ink, and set down by hand, a
+// few degrees off level and a few pixels off its place, not twice alike. The word and its frame are turned together,
+// pixel by pixel (the nearest pixel of the level impression, for each pixel of the turned one), so they stay on the
+// art-pixel grid, with the stepped edges a stamp would leave, where a CSS rotation would blur the lettering
+// (notes/art-direction.md). Nothing else frames it: a level box drawn round the turned word read as a stray line.
 import STAMP_FACE from '../../scripts/fonts/stamp.txt?raw';
 
 /** The stamp face's drawn characters, by character: ten rows of '#' (inked) and '.', as in the font file. */
@@ -20,8 +19,9 @@ const GLYPHS: Record<string, string[]> = {};
 /** The face's capitals stand on rows 1 to 7; a glyph is followed by a blank column, and a space is three wide. */
 const CAPS = [1, 8] as const;
 const SPACE = 3;
-/** In art pixels (a font pixel of 40px type is two): the bare rubber round the word, which leaves no ink. */
-const PAD = { x: 2, y: 2 };
+/** In art pixels (a font pixel of 40px type is two): the inked frame, and the rubber between it and the word. */
+const FRAME = 2;
+const PAD = { x: 5, y: 3 };
 
 export type Impression = { width: number; height: number; inked: boolean[] };
 
@@ -42,22 +42,25 @@ function worn(flat: Impression, seed: number): Impression {
   return { ...flat, inked };
 }
 
-/** The word as the stamp's rubber carries it, level, one art pixel to a cell. */
+/** The word as the stamp's rubber carries it, level: in its frame, one art pixel to a cell. */
 function level(word: string): Impression {
   const glyphs = [...word.toUpperCase()].map((ch) => GLYPHS[ch] ?? (ch === ' ' ? null : GLYPHS['?']));
   const widths = glyphs.map((g) => (g ? g[0].length : SPACE));
   const textWidth = (widths.reduce((sum, w) => sum + w + 1, 0) - 1) * 2;
   const textHeight = (CAPS[1] - CAPS[0]) * 2;
-  const width = textWidth + 2 * PAD.x;
-  const height = textHeight + 2 * PAD.y;
+  const width = textWidth + 2 * (FRAME + PAD.x);
+  const height = textHeight + 2 * (FRAME + PAD.y);
   const inked = new Array<boolean>(width * height).fill(false);
-  let left = PAD.x;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) if (x < FRAME || y < FRAME || x >= width - FRAME || y >= height - FRAME) inked[y * width + x] = true;
+  }
+  let left = FRAME + PAD.x;
   glyphs.forEach((glyph, i) => {
     if (glyph) {
       for (let row = CAPS[0]; row < CAPS[1]; row++) {
         [...glyph[row]].forEach((cell, col) => {
           if (cell !== '#') return;
-          const [x, y] = [left + col * 2, PAD.y + (row - CAPS[0]) * 2];
+          const [x, y] = [left + col * 2, FRAME + PAD.y + (row - CAPS[0]) * 2];
           for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) inked[(y + dy) * width + x + dx] = true;
         });
       }
