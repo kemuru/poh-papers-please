@@ -22,24 +22,33 @@ import { asPointed, evidenceLine, evidenceWords } from './evidence';
 import { pick } from './Slips';
 import { weekEnd, type GameState, type Ruling } from './week';
 import { PixelPortrait, pixelPaths } from './PixelPortrait';
-import { CREST, DeskSprite, GAVEL, LIKENESS_MARK, MASTHEAD, PAPERCLIP } from './DeskArt';
+import { CREST, DeskSprite, GAVEL, KNOB, LIKENESS_MARK, MASTHEAD, PAPERCLIP } from './DeskArt';
+import { ADDING_MACHINE, BILL_SPIKE, CREST_BRASS, EMPTY_SEAT, OUT_TRAY } from './ScreenArt';
 import { caseNumber } from './Shift';
 import { thunk, tick } from './sound';
 
 // The evening: the court hears the day's challenges, the accounts are read out, and at the
 // end of the week (or sooner) a letter arrives.
 
-/** Space or Enter moves on, unless a button has the focus and will do it anyway. */
-function useKeyToContinue(onContinue: () => void) {
+/**
+ * Space or Enter moves on, unless a button has the focus and will do it anyway. Where moving on throws
+ * something away (the letter at the end, the night's card), only Enter does, and only once the way on is
+ * there to be seen: a Space still held from the evening cannot skip past them.
+ */
+export function useKeyToContinue(onContinue: () => void, only?: { enter: true; shown: () => boolean }) {
   const go = useRef(onContinue);
   go.current = onContinue;
+  const guard = useRef(only);
+  guard.current = only;
   // With single-key shortcuts off, only the focused button moves on.
   const { settings } = useSettings();
   const shortcuts = useRef(settings.shortcuts);
   shortcuts.current = settings.shortcuts;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!shortcuts.current || (e.key !== ' ' && e.key !== 'Enter') || e.repeat || (e.target as HTMLElement).closest?.('button, a, dialog')) return;
+      const keys = guard.current ? ['Enter'] : [' ', 'Enter'];
+      if (!shortcuts.current || !keys.includes(e.key) || e.repeat || (e.target as HTMLElement).closest?.('button, a, dialog')) return;
+      if (guard.current && !guard.current.shown()) return;
       e.preventDefault();
       go.current();
     };
@@ -47,6 +56,9 @@ function useKeyToContinue(onContinue: () => void) {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 }
+
+/** Whether a way on that fades in has arrived: it is not there to be pressed until it can be seen. */
+export const arrived = (key: HTMLElement | null) => key !== null && getComputedStyle(key).visibility === 'visible';
 
 /** Plays `sound` once for each of `count` things as they appear, `gap` seconds apart. */
 function useRhythm(count: number, delay: number, gap: number, sound: () => void) {
@@ -64,17 +76,17 @@ const APPEAL_SEAT_GAP = 0.08;
 /** A face for each juror in the pool, the same all week. */
 const JUROR_FACES = JUROR_NAMES.map((_, j) => generatePortrait(0x70c0 + j * 7919));
 
-// Every face in court is drawn at the desk's scale, two design pixels to a portrait pixel, and cropped
-// to fit: the case's photo to the head and shoulders, a juror to the face, in the jury box's oak.
+// Every face in court is drawn on the desk's grid, and cropped to fit: the case's photo to the head and
+// shoulders, a juror to the head and neck, against the jury box's oak.
 /** The photo on the case, as on the form: the same photo paper behind it. */
 const PHOTO_BG = '#cfd8dc';
 const PHOTO_CROP = { x: 4, y: 2, width: 32, height: 36 };
-/** On a crowded day's board of cases, a closer crop. */
-const PHOTO_CROP_CROWDED = { x: 8, y: 6, width: 24, height: 28 };
+/** On a crowded day's board of cases, the face alone. */
+const PHOTO_CROP_CROWDED = { x: 10, y: 8, width: 20, height: 22 };
 /** The inside of the jury box, oak behind every juror's head. */
 const JURY_BOX = '#4a3626';
-/** A juror's head, crown to chin, as the Gazette crops a face. */
-const JUROR_CROP = { x: 9, y: 7, width: 22, height: 24 };
+/** A juror, head and neck and the tops of the shoulders, as they show over the jury box's rail. */
+const JUROR_CROP = { x: 6, y: 6, width: 28, height: 30 };
 
 /** Where each case's hearing sits in the docket's timeline: when it prints, and when its stamp comes down. */
 function timeline(rulings: readonly Ruling[]) {
@@ -90,14 +102,22 @@ function timeline(rulings: readonly Ruling[]) {
 }
 
 /**
- * How the docket is laid out for this many cases: one row of them, two, three or four across, with room
- * under each for its jury and everything the court said; two rows, three across, when the clerk
+ * How the court is laid out for this many cases: a bay of the jury box and a slip on the table for each, side
+ * by side, one to four across, centred and larger the fewer there are; two rows, three across, when the clerk
  * challenged five or six; and past six a board of them, five across.
  */
-function layoutFor(cases: number): 'two' | 'three' | 'four' | 'crowded' {
-  return cases > 6 ? 'crowded' : cases > 4 || cases === 3 ? 'three' : cases === 4 ? 'four' : 'two';
+function layoutFor(cases: number): 'one' | 'two' | 'three' | 'four' | 'crowded' {
+  if (cases > 6) return 'crowded';
+  if (cases > 4 || cases === 3) return 'three';
+  return cases === 4 ? 'four' : cases === 2 ? 'two' : 'one';
 }
 
+/**
+ * The Humanity Court, as the clerk sees it from the table: the bench at the head of the room with the
+ * Ministry's seals on its front, the jury box across the room with a bay for each case (its jurors behind the
+ * rail, or its seats empty when the case came with its evidence), and in front of it the clerk's table, each
+ * case's slip on it under its bay, stamped as the court rules. The way on is at the table's right end.
+ */
 export function Court({
   day,
   queue,
@@ -118,8 +138,8 @@ export function Court({
   const end = times.length ? times[times.length - 1].stamp + 0.4 : 0.4;
   const layout = layoutFor(rulings.length);
   const crowded = layout === 'crowded';
-  /** Two rows of cases: each keeps to its ruling, and an appealed case to the tallies of the juries before. */
-  const stacked = rulings.length > 4;
+  /** Five or six cases, two rows of three: each slip keeps to its ruling, each bay to its jury. */
+  const stacked = rulings.length > 4 && !crowded;
   const section = useRef<HTMLElement>(null);
   // Space or Enter while the court is still sitting (a press carried over from the desk, or during
   // an appeal's jury) brings every stamp down at once; only a press after that moves on.
@@ -138,32 +158,49 @@ export function Court({
   return (
     <main className={classes('screen court-screen')}>
       <section ref={section} className={classes('court')} aria-label="Humanity Court">
-        {/* The bench: the court's brass plate, the session, and the way out at its end once every stamp is down. */}
+        {/* The bench: the gavel on its top, and on its front the Ministry's seals either side of the court's brass plate. */}
         <header className="court-bench">
-          <h2 className="court-plate">The Humanity Court</h2>
           <DeskSprite sprite={GAVEL} className="court-gavel" />
-          <p className="court-session">{COURT_SESSION.replace('{day}', String(day))}</p>
-          <button className="screen-button court-out" onClick={onDone} style={{ animationDelay: `${end}s` }}>
-            To the accounts
-          </button>
+          <div className="court-bench-front">
+            <DeskSprite sprite={CREST_BRASS} className="court-crest" />
+            <h2 className="court-plate">The Humanity Court</h2>
+            <DeskSprite sprite={CREST_BRASS} className="court-crest" />
+            <p className="court-session">{COURT_SESSION.replace('{day}', String(day))}</p>
+          </div>
         </header>
-        {rulings.length === 0 && <p className="court-empty">{EMPTY_COURT}</p>}
         <div className={classes('docket')}>
-          {rulings.map((r, n) => (
-            <Hearing
-              key={r.index}
-              day={day}
-              applicant={queue[r.index]}
-              ruling={r}
-              crowded={crowded}
-              roomy={!stacked}
-              start={times[n].start}
-              stamp={times[n].stamp}
-              heardAtSitting={sat.get(r.index) ?? 1}
-              onAppeal={() => appeal(r.index)}
-            />
-          ))}
+          {rulings.length === 0 ? (
+            // Nobody challenged: the box stands empty, and the court's note lies on the table.
+            <div className="hearing court-empty">
+              <div className="hearing-box">
+                <EmptySeats />
+              </div>
+              <p className="hearing-slip">{EMPTY_COURT}</p>
+            </div>
+          ) : (
+            rulings.map((r, n) => (
+              <Hearing
+                key={r.index}
+                day={day}
+                applicant={queue[r.index]}
+                ruling={r}
+                crowded={crowded}
+                busy={rulings.length > 4}
+                roomy={rulings.length <= 3}
+                start={times[n].start}
+                stamp={times[n].stamp}
+                heardAtSitting={sat.get(r.index) ?? 1}
+                onAppeal={() => appeal(r.index)}
+              />
+            ))
+          )}
         </div>
+        {/* The table's front edge; the way on waits at its right end until the last stamp is down. */}
+        <footer className="court-foot">
+          <button className="screen-button way-on court-out" onClick={onDone} style={{ animationDelay: `${end}s` }}>
+            To the accounts <kbd>Space</kbd>
+          </button>
+        </footer>
       </section>
     </main>
   );
@@ -180,11 +217,23 @@ function useStampSounds(at: readonly number[]) {
   return () => timers.current.forEach((t) => window.clearTimeout(t));
 }
 
+/** A bay nobody sits in: three empty seats behind the rail. */
+function EmptySeats() {
+  return (
+    <div className="bay-empty" aria-hidden="true">
+      <DeskSprite sprite={EMPTY_SEAT} />
+      <DeskSprite sprite={EMPTY_SEAT} />
+      <DeskSprite sprite={EMPTY_SEAT} />
+    </div>
+  );
+}
+
 function Hearing({
   day,
   applicant: a,
   ruling: r,
   crowded,
+  busy,
   roomy,
   start,
   stamp,
@@ -195,7 +244,9 @@ function Hearing({
   applicant: GeneratedApplicant;
   ruling: Ruling;
   crowded: boolean;
-  /** One row of cases: room for the line that says there was no evidence. */
+  /** Five cases or more: the slip keeps to the name and the ruling. */
+  busy: boolean;
+  /** One to three cases: room for the line that says there was no evidence. */
   roomy: boolean;
   start: number;
   stamp: number;
@@ -209,7 +260,6 @@ function Hearing({
   // After an appeal, the stamp comes down again once the new jury has sat.
   const stampAt = appealed ? 0.35 + lastRound.size * APPEAL_SEAT_GAP : stamp;
   const fee = appealFee(court);
-  let seatAt = start + 0.45;
   const card = useRef<HTMLElement>(null);
   const next = useRef<HTMLButtonElement>(null);
   /** The last APPEAL was pressed from the keyboard, not clicked. */
@@ -228,41 +278,59 @@ function Hearing({
   const stamped = (e: AnimationEvent) => {
     if (appealed && byKey.current && e.target === e.currentTarget && document.activeElement === card.current) next.current?.focus();
   };
+  // The juries in the order they sat: the one sitting now in the bay, the ones appealed from as their tallies above it.
+  let seatAt = start + 0.45;
+  const juries = court.rounds.map((round, k) => {
+    const fresh = k >= heardAtSitting;
+    const first = fresh ? 0.1 : seatAt;
+    if (!fresh) seatAt += round.size * (heardAtSitting > 1 ? APPEAL_SEAT_GAP : SEAT_GAP);
+    return (
+      <Jury
+        key={k}
+        round={round}
+        n={k}
+        crowded={crowded}
+        past={k < court.rounds.length - 1}
+        first={first}
+        gap={fresh || heardAtSitting > 1 ? APPEAL_SEAT_GAP : SEAT_GAP}
+      />
+    );
+  });
   return (
-    <article ref={card} tabIndex={-1} className={court.evidence ? 'hearing proven' : 'hearing'} data-testid="ruling" data-upheld={r.upheld} style={{ animationDelay: `${start}s` }}>
-      {/* The photo from the form, and the case number typed under it, as the desk typed it on the form. */}
-      <div className="hearing-face">
-        <span className="hearing-photo">
-          <PixelPortrait portrait={a.photo} scale={2} crop={crowded ? PHOTO_CROP_CROWDED : PHOTO_CROP} background={PHOTO_BG} title={`Photo of ${a.name}`} />
-        </span>
-        <span className="hearing-no">{caseNumber(day, r.index)}</span>
+    <article ref={card} tabIndex={-1} className={court.evidence ? 'hearing proven' : 'hearing'} data-testid="ruling" data-upheld={r.upheld}>
+      {/* The case's bay in the jury box. */}
+      <div className="hearing-box">
+        {court.evidence ? (
+          <EmptySeats />
+        ) : (
+          <>
+            {juries.length > 1 && <div className="jury-past">{juries.slice(0, -1)}</div>}
+            {juries[juries.length - 1]}
+          </>
+        )}
       </div>
-      <div className="hearing-body">
-        <h3>The Registry v. {a.name}</h3>
+      {/* The case slip on the table: the photo from the form with its number typed under it, the case, what it
+          came with, and the court's ruling, stamped. */}
+      <div className="hearing-slip" style={{ animationDelay: `${start}s` }}>
+        <div className="hearing-face">
+          <span className="hearing-photo">
+            <PixelPortrait portrait={a.photo} scale={2} crop={crowded ? PHOTO_CROP_CROWDED : PHOTO_CROP} background={PHOTO_BG} title={`Photo of ${a.name}`} />
+          </span>
+          <span className="hearing-no">{caseNumber(day, r.index)}</span>
+        </div>
+        {/* On a busy court the slip prints the name alone; the case's full title is still there to be read out. */}
+        <h3 className={busy ? 'sr-only' : undefined}>The Registry v. {a.name}</h3>
+        {busy && (
+          <p className="hearing-name" aria-hidden="true">
+            {a.name}
+          </p>
+        )}
         {court.evidence ? (
           <p className="hearing-heard" data-testid="evidence-line">
             Evidence: {evidenceWords(court.evidence)}
           </p>
         ) : (
-          <>
-            {roomy && <p className="hearing-heard">{HUNCH_LINE}</p>}
-            {court.rounds.map((round, k) => {
-              const fresh = k >= heardAtSitting;
-              const first = fresh ? 0.1 : seatAt;
-              if (!fresh) seatAt += round.size * (heardAtSitting > 1 ? APPEAL_SEAT_GAP : SEAT_GAP);
-              return (
-                <Jury
-                  key={k}
-                  round={round}
-                  n={k}
-                  crowded={crowded}
-                  past={k < court.rounds.length - 1}
-                  first={first}
-                  gap={fresh || heardAtSitting > 1 ? APPEAL_SEAT_GAP : SEAT_GAP}
-                />
-              );
-            })}
-          </>
+          roomy && <p className="hearing-heard">{HUNCH_LINE}</p>
         )}
         <div className="hearing-outcome" key={court.rounds.length} style={{ animationDelay: `${stampAt}s` }} onAnimationEnd={stamped}>
           {r.upheld ? (
@@ -283,47 +351,46 @@ function Hearing({
           {r.removed && <p className="hearing-evidence">Removed from the registry with them: {r.removed}, who vouched for them.</p>}
           {r.note && <p className="court-note">{r.note}</p>}
           {fee !== null && (
+            // APPEAL: the court's one decision, a key of its own, with its fee on a tag tied to it.
             <button
               ref={next}
-              className="appeal-button"
+              className="appeal-key"
               data-testid="appeal"
               onClick={(e) => {
                 byKey.current = e.detail === 0;
                 onAppeal();
               }}
             >
-              <b>{APPEAL_BUTTON.word}</b>
-              {APPEAL_BUTTON.terms.replace('{size}', String(JURY_SIZES[court.rounds.length])).replace('{fee}', String(fee))}
+              <span className="appeal-face">
+                <b>{APPEAL_BUTTON.word}</b>
+                {APPEAL_BUTTON.jury.replace('{size}', String(JURY_SIZES[court.rounds.length]))}
+                <span className="sr-only">{APPEAL_BUTTON.join}</span>
+              </span>
+              <span className="appeal-fee">{APPEAL_BUTTON.fee.replace('{fee}', String(fee))}</span>
             </button>
           )}
         </div>
-      </div>
-      <div
-        key={`stamp-${court.rounds.length}`}
-        className={r.upheld ? 'ruling-stamp upheld' : 'ruling-stamp dismissed'}
-        style={{ animationDelay: `${stampAt}s` }}
-      >
-        {r.upheld ? 'Upheld' : 'Dismissed'}
+        <div
+          key={`stamp-${court.rounds.length}`}
+          className={r.upheld ? 'ruling-stamp upheld' : 'ruling-stamp dismissed'}
+          style={{ animationDelay: `${stampAt}s` }}
+        >
+          {r.upheld ? 'Upheld' : 'Dismissed'}
+        </div>
       </div>
     </article>
   );
 }
 
 /**
- * One jury: its seats in the order drawn, each face with its vote and what it said. A `past` jury has
- * been appealed from; where the docket is short of room it shows only its tally. The size shows at
- * once, the tally only once the last seat has sat: before that it would give the stamp away.
+ * One jury: its seats in the order drawn, each face over the rail with its vote and what it said, and its plate
+ * on the box's front. A `past` jury has been appealed from: only its plate is left. The size shows at once,
+ * the tally only once the last seat has sat: before that it would give the stamp away.
  */
 function Jury({ round, n, crowded, past, first, gap }: { round: Round; n: number; crowded: boolean; past: boolean; first: number; gap: number }) {
   const upholds = round.seats.filter((s) => s.vote === 'uphold').length;
   return (
     <div className={`jury jury-${round.size}${crowded ? ' collapsed' : ''}${n === 0 ? ' first' : ''}${past ? ' past' : ''}`} data-testid="round" data-size={round.size}>
-      <p className="jury-head">
-        {JURY_LABEL.size.replace('{size}', String(round.size))}
-        <span className="jury-tally" style={{ animationDelay: `${first + round.size * gap}s` }}>
-          {JURY_LABEL.tally.replace('{n}', String(upholds))}
-        </span>
-      </p>
       <ol className="jurors">
         {round.seats.map((seat, k) => {
           const bubble = pick(BUBBLES[seat.reason], seat.juror + k + n).replace('{rule}', seat.found ? String(RULEBOOK[seat.found].number) : '');
@@ -338,7 +405,7 @@ function Jury({ round, n, crowded, past, first, gap }: { round: Round; n: number
               title={`${name}: ${bubble}`}
               style={{ animationDelay: `${first + k * gap}s` }}
             >
-              {/* A seat in the box: the juror's face, and the vote card held up at its corner. */}
+              {/* A seat in the box: the juror's face over the rail, and the vote card hung on the rail in front. */}
               <span className="juror-seat">
                 <span className="juror-face">
                   <PixelPortrait portrait={JUROR_FACES[seat.juror]} scale={2} crop={JUROR_CROP} background={JURY_BOX} title={name} />
@@ -352,6 +419,12 @@ function Jury({ round, n, crowded, past, first, gap }: { round: Round; n: number
           );
         })}
       </ol>
+      <p className="jury-head">
+        {JURY_LABEL.size.replace('{size}', String(round.size))}
+        <span className="jury-tally" style={{ animationDelay: `${first + round.size * gap}s` }}>
+          {JURY_LABEL.tally.replace('{n}', String(upholds))}
+        </span>
+      </p>
     </div>
   );
 }
@@ -384,8 +457,11 @@ export function Statement({ day, end, unprocessed, onNext }: { day: number; end:
   return (
     <main className="screen statement-screen">
       <div className="till">
-        {/* The adding machine at the back of the desk; the roll comes out of its slot. */}
-        <div className="till-machine" aria-hidden="true" />
+        {/* The day's forms in the out tray, and its bills on the spike, either side of the machine. */}
+        <DeskSprite sprite={OUT_TRAY} className="till-tray" />
+        <DeskSprite sprite={BILL_SPIKE} className="till-spike" />
+        {/* The adding machine at the back of the desk; the roll comes out of the slot along its foot. */}
+        <DeskSprite sprite={ADDING_MACHINE} className="till-machine" />
         <div className="till-roll" style={{ animationDuration: `${printed + 0.3}s` }}>
           <section className="statement" aria-label="Statement">
             <h2>
@@ -409,11 +485,11 @@ export function Statement({ day, end, unprocessed, onNext }: { day: number; end:
             </p>
           </section>
         </div>
-        {/* The way on, on the desk beside the roll's torn end. */}
-        <button className="screen-button statement-next" onClick={onNext} style={{ animationDelay: `${printed + 0.3}s` }}>
-          {next}
-        </button>
       </div>
+      {/* The way on, where it always is: the desk's bottom right corner. */}
+      <button className="screen-button way-on" onClick={onNext} style={{ animationDelay: `${printed + 0.3}s` }}>
+        {next} <kbd>Space</kbd>
+      </button>
     </main>
   );
 }
@@ -443,10 +519,15 @@ type EndingProps = {
 /**
  * How the week ended, laid out on the desk: Human Resources' letter on the Ministry's letterhead, stamped;
  * Likeness's letter clipped to it, if there is one; the Gazette's last edition beside them (or, for a clerk
- * fired before Humanity Day, the small ad for the vacancy); and the ways on, on the baize under them.
+ * fired before Humanity Day, the small ad for the vacancy, and the clerk's stamps put out to go back); and
+ * the ways on, along the desk's front under them.
  */
 export function Ending({ state, card, earlier, onNewWeek, onBack, onBoard }: EndingProps) {
   const [copied, setCopied] = useState<string | null>(null);
+  // Enter starts the next week, once the key for it is on the desk: a Space still going from the evening
+  // does not throw the letter away before it is read.
+  const newWeek = useRef<HTMLButtonElement>(null);
+  useKeyToContinue(onNewWeek, { enter: true, shown: () => arrived(newWeek.current) });
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(card);
@@ -502,35 +583,55 @@ export function Ending({ state, card, earlier, onNewWeek, onBack, onBoard }: End
             </aside>
           )}
           {special ? <SpecialEdition special={special} ending={ending as Exclude<EndingId, 'fired'>} /> : <Classified />}
+          {/* Returned, as the letter asks: the green one first. */}
+          {ending === 'fired' && <ReturnedStamps />}
         </div>
+        {/* The ways on, along the desk's front: the other ways at the left, and the next week at the right. */}
         <div className="ending-ways">
-          <button className="screen-button" onClick={onNewWeek}>
-            {MENU.newWeek}
+          <div className="ending-others">
+            <button className="steel-key" onClick={() => void copy()}>
+              {BOARD.today.copy}
+            </button>
+            <button className="steel-key" onClick={onBoard}>
+              {MENU.board}
+            </button>
+            {copied && (
+              <span className="board-copied" role="status">
+                {copied}
+              </span>
+            )}
+            {earlier.length > 0 && (
+              <div className="ending-mornings">
+                <span>{MENU.backTo}</span>
+                {earlier.map((d) => (
+                  <button key={d} className="steel-key" onClick={() => onBack(d)}>
+                    {MENU.backDay.replace('{day}', String(d))}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <button ref={newWeek} className="screen-button way-on" onClick={onNewWeek}>
+            {MENU.newWeek} <kbd>Enter</kbd>
           </button>
-          <button className="board-button" onClick={() => void copy()}>
-            {BOARD.today.copy}
-          </button>
-          <button className="board-button" onClick={onBoard}>
-            {MENU.board}
-          </button>
-          {copied && (
-            <span className="board-copied" role="status">
-              {copied}
-            </span>
-          )}
-          {earlier.length > 0 && (
-            <div className="ending-mornings">
-              <span>{MENU.backTo}</span>
-              {earlier.map((d) => (
-                <button key={d} className="menu-link" onClick={() => onBack(d)}>
-                  {MENU.backDay.replace('{day}', String(d))}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </main>
+  );
+}
+
+/** The clerk's two stamps, put out on the desk to go back as the letter asks: the green one first. */
+function ReturnedStamps() {
+  return (
+    <div className="returned-stamps" aria-hidden="true">
+      {(['accept', 'challenge'] as const).map((kind) => (
+        <span key={kind} className={`returned-stamp returned-${kind}`}>
+          <DeskSprite sprite={KNOB} />
+          <span className="returned-neck" />
+          <span className="returned-face" />
+        </span>
+      ))}
+    </div>
   );
 }
 

@@ -73,7 +73,8 @@ export const PROPS = {
   paper: '#f6f3ec',
   cardboard: { hi: '#dec293', base: '#c6a36d', lo: '#9f7f50' },
   sweat: { hi: '#f2fbff', base: '#9fd2e6', lo: '#5b91ab' },
-  sleepMask: { base: '#b8a3d6', lo: '#8a74ab', stitch: '#54406f' },
+  /** Navy satin, stitched in pale thread: nothing on a brow but a unit's lamp is violet (notes/art-direction.md). */
+  sleepMask: { base: '#303c63', lo: '#1f2742', stitch: '#a9b4cf' },
   tweed: { hi: '#9c8f74', base: '#7a6d55', lo: '#5a4f3c' },
   knit: { hi: '#e0736a', base: '#c24d45', lo: '#8f3530' },
   bobble: { hi: '#fbf6ea', base: '#e8e0cc', lo: '#c2b89f' },

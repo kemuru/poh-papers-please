@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type Ref } from 'react';
 import { BOARD, LETTER_HINTS } from '../content/board';
 import { ENDINGS, HEADHUNTED } from '../content/verdicts';
 import { LETTERS, type LetterId } from '../economy/endings';
@@ -6,7 +6,6 @@ import { CREST, CREST_LIGHT, DeskSprite, LIKENESS_MARK, MOON, PADLOCK, PIN_BRASS
 import { setMusicScene } from './music';
 import type { ClerkRecord } from './record';
 import { SettingsPanel } from './SettingsPanel';
-import type { Sprite } from './sprites';
 import './board.css';
 
 /** The week in this browser, as the board describes it. */
@@ -78,12 +77,9 @@ export function Board({ saved, setAside, record, today, onContinue, onNewWeek, o
     }
   };
 
+  // The vacancy is the first thing to press on a first visit; once a week is under way, its Continue is.
   const vacancy = (
-    <Notice head={BOARD.vacancy.head} lines={BOARD.vacancy.lines} className="notice-vacancy" testId="board-vacancy" pin={PIN_BRASS}>
-      <button ref={saved ? undefined : first} className={saved ? 'board-button' : 'screen-button'} onClick={() => ask('new', onNewWeek)}>
-        {BOARD.vacancy.action}
-      </button>
-    </Notice>
+    <Vacancy primary={!saved} keyRef={saved ? undefined : first} onStart={() => ask('new', onNewWeek)} />
   );
 
   return (
@@ -91,57 +87,57 @@ export function Board({ saved, setAside, record, today, onContinue, onNewWeek, o
       <div className="board" role="region" aria-label={BOARD.regions.board} inert={asking !== null}>
         <div className="board-cork">
           <Poster />
-          {/* The first notice hangs beside the poster; the rest share the row under it, two or three to it. */}
-          <section className={saved || setAside ? 'board-notices three' : 'board-notices two'} aria-label={BOARD.regions.notices}>
-            {/* The week under way is the first notice there is; with none, the vacancy is. */}
+          <section className="board-notices" aria-label={BOARD.regions.notices}>
+            {/* The first notice hangs beside the poster: the week under way, or else the vacancy. */}
             {saved ? (
-              <Notice head={BOARD.week.head} lines={[saved.where]} className="notice-week" testId="board-continue" pin={PIN_RED}>
-                <button ref={first} className="screen-button" onClick={onContinue}>
-                  {BOARD.week.continue}
-                </button>
-              </Notice>
+              // The clerk's time card for the week under way, where it stands typed on it.
+              <article className="board-notice notice-week" data-testid="board-continue">
+                <DeskSprite sprite={PIN_RED} className="board-pin" />
+                <h2>{BOARD.week.head}</h2>
+                <p className="notice-typed">{saved.where}</p>
+                <div className="board-notice-actions">
+                  <button ref={first} className="screen-button" onClick={onContinue}>
+                    {BOARD.week.continue}
+                  </button>
+                </div>
+              </article>
             ) : (
               vacancy
             )}
-            {setAside && <p className="board-note">{BOARD.setAside}</p>}
-            {saved && vacancy}
-            <Notice
-              head={BOARD.today.head}
-              lines={[today.label, todayDone ? fill(BOARD.today.finished, { letter: todayDone.letter, savings: todayDone.savings }) : BOARD.today.line]}
-              className="notice-today"
-              testId="board-today"
-              pin={PIN_RED}
-            >
-              <button className="board-button" onClick={todayUnderway ? onContinue : () => ask('today', onToday)}>
-                {todayUnderway ? BOARD.today.resume : todayDone ? BOARD.today.again : BOARD.today.action}
-              </button>
-              {todayDone && (
-                <button className="board-button" onClick={() => void copy(todayDone.card)}>
-                  {BOARD.today.copy}
-                </button>
-              )}
-              {/* Always there, so a screen reader hears it fill. */}
-              <span className="board-copied" role="status">
-                {copied}
-              </span>
-            </Notice>
-            <Notice
-              head={BOARD.night.head}
-              lines={nightOpen ? [BOARD.night.line, ...(record.endless !== null ? [fill(BOARD.night.best, { count: record.endless })] : [])] : [BOARD.night.locked]}
-              className={nightOpen ? 'notice-night' : 'notice-night locked'}
-              testId="board-night"
-              pin={PIN_BRASS}
-              mark={<DeskSprite sprite={nightOpen ? MOON : PADLOCK} className="notice-mark" />}
-            >
-              {nightOpen && (
-                <button className="board-button" onClick={onNight}>
-                  {BOARD.night.action}
-                </button>
-              )}
-            </Notice>
+            {/* The rest along the row under the poster, each on its own stock, pinned where it was put up. */}
+            <div className="board-row">
+              {setAside && <p className="board-note">{BOARD.setAside}</p>}
+              <TodayLeaf
+                label={today.label}
+                line={todayDone ? fill(BOARD.today.finished, { letter: todayDone.letter, savings: todayDone.savings }) : BOARD.today.line}
+                action={todayUnderway ? BOARD.today.resume : todayDone ? BOARD.today.again : BOARD.today.action}
+                onAction={todayUnderway ? onContinue : () => ask('today', onToday)}
+                onCopy={todayDone ? () => void copy(todayDone.card) : null}
+                copied={copied}
+              />
+              {/* The Ministry never closes: an enamel sign screwed to the board, the moon on it, or its padlock until it opens. */}
+              <article className={nightOpen ? 'board-notice notice-night' : 'board-notice notice-night locked'} data-testid="board-night">
+                <h2>
+                  {BOARD.night.head}
+                  <DeskSprite sprite={nightOpen ? MOON : PADLOCK} className="notice-mark" />
+                </h2>
+                {(nightOpen ? [BOARD.night.line, ...(record.endless !== null ? [fill(BOARD.night.best, { count: record.endless })] : [])] : [BOARD.night.locked]).map((line) => (
+                  <p key={line}>{line}</p>
+                ))}
+                {nightOpen && (
+                  <div className="board-notice-actions">
+                    <button className="steel-key" onClick={onNight}>
+                      {BOARD.night.action}
+                    </button>
+                  </div>
+                )}
+              </article>
+            </div>
           </section>
           <Letters found={record.letters} />
+          {/* Down the right of the board: the vacancy, while a week is under way; the record; the settings. */}
           <div className="board-side">
+            {saved && vacancy}
             <Record record={record} />
             {/* The settings: two switches on a steel plate screwed to the frame. */}
             <div className="switch-plate">
@@ -197,35 +193,74 @@ function Poster() {
   );
 }
 
-function Notice({
-  head,
-  lines,
-  className,
-  testId,
-  pin,
-  mark,
-  children,
-}: {
-  head: string;
-  lines: readonly string[];
-  className: string;
-  testId: string;
-  pin: Sprite;
-  /** Drawn beside the head: the night's moon, or its padlock. */
-  mark?: ReactNode;
-  children?: ReactNode;
-}) {
+/** Clerk wanted: the Ministry's vacancy, printed on Form 1's stock under a double rule, the seal in its corner. */
+function Vacancy({ primary, keyRef, onStart }: { primary: boolean; keyRef?: Ref<HTMLButtonElement>; onStart: () => void }) {
   return (
-    <article className={`board-notice ${className}`} data-testid={testId}>
-      <DeskSprite sprite={pin} className="board-pin" />
-      <h2>
-        {head}
-        {mark}
-      </h2>
-      {lines.map((line) => (
+    <article className="board-notice notice-vacancy" data-testid="board-vacancy">
+      <DeskSprite sprite={PIN_BRASS} className="board-pin" />
+      <header className="notice-form-head">
+        <h2>{BOARD.vacancy.head}</h2>
+        <DeskSprite sprite={CREST} className="notice-crest" />
+      </header>
+      {BOARD.vacancy.lines.map((line) => (
         <p key={line}>{line}</p>
       ))}
-      {children && <div className="board-notice-actions">{children}</div>}
+      <div className="board-notice-actions">
+        <button ref={keyRef} className={primary ? 'screen-button' : 'steel-key'} onClick={onStart}>
+          {BOARD.vacancy.action}
+        </button>
+      </div>
+    </article>
+  );
+}
+
+/**
+ * Today's week: a leaf torn off the Ministry's calendar, its red head, the day's number printed large with the
+ * weekday and the month beside it, and the week's line under them.
+ */
+function TodayLeaf({
+  label,
+  line,
+  action,
+  onAction,
+  onCopy,
+  copied,
+}: {
+  label: string;
+  line: string;
+  action: string;
+  onAction: () => void;
+  onCopy: (() => void) | null;
+  copied: string | null;
+}) {
+  // "Wednesday 30 September 2026", as the leaf prints it: the weekday, the number, the month and year.
+  const [weekday, day, ...month] = label.split(' ');
+  return (
+    <article className="board-notice notice-today" data-testid="board-today">
+      <DeskSprite sprite={PIN_RED} className="board-pin" />
+      <h2>{BOARD.today.head}</h2>
+      {month.length === 2 ? (
+        <p className="leaf-date">
+          <span className="leaf-weekday">{weekday}</span> <span className="leaf-day">{day}</span> <span className="leaf-month">{month.join(' ')}</span>
+        </p>
+      ) : (
+        <p className="leaf-date">{label}</p>
+      )}
+      <p>{line}</p>
+      <div className="board-notice-actions">
+        <button className="steel-key" onClick={onAction}>
+          {action}
+        </button>
+        {onCopy && (
+          <button className="steel-key" onClick={onCopy}>
+            {BOARD.today.copy}
+          </button>
+        )}
+        {/* Always there, so a screen reader hears it fill. */}
+        <span className="board-copied" role="status">
+          {copied}
+        </span>
+      </div>
     </article>
   );
 }
@@ -275,7 +310,7 @@ function Letters({ found }: { found: readonly LetterId[] }) {
   );
 }
 
-/** The clerk's record card: what the clerk has done here, typed in against each line. */
+/** The clerk's record: a ruled index card, what the clerk has done here typed in against each line. */
 function Record({ record }: { record: ClerkRecord }) {
   const { none } = BOARD.record;
   const rows = [
@@ -286,7 +321,7 @@ function Record({ record }: { record: ClerkRecord }) {
   ];
   return (
     <section className="board-record" aria-label={BOARD.record.head} data-testid="record">
-      <DeskSprite sprite={PIN_RED} className="board-pin" />
+      <DeskSprite sprite={PIN_BRASS} className="board-pin" />
       <h2>{BOARD.record.head}</h2>
       <dl>
         {rows.map(([label, value]) => (

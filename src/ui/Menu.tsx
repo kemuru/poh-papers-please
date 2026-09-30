@@ -109,7 +109,7 @@ export function Menu(p: Props) {
               <div className="menu-mornings">
                 <span>{MENU.backTo}</span>
                 {earlier.map((d) => (
-                  <button key={d} className="menu-link" onClick={() => p.onBack(d)}>
+                  <button key={d} className="steel-key" onClick={() => p.onBack(d)}>
                     {MENU.backDay.replace('{day}', String(d))}
                   </button>
                 ))}
@@ -117,14 +117,14 @@ export function Menu(p: Props) {
             )}
             <div className="menu-restarts">
               {dayBegun && (
-                <button className="menu-link" onClick={() => p.onView('day')}>
+                <button className="steel-key" onClick={() => p.onView('day')}>
                   {fill(MENU.dayAgain)}
                 </button>
               )}
-              <button className="menu-link" onClick={() => p.onView('week')}>
+              <button className="steel-key" onClick={() => p.onView('week')}>
                 {MENU.newWeek}
               </button>
-              <button className="menu-link" onClick={p.onBoard}>
+              <button className="steel-key" onClick={p.onBoard}>
                 {MENU.board}
               </button>
             </div>

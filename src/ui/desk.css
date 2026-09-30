@@ -358,7 +358,10 @@ kbd {
 /* The booth takes the room the width gives it, up to the width of a face at the window, on the grid. */
 .station {
   display: grid;
-  /* Never shorter than what is on the desk: the hall above makes the room. */
+  /*
+   * Everything below the hall, which is as tall as the stage allows once the desk's tallest papers have
+   * their room (Hall.tsx): it never gives way to the papers, so the desk does not move as they change.
+   */
   flex: 1 0 auto;
   grid-template-columns: round(nearest, clamp(232px, 232px + (100% - 1240px) * 0.26, 284px), 2px) minmax(0, 1fr);
   font-family: var(--print);
@@ -1385,10 +1388,11 @@ kbd {
 }
 
 /*
- * In the narrowest book (a 1240-wide desk) Rule 2's page would push the hall out of the room: the page is
- * set close, and Fig. 2's two stills stand side by side with their captions under them.
+ * In a narrow book (on a stage up to about 1460 wide) Rule 2's page, set as on a wide one, would be the
+ * tallest thing on the desk, and the hall is only as tall as the desk's tallest papers let it be (Hall.tsx):
+ * so the page is set close, and Fig. 2's two stills stand side by side with their captions under them.
  */
-@container book (max-width: 360px) {
+@container book (max-width: 440px) {
   .rulebook {
     padding-right: 10px;
     padding-left: 24px;

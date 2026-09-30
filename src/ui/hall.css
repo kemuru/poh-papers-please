@@ -1,33 +1,25 @@
-/* The waiting hall above the booth: a pixel-art scene and the announcement board. */
+/* The waiting hall above the booth: a pixel-art scene on the portraits' grid. */
 
-/* The hall gives way before the desk does: on a short or wide window the room is drawn smaller,
-   and the papers, stamps and notes below always have their full height. */
+/* As tall as Hall.tsx works out for the stage, and no taller or shorter whatever is on the desk: it never
+   gives way to the papers, and the desk below takes the rest. */
 .hall {
   position: relative;
-  display: flex;
-  flex: 0 1 auto;
-  flex-direction: column;
-  min-height: 0;
+  flex: none;
   overflow: hidden;
   background: #8f9a83;
-  border-bottom: 3px solid #121410;
+  border-bottom: 2px solid #121410;
 }
 
+/* One hall pixel to two design pixels, always (its height is set with it): wider stages see more room. */
 .hall-scene {
   display: block;
-  flex: 0 1 auto;
   width: 100%;
-  height: auto;
-  min-height: 140px;
-  max-height: 230px;
-  /* On a wide stage the scene stops growing and the room carries on past its edges. */
-  overflow: visible;
   image-rendering: pixelated;
 }
 
-/* Everyone breathes, a pixel at a time, never in step. */
+/* Everyone breathes, a whole pixel at a time, never in step. */
 .bob {
-  animation: bob 2.6s steps(2) infinite;
+  animation: bob 2.6s step-end infinite;
 }
 
 @keyframes bob {
@@ -36,16 +28,10 @@
   }
 }
 
-/* Called to the window: they shuffle off to the left, and the queue shuffles up. */
-.queuer {
-  transition: transform 1.3s steps(13);
-}
-
+/* Called to the window, they walk off to the left (Hall.tsx walks them, two hall pixels a step) and are gone. */
 .queuer.gone {
   opacity: 0;
-  transition:
-    transform 1.3s steps(13),
-    opacity 0s 1.3s;
+  transition: opacity 0s 1.3s;
 }
 
 .tube.flicker {
@@ -70,74 +56,166 @@
   }
 }
 
+/*
+ * A pigeon waits, pecks twice, walks a hall pixel at a time, turns round, pecks, and walks back. The peck
+ * is its own frame, shown in turn with the standing one; nothing tips it over. The ones on a perch only
+ * turn round.
+ */
 .pigeon {
   transform-box: fill-box;
   transform-origin: center;
-  animation: pigeon-walk 19s steps(90) infinite;
+  animation: pigeon-turn 19s step-end infinite;
+}
+
+.pigeon.walking {
+  animation-name: pigeon-walk;
+  animation-timing-function: linear;
+}
+
+.pigeon-stand,
+.pigeon-peck {
+  animation: pigeon-stand 19s step-end infinite;
+  animation-duration: inherit;
+  animation-delay: inherit;
+}
+
+.pigeon-peck {
+  animation-name: pigeon-peck;
 }
 
 @keyframes pigeon-walk {
   0% {
     transform: translateX(0) scaleX(1);
-  }
-  8% {
-    transform: translateX(0) scaleX(1) rotate(-12deg);
+    animation-timing-function: step-end;
   }
   10% {
     transform: translateX(0) scaleX(1);
+    animation-timing-function: steps(64);
   }
   45% {
     transform: translateX(-64px) scaleX(1);
+    animation-timing-function: step-end;
   }
   50% {
     transform: translateX(-64px) scaleX(-1);
-  }
-  58% {
-    transform: translateX(-64px) scaleX(-1) rotate(12deg);
+    animation-timing-function: step-end;
   }
   60% {
     transform: translateX(-64px) scaleX(-1);
+    animation-timing-function: steps(64);
   }
   95% {
     transform: translateX(0) scaleX(-1);
+    animation-timing-function: step-end;
   }
   100% {
     transform: translateX(0) scaleX(1);
   }
 }
 
-.drip {
-  animation: drip 1.7s linear infinite;
+@keyframes pigeon-turn {
+  0% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(-1);
+  }
+  100% {
+    transform: scaleX(-1);
+  }
 }
 
-@keyframes drip {
+@keyframes pigeon-stand {
   0% {
-    transform: translateY(0);
-    opacity: 0;
-  }
-  10% {
     opacity: 1;
   }
-  90% {
-    transform: translateY(84px);
+  4% {
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  7% {
+    opacity: 0;
+  }
+  9% {
+    opacity: 1;
+  }
+  54% {
+    opacity: 0;
+  }
+  56% {
+    opacity: 1;
+  }
+  57% {
+    opacity: 0;
+  }
+  59% {
     opacity: 1;
   }
   100% {
-    transform: translateY(86px);
+    opacity: 1;
+  }
+}
+
+@keyframes pigeon-peck {
+  0% {
+    opacity: 0;
+  }
+  4% {
+    opacity: 1;
+  }
+  6% {
+    opacity: 0;
+  }
+  7% {
+    opacity: 1;
+  }
+  9% {
+    opacity: 0;
+  }
+  54% {
+    opacity: 1;
+  }
+  56% {
+    opacity: 0;
+  }
+  57% {
+    opacity: 1;
+  }
+  59% {
+    opacity: 0;
+  }
+  100% {
     opacity: 0;
   }
 }
 
+/* The leak falls a hall pixel at a time: Hall.tsx sets how far (--fall) and in how many steps. */
+.drip {
+  animation: drip 1.7s infinite;
+}
+
+@keyframes drip {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(var(--fall));
+  }
+}
+
+/* Rain down the outside windows, two hall pixels a step. */
 .rain {
-  animation: rain 0.7s linear infinite;
+  animation: rain 0.7s steps(14) infinite;
 }
 
 @keyframes rain {
   from {
-    transform: translate(0, 0);
+    transform: translateY(0);
   }
   to {
-    transform: translate(-3px, 34px);
+    transform: translateY(28px);
   }
 }
 

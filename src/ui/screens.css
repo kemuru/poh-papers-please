@@ -2,6 +2,7 @@
    on the desk's grid, in the Ministry's type, with the palette of src/ui/desk.css. */
 
 .screen {
+  position: relative;
   display: flex;
   flex: 1;
   justify-content: center;
@@ -44,6 +45,22 @@
     0 2px 0 var(--brass-deep);
 }
 
+/*
+ * The way on out of every evening screen (the court, the accounts, the letters, the night's end) is the same
+ * brass key in the same place: the bottom right corner, its key cap on it as the lever has one.
+ */
+.way-on {
+  position: absolute;
+  z-index: 3;
+  right: 24px;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  padding: 8px 12px 10px 18px;
+}
+
 /* A button is there, or it is not; it can take the focus either way. (A reveal is never steps(1): a delay
    summed from many cards can end a hair short, and steps(1) would stay on its first frame.) */
 @keyframes button-show {
@@ -59,20 +76,71 @@
   }
 }
 
+/*
+ * The steel key: every other way on, on every evening screen, the board and the menu. A small key in the booth's
+ * steel, its word in the stamp face, a 2px outline in its darkest shade and a hard 4px shadow; pressed, it goes
+ * down an art pixel.
+ */
+.steel-key {
+  display: inline-block;
+  padding: 4px 12px 6px;
+  border: 2px solid var(--steel-deep);
+  background: var(--steel-light);
+  box-shadow:
+    inset 0 2px 0 var(--steel-shine),
+    inset 0 -4px 0 var(--steel),
+    0 4px 0 var(--steel-deep);
+  color: var(--charcoal-deep);
+  font-family: var(--stamp);
+  font-size: 20px;
+  font-weight: normal;
+  line-height: 24px;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.steel-key:hover {
+  background: #aab3b6;
+}
+
+.steel-key:active {
+  translate: 0 2px;
+  box-shadow:
+    inset 0 2px 0 var(--steel-shine),
+    inset 0 -2px 0 var(--steel),
+    0 2px 0 var(--steel-deep);
+}
+
+.steel-key:focus-visible,
+.appeal-key:focus-visible {
+  outline: 2px solid var(--marker);
+  outline-offset: 2px;
+}
+
 /* ------------------------------------------------------------ the court */
 
 /*
- * The Humanity Court: dark oak panelling, the bench across the top with the court's brass plate on it, and
- * the day's cases laid out below on the case slip's pale blue stock, each with its ruling stamped on it.
+ * The Humanity Court, seen from the clerk's table: the oak-panelled wall with the bench at its head; the jury
+ * box across the room, a bay for each case, the jurors behind its brass rail; and the clerk's table in front,
+ * green leather in an oak frame, each case's slip on it under its bay. The table's front edge runs along the
+ * foot, with the way on at its right end. The room is a container: a short room (a laptop's window) keeps the
+ * bench low, and a narrow one prints less on each slip.
  */
 .court-screen {
   --oak-deep: #140e09;
   --oak: #33251a;
+  /* The inside of the jury box: the jurors' portraits are drawn on it. */
+  --box: #4a3626;
+  --leather: #2a382d;
+  --leather-dark: #1a211c;
   --case: var(--blue);
   --case-edge: var(--blue-edge);
   --case-dark: #5f7a93;
   --case-light: #e3ebf3;
-  padding: 10px 16px;
+  --bubble: #f4f6f0;
+  align-items: stretch;
+  padding: 0;
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='96' shape-rendering='crispEdges'%3E%3Cpath fill='%2321170f' d='M0 0h64v2H2v94H0z'/%3E%3Cpath fill='%2345321f' d='M2 2h62v2H4v92H2z'/%3E%3Cpath fill='%233d2c1e' d='M12 14h44v2H14v70h-2z'/%3E%3Cpath fill='%23291d13' d='M56 14h2v72H12v-2h44z'/%3E%3C/svg%3E")
       0 0 / 64px 96px,
@@ -80,37 +148,89 @@
 }
 
 .court {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: min(1440px, 100%);
-  max-height: 100%;
+  container: court / size;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: 100%;
+  min-height: 0;
   color: var(--ink);
   font-family: var(--print);
   font-size: 20px;
   line-height: 24px;
 }
 
-/* A board of cases takes the whole bench. */
-.court.crowded {
-  width: 100%;
+/* No margins but the ones given here (and never over them: a plate's margins are the box's front). */
+:where(.court) p,
+:where(.court) h3 {
+  margin: 0;
 }
 
-/* The bench: lighter wood, lit along its top edge, with the plate, the session, and the way out at its end. */
+/* ---------------------------------------------- the bench */
+
+/* The bench: an oak slab lit along its edge, over a panelled front; the gavel lies on the slab. */
 .court-bench {
+  position: relative;
+  justify-self: center;
+  width: round(down, min(1080px, 100% - 64px), 4px);
+  margin-top: 18px;
+  padding-top: 14px;
+  background:
+    linear-gradient(var(--wood-deep) 0 0) 0 0 / 100% 2px no-repeat,
+    linear-gradient(var(--wood-light) 0 0) 0 2px / 100% 2px no-repeat,
+    linear-gradient(var(--wood) 0 0) 0 4px / 100% 6px no-repeat,
+    linear-gradient(var(--wood-dark) 0 0) 0 10px / 100% 2px no-repeat,
+    linear-gradient(var(--wood-deep) 0 0) 0 12px / 100% 2px no-repeat;
+}
+
+/* The slab's ends. */
+.court-bench::before,
+.court-bench::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 14px;
+  background: var(--wood-deep);
+}
+
+.court-bench::after {
+  left: auto;
+  right: 0;
+}
+
+.court-gavel {
+  position: absolute;
+  top: -22px;
+  right: 72px;
+  display: block;
+}
+
+/*
+ * The front: a raised panel framed in a darker line, the court's brass plate between the Ministry's seals and
+ * the session gilded beside it; in a tall room, for one case or two, a taller bench, the session under the plate.
+ */
+.court-bench-front {
   display: flex;
-  flex: none;
   align-items: center;
-  gap: 16px;
-  min-height: 54px;
-  padding: 4px 8px 6px;
+  justify-content: center;
+  gap: 8px 16px;
+  margin: 0 16px;
+  padding: 8px 24px;
   border: 2px solid var(--wood-deep);
+  border-top: 0;
   background: var(--wood-dark);
   box-shadow:
-    inset 0 2px 0 var(--wood),
-    inset 0 -4px 0 #4a3322,
+    inset 0 0 0 4px var(--wood-dark),
+    inset 0 0 0 6px #4a3322,
+    inset 0 0 0 8px #6f5037,
     0 4px 0 var(--oak-deep);
-  color: var(--buff-light);
+  color: var(--brass-light);
+}
+
+.court-crest {
+  display: block;
+  flex: none;
 }
 
 /* Brass, screwed to the bench, engraved. */
@@ -118,7 +238,7 @@
   position: relative;
   flex: none;
   margin: 0;
-  padding: 4px 18px;
+  padding: 2px 22px;
   border: 2px solid var(--brass-deep);
   background: var(--brass);
   box-shadow:
@@ -136,8 +256,8 @@
 .court-plate::after {
   content: '';
   position: absolute;
-  top: 14px;
-  left: 6px;
+  top: calc(50% - 2px);
+  left: 8px;
   width: 4px;
   height: 4px;
   background: var(--brass-dark);
@@ -145,89 +265,501 @@
 
 .court-plate::after {
   left: auto;
-  right: 6px;
+  right: 8px;
 }
 
-/* The gavel, lying on the bench beside the plate. */
-.court-gavel {
-  flex: none;
-  display: block;
-  margin: -6px 0 -8px;
+/* A busy court: the bench lower, the plate alone on its front. */
+.court.stacked .court-bench,
+.court.crowded .court-bench {
+  margin-top: 12px;
 }
 
+.court.stacked .court-bench-front,
+.court.crowded .court-bench-front {
+  padding: 4px 24px;
+}
+
+.court.crowded .court-bench {
+  margin-top: 8px;
+}
+
+.court.crowded .court-bench-front {
+  padding: 2px 24px;
+}
+
+.court.crowded .court-plate {
+  padding: 0 20px;
+}
+
+.court.crowded .docket {
+  margin-top: 8px;
+}
+
+.court.stacked .court-crest,
+.court.crowded .court-crest,
+.court.crowded .court-session {
+  display: none;
+}
+
+/* The session, gilded on the front: after the plate, and the second seal after it. */
 .court-session {
-  flex: 1 1 auto;
-  min-width: 0;
-  margin: 0;
+  order: 1;
 }
 
-.court-out {
-  flex: none;
-  margin: 0 0 0 auto;
+.court-crest:last-of-type {
+  order: 2;
 }
 
-/* Out of reach until the last stamp is down: a click where it will be does not skip the court. */
-.court .court-out {
-  animation: button-in 0.1s linear both;
+@container court (height >= 840px) {
+  .court.one .court-bench,
+  .court.two .court-bench {
+    margin-top: 30px;
+  }
+
+  .court.one .court-bench-front,
+  .court.two .court-bench-front {
+    flex-wrap: wrap;
+    padding: 14px 24px 12px;
+  }
+
+  .court.one .court-crest:last-of-type,
+  .court.two .court-crest:last-of-type {
+    order: 0;
+  }
+
+  .court.one .court-crest,
+  .court.two .court-crest {
+    width: 64px;
+    height: 64px;
+  }
+
+  .court.one .court-plate,
+  .court.two .court-plate {
+    padding: 4px 22px;
+    font-size: 30px;
+    line-height: 36px;
+  }
+
+  .court.one .court-session,
+  .court.two .court-session {
+    flex-basis: 100%;
+    text-align: center;
+  }
+
+  .docket {
+    margin-top: 22px;
+  }
+
+  /* A tall room: a first jury in tiers is seated a size larger, to the shoulders. */
+  .docket.three:not(.stacked) .jury-3 .juror-face,
+  .docket.four .jury-3 .juror-face {
+    width: 56px;
+    height: 60px;
+  }
+
+  .docket.three:not(.stacked) .jury-3 .juror-face svg,
+  .docket.four .jury-3 .juror-face svg {
+    margin: 0;
+  }
 }
 
-.court-empty {
-  align-self: center;
-  margin: 24px 0 0;
-  padding: 10px 16px;
-  border: 2px solid var(--case-edge);
-  background: var(--case);
-  box-shadow: 4px 4px 0 var(--oak-deep);
-}
+/* ---------------------------------------------- the jury box and the table */
 
-/* The day's cases. Never a scrollbar in play: the docket only scrolls if something has gone badly wrong
-   with the day. Room at its right and foot for the papers' shadows. Each column is a whole number of art
-   pixels wide, so every card, and every letter on it, lands on the grid. */
+/*
+ * The docket: a column for each case, its bay in the jury box over its slip on the table. Never a scrollbar in
+ * play: it only scrolls if something has gone badly wrong with the day. Every column is a whole number of art
+ * pixels wide, so every bay, slip and letter on them lands on the grid.
+ */
 .docket {
-  container-type: inline-size;
+  --cols: 2;
   display: grid;
-  grid-template-columns: repeat(2, round(down, (100% - 12px) / 2, 4px));
-  grid-auto-rows: max-content;
-  align-content: start;
-  gap: 12px;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  /* One row of cases: the jury box, then the slips in the middle of the table, the table's room shared
+     either side of them. */
+  grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 1fr);
+  justify-self: center;
+  width: round(down, 100% - 32px, calc(var(--cols) * 4px));
   min-height: 0;
-  padding: 0 4px 4px 0;
+  margin-top: 12px;
   overflow: auto;
+  /* The table: green leather in an oak frame. */
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Cpath fill='%23324236' d='M2 2h2v2H2zM10 8h2v2h-2z'/%3E%3Cpath fill='%23243028' d='M12 2h2v2h-2zM4 12h2v2H4z'/%3E%3C/svg%3E")
+      0 0 / 16px 16px,
+    var(--leather);
+  box-shadow:
+    inset 2px 0 0 var(--wood-deep),
+    inset 8px 0 0 var(--wood),
+    inset 10px 0 0 var(--wood-deep),
+    inset -2px 0 0 var(--wood-deep),
+    inset -8px 0 0 var(--wood),
+    inset -10px 0 0 var(--wood-deep);
+}
+
+.docket.one {
+  --cols: 1;
 }
 
 .docket.three {
-  grid-template-columns: repeat(3, round(down, (100% - 24px) / 3, 4px));
+  --cols: 3;
 }
 
 .docket.four {
-  grid-template-columns: repeat(4, round(down, (100% - 36px) / 4, 4px));
+  --cols: 4;
 }
 
 .docket.crowded {
-  grid-template-columns: repeat(5, round(down, (100% - 32px) / 5, 4px));
-  gap: 8px;
+  --cols: 5;
+}
+
+/* Two rows of cases: two lengths of the box, each over its row of slips. */
+.docket.stacked {
+  grid-template-rows: auto minmax(auto, 1fr) auto minmax(auto, 1fr);
+}
+
+/* A case: its bay over its slip, on the rows the other cases in its row share. */
+.hearing {
+  display: grid;
+  grid-row: 1 / span 3;
+  grid-template-rows: subgrid;
+  min-width: 0;
+}
+
+/* The case a Space or Enter is about after an appeal. */
+.hearing:focus {
+  outline: none;
+}
+
+.hearing:focus-visible {
+  outline: 2px solid var(--marker);
+  outline-offset: -2px;
 }
 
 /*
- * A case, as a file card: the photo from the form with its number typed under it; beside them the case's
- * name and the ruling's stamp; and under them the evidence or the jury, and the ruling. Each is as long as
- * what the court said on it, as papers are. (The stamp's row takes whatever the photo is taller by.)
+ * A bay of the jury box: its oak inside, the jurors over the brass rail, and the box's front below it with the
+ * jury's plate. Each bay has a post at either side, lit on its left, and the box a rail along its top. The rail
+ * and the front are the same height in every bay, so they run straight across the room. A bay is a container:
+ * a narrow one seats its jury in tiers, each juror's words beside them.
  */
-.hearing {
+.hearing-box {
+  --front: 44px;
+  container: bay / inline-size;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 12px 12px 0;
+  background:
+    linear-gradient(var(--brass-light) 0 0) left 0 bottom calc(var(--front) + 4px) / 100% 2px no-repeat,
+    linear-gradient(var(--brass) 0 0) left 0 bottom calc(var(--front) + 2px) / 100% 2px no-repeat,
+    linear-gradient(var(--brass-deep) 0 0) left 0 bottom var(--front) / 100% 2px no-repeat,
+    linear-gradient(var(--wood-deep) 0 0) left 0 bottom 0 / 100% 2px no-repeat,
+    linear-gradient(#6f5037 0 0) left 0 bottom 2px / 100% 2px no-repeat,
+    linear-gradient(var(--wood) 0 0) left 0 bottom 0 / 100% var(--front) no-repeat,
+    var(--box);
+  box-shadow:
+    inset 2px 0 0 var(--wood-light),
+    inset 4px 0 0 var(--wood),
+    inset -2px 0 0 var(--wood-deep),
+    inset -4px 0 0 var(--wood),
+    inset 0 4px 0 var(--wood),
+    inset 0 6px 0 var(--wood-deep);
+}
+
+/* A case with its evidence: nobody in the bay, the backs of its empty seats over the rail. */
+.bay-empty {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: var(--front);
+  padding-bottom: 6px;
+}
+
+.bay-empty svg {
+  display: block;
+}
+
+.docket.one .bay-empty svg,
+.docket.two .bay-empty svg {
+  width: 80px;
+  height: 64px;
+}
+
+/* ---------------------------------------------- the jury */
+
+/* The jury sitting now: its seats over the rail, and its plate on the box's front. */
+.hearing-box > .jury {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.jurors {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0 12px;
+  margin: 0;
+  padding: 0 0 6px;
+  list-style: none;
+}
+
+/* The plate: brass on the box's front, the size engraved at once, the count once every seat has sat. */
+.jury-head {
+  align-self: center;
+  margin: 6px 0;
+  padding: 2px 10px;
+  border: 2px solid var(--brass-deep);
+  background: var(--brass);
+  box-shadow: inset 0 2px 0 var(--brass-light);
+  color: var(--brass-deep);
+  white-space: nowrap;
+}
+
+/* The count comes in once the last seat has sat, and is not there to be read before. A jury appealed
+   from has been counted: its tally stays. */
+.jury-tally {
+  animation: court-reveal 0.1s linear both;
+}
+
+.jury.past .jury-tally {
+  animation: none;
+}
+
+/* The juries appealed from: their plates only, screwed to the box's back over the jury sitting now. */
+.jury-past {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 8px;
+  margin-bottom: 6px;
+}
+
+.jury.past .jurors {
+  display: none;
+}
+
+.jury.past .jury-head {
+  margin: 0;
+  background: var(--brass-dark);
+  box-shadow: inset 0 2px 0 var(--brass);
+  color: var(--brass-light);
+}
+
+/* A juror: over the rail, what they said over their head. */
+.juror {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  animation: juror-in 0.16s steps(3, jump-none) both;
+}
+
+@keyframes juror-in {
+  from {
+    visibility: hidden;
+    transform: translateY(4px);
+  }
+}
+
+/* A first jury's three share the bay, a third each, for what they say. */
+.jury-3:not(.collapsed) .juror {
+  flex: 1 1 0;
+  max-width: 280px;
+}
+
+.juror-seat {
+  position: relative;
+  flex: none;
+  display: block;
+  line-height: 0;
+}
+
+/* The juror down to the shoulders, which the rail cuts off. The portrait is drawn on the box's oak. */
+.juror-face {
+  display: block;
+  width: 56px;
+  height: 60px;
+  overflow: hidden;
+}
+
+.juror-face svg {
+  display: block;
+  width: 56px;
+  height: 60px;
+}
+
+/* One or two cases: the jurors twice the size, two art pixels to a portrait pixel. */
+.docket.one .jury-3 .juror-face,
+.docket.one .jury-3 .juror-face svg,
+.docket.two .jury-3 .juror-face,
+.docket.two .jury-3 .juror-face svg {
+  width: 112px;
+  height: 120px;
+}
+
+/* A rail in front of every row of seats, where a jury sits in more than one. */
+.juror-seat::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  right: -3px;
+  bottom: -6px;
+  left: -3px;
+  height: 6px;
+  background:
+    linear-gradient(var(--brass-light) 0 0) 0 0 / 100% 2px no-repeat,
+    linear-gradient(var(--brass-deep) 0 0) 0 4px / 100% 2px no-repeat,
+    var(--brass);
+}
+
+/* Juries on appeal, and a crowded court's: rows of smaller heads, only their faces over the rail. */
+.jury:not(.jury-3) .jurors,
+.jury.collapsed .jurors {
+  flex-wrap: wrap;
+  gap: 14px 6px;
+}
+
+.jury:not(.jury-3) .juror-face,
+.jury.collapsed .juror-face {
+  width: 32px;
+  height: 36px;
+}
+
+.jury:not(.jury-3) .juror-face svg,
+.jury.collapsed .juror-face svg {
+  margin: -8px 0 0 -12px;
+}
+
+/* The vote card, hung on the rail in front of the juror: a tick to uphold, a cross to dismiss, a dash for one who would not say. */
+.vote-mark {
+  position: absolute;
+  right: -8px;
+  bottom: -10px;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--ink);
+  background: var(--bubble);
+  color: var(--ink-soft);
+  font-family: var(--stamp);
+  font-size: 20px;
+  line-height: 16px;
+  text-align: center;
+}
+
+.juror.vote-uphold .vote-mark {
+  color: var(--accept);
+}
+
+.juror.vote-dismiss .vote-mark {
+  color: var(--challenge);
+}
+
+/* What a juror said, in a speech bubble over their head, its tail pointing down at them. */
+.bubble {
+  position: relative;
+  max-width: 100%;
+  padding: 2px 8px 4px;
+  border: 2px solid var(--ink);
+  background: var(--bubble);
+  text-align: center;
+}
+
+.bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: calc(50% - 6px);
+  width: 12px;
+  height: 6px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 6 3' width='12' height='6' shape-rendering='crispEdges'%3E%3Cpath fill='%231f1d1a' d='M0 0h1v1H0zM5 0h1v1H5zM1 1h1v1H1zM4 1h1v1H4zM2 2h2v1H2z'/%3E%3Cpath fill='%23f4f6f0' d='M1 0h4v1H1zM2 1h2v1H2z'/%3E%3C/svg%3E");
+}
+
+/*
+ * A narrow bay: the three sit in tiers, a rail in front of each, and each one's words beside them, the bubble's
+ * tail pointing back at the face.
+ */
+@container bay (width < 540px) {
+  .jury-3:not(.collapsed) .jurors {
+    flex-direction: column;
+    align-self: center;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .jury-3:not(.collapsed) .juror {
+    flex: none;
+    flex-direction: row;
+    gap: 14px;
+    max-width: none;
+  }
+
+  .jury-3:not(.collapsed) .juror-face {
+    width: 44px;
+    height: 48px;
+  }
+
+  .jury-3:not(.collapsed) .juror-face svg {
+    margin: -2px 0 0 -6px;
+  }
+
+  .jury-3:not(.collapsed) .bubble {
+    align-self: center;
+    text-align: left;
+  }
+
+  .jury-3:not(.collapsed) .bubble::after {
+    top: 6px;
+    left: -8px;
+    width: 8px;
+    height: 10px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5' width='8' height='10' shape-rendering='crispEdges'%3E%3Cpath fill='%231f1d1a' d='M3 0h1v1H3zM1 1h2v1H1zM0 2h1v1H0zM1 3h2v1H1zM3 4h1v1H3z'/%3E%3Cpath fill='%23f4f6f0' d='M3 1h1v3H3zM1 2h2v1H1z'/%3E%3C/svg%3E");
+  }
+}
+
+/* ---------------------------------------------- the slips on the table */
+
+/*
+ * A case slip, back from the court: the photo from the form with its number typed under it; beside them the
+ * case and the ruling's stamp; under them the evidence or the hunch, and the ruling. On the case slip's pale
+ * blue, its hard shadow on the leather, centred in its column; the slips of a row laid level along their tops,
+ * each as long as what it says.
+ */
+.hearing-slip {
   position: relative;
   display: grid;
+  grid-row: -2;
   grid-template-columns: auto minmax(0, 1fr);
   grid-template-rows: auto 1fr;
   align-self: start;
+  justify-self: center;
   align-content: start;
-  column-gap: 12px;
-  padding: 8px 10px 10px 8px;
+  column-gap: 14px;
+  width: calc(100% - 28px);
+  max-width: var(--slip-max, none);
+  margin: 16px 0;
+  padding: 10px 14px 12px 10px;
   border: 2px solid var(--case-edge);
   background: var(--case);
-  box-shadow: 4px 4px 0 var(--oak-deep);
-  /* Printed a step at a time. jump-none: the last step is the whole card, even when the browser's sum of
-     delay and duration comes out a hair short of the end, as it does from the fourth card on. */
+  box-shadow: 4px 4px 0 var(--leather-dark);
+  container-type: inline-size;
+  /* Printed a step at a time. jump-none: the last step is the whole slip, even when the browser's sum of
+     delay and duration comes out a hair short of the end, as it does from the fourth slip on. */
   animation: court-print 0.56s steps(8, jump-none) both;
+}
+
+.docket.one {
+  --slip-max: 760px;
+}
+
+.docket.two {
+  --slip-max: 660px;
 }
 
 @keyframes court-print {
@@ -239,20 +771,6 @@
     clip-path: inset(0 -8px -8px -8px);
     transform: none;
   }
-}
-
-/* The case a Space or Enter is about after an appeal. */
-.hearing:focus {
-  outline: none;
-}
-
-.hearing:focus-visible {
-  outline: 2px solid var(--marker);
-  outline-offset: 2px;
-}
-
-.hearing p {
-  margin: 0;
 }
 
 .hearing-face {
@@ -282,24 +800,20 @@
   font-family: var(--type);
 }
 
-/* The card's parts sit on its own grid: the name and the stamp beside the photo, the rest under both. */
-.hearing-body {
-  display: contents;
-}
-
-.hearing h3 {
+.hearing-slip h3,
+.hearing-slip .hearing-name {
   grid-column: 2;
   grid-row: 1;
-  margin: 0;
   font-size: inherit;
   font-weight: normal;
   /* On two lines, "The Registry v." over the name, rather than a name broken in two. */
   text-wrap: balance;
 }
 
-.hearing-body > :not(h3) {
+.hearing-slip > .hearing-heard,
+.hearing-slip > .hearing-outcome {
   grid-column: 1 / -1;
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 .hearing-heard {
@@ -392,224 +906,223 @@
   }
 }
 
-/* Four across: a smaller stamp, and on a narrow bench the smallest. */
-.docket.four .ruling-stamp {
-  padding: 2px 10px;
-  font-size: 30px;
-  line-height: 30px;
-}
-
-@container (width < 1320px) {
-  .docket.four .ruling-stamp {
+/* A narrow slip: a smaller stamp. */
+@container (width < 400px) {
+  .ruling-stamp {
+    padding: 2px 10px;
     font-size: 20px;
     line-height: 24px;
   }
 }
 
-/* ------------------------------------------------------------ the jury */
-
-/* A round: its size, and once every seat has sat, how many upheld; then its seats in the order drawn. */
-.jury-head {
-  color: var(--ink-soft);
-}
-
-/* The count comes in once the last seat has sat, and is not there to be read before. A jury appealed
-   from has been counted: its tally stays. */
-.jury-tally {
-  color: var(--ink);
-  animation: court-reveal 0.1s linear both;
-}
-
-.jury.past .jury-tally {
-  animation: none;
-}
-
-.jurors {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 4px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* A first jury: a seat to a line, each with what the juror said. */
-.jury-3:not(.collapsed) .jurors {
-  flex-direction: column;
-  gap: 4px;
-}
-
-.juror {
-  display: flex;
+/*
+ * APPEAL: the court's one decision, a key of its own in the stamp's red, the word stamped on it and the next jury
+ * printed after; its fee on a buff tag tied to its end.
+ */
+.appeal-key {
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  animation: juror-in 0.16s steps(3, jump-none) both;
-}
-
-@keyframes juror-in {
-  from {
-    visibility: hidden;
-    transform: translateY(4px);
-  }
-}
-
-/* A seat in the jury box: the juror's head in the box's oak, and the vote held up at its corner. */
-.juror-seat {
-  position: relative;
-  flex: none;
-  display: block;
-  line-height: 0;
-}
-
-.juror-face {
-  display: block;
-  width: 44px;
-  height: 48px;
-  overflow: hidden;
-  border: 2px solid var(--wood-deep);
-  box-sizing: content-box;
-}
-
-.juror-face svg {
-  display: block;
-}
-
-/* The vote card: a tick for uphold, a cross for dismiss, a dash for a juror who would not say. */
-.vote-mark {
-  position: absolute;
-  right: -6px;
-  bottom: -4px;
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--ink);
-  background: #f4f6f0;
-  color: var(--ink-soft);
-  font-family: var(--stamp);
-  font-size: 20px;
-  line-height: 16px;
-  text-align: center;
-}
-
-.juror.vote-uphold .vote-mark {
-  color: var(--accept);
-}
-
-.juror.vote-dismiss .vote-mark {
-  color: var(--challenge);
-}
-
-/* What a juror said, in a speech bubble pointing at the face. */
-.bubble {
-  position: relative;
-  padding: 2px 6px;
-  border: 2px solid var(--ink);
-  background: var(--case-light);
-}
-
-.bubble::before {
-  content: '';
-  position: absolute;
-  top: 6px;
-  left: -8px;
-  width: 8px;
-  height: 10px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5' width='8' height='10' shape-rendering='crispEdges'%3E%3Cpath fill='%231f1d1a' d='M3 0h1v1H3zM1 1h2v1H1zM0 2h1v1H0zM1 3h2v1H1zM3 4h1v1H3z'/%3E%3Cpath fill='%23e3ebf3' d='M3 1h1v3H3zM1 2h2v1H1z'/%3E%3C/svg%3E");
-}
-
-/* Juries on appeal: rows of heads, closer together, and fifteen of them closer still. */
-.jury:not(.jury-3) .juror-face,
-.jury.collapsed .juror-face {
-  width: 32px;
-  height: 36px;
-}
-
-.jury:not(.jury-3) .juror-face svg,
-.jury.collapsed .juror-face svg {
-  margin: -6px 0 0 -6px;
-}
-
-.jury-15 .jurors {
-  gap: 6px 4px;
-}
-
-/* APPEAL: a key on the case, its word stamped on it and its terms printed after. */
-.appeal-button {
-  display: inline-block;
-  justify-self: start;
-  padding: 2px 10px 4px;
-  border: 2px solid var(--ink);
-  background: var(--case-light);
-  box-shadow: 0 4px 0 var(--ink);
-  color: var(--ink);
-  font-family: var(--print);
-  font-size: 20px;
-  line-height: 24px;
-  white-space: nowrap;
+  max-width: 100%;
+  padding: 0 0 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
 }
 
-.hearing-outcome > .appeal-button {
-  margin-top: 8px;
+.hearing-outcome > .appeal-key {
+  margin-top: 10px;
 }
 
-.appeal-button b {
+.appeal-face {
+  position: relative;
+  flex: none;
+  padding: 6px 14px 8px;
+  border: 2px solid #4a100d;
+  background: #b3443a;
+  box-shadow:
+    inset 0 2px 0 #d06a5e,
+    inset 0 -4px 0 #7f2a23,
+    0 4px 0 #4a100d;
+  color: #fbe9e4;
+  white-space: nowrap;
+}
+
+.appeal-face b {
   font-family: var(--stamp);
   font-weight: normal;
 }
 
-.appeal-button:hover {
-  background: #f4f6f0;
+.appeal-key:hover .appeal-face {
+  background: #bf4b40;
 }
 
-.appeal-button:active {
+.appeal-key:active .appeal-face {
   translate: 0 2px;
-  box-shadow: 0 2px 0 var(--ink);
+  box-shadow:
+    inset 0 2px 0 #d06a5e,
+    inset 0 -2px 0 #7f2a23,
+    0 2px 0 #4a100d;
 }
 
-.appeal-button:focus-visible {
-  outline: 2px solid var(--marker);
-  outline-offset: 2px;
+/* The fee tag: buff card with a punched hole, the fee typed on it, on a string from the key. */
+.appeal-fee {
+  position: relative;
+  flex: none;
+  margin-left: 14px;
+  padding: 0 8px 0 18px;
+  border: 2px solid var(--buff-edge);
+  background:
+    linear-gradient(var(--buff-edge) 0 0) 6px 50% / 6px 6px no-repeat,
+    var(--buff-light);
+  box-shadow: 2px 2px 0 var(--leather-dark);
+  color: var(--ink);
+  font-family: var(--type);
+  white-space: nowrap;
 }
 
-/* ------------------------------------------------------------ the court, when it is busy */
-
-/* Past one row of cases, or once a case is appealed on a narrow card, a jury appealed from is its tally. */
-.docket:not(.two) .jury.past .jurors {
-  display: none;
+.appeal-fee::before {
+  content: '';
+  position: absolute;
+  top: calc(50% - 1px);
+  left: -16px;
+  width: 24px;
+  height: 2px;
+  background: var(--ink);
 }
 
-.docket:not(.two) .jury.past + .jury {
-  margin-top: 0;
+/* A narrow slip: the key's word over its terms, so the tag still hangs inside the slip. */
+@container (width < 360px) {
+  .appeal-face {
+    padding: 4px 12px 8px;
+  }
+
+  .appeal-face b {
+    display: block;
+  }
+
+  .appeal-fee {
+    margin-left: 12px;
+    padding-left: 16px;
+  }
+
+  .appeal-fee::before {
+    left: -14px;
+    width: 20px;
+  }
+}
+
+/* ---------------------------------------------- the court, when it is busy */
+
+/* Two rows of cases: two lengths of the box, each over its row of slips. */
+.docket.stacked,
+.docket.crowded {
+  grid-template-rows: auto minmax(auto, 1fr) auto minmax(auto, 1fr);
+}
+
+.docket.stacked .hearing,
+.docket.crowded .hearing {
+  grid-row: auto / span 2;
+}
+
+
+/* On a busy court's slips the lines are set tight, all but the rules broken, which are printed in full. */
+.docket.stacked .hearing-slip,
+.docket.crowded .hearing-slip {
+  line-height: 22px;
+}
+
+.docket.stacked .hearing-evidence,
+.docket.crowded .hearing-evidence {
+  line-height: 24px;
 }
 
 /*
- * Two rows of cases: the photo in a column of its own and everything else beside it, the stamp in the
- * corner, the seats closer, and the court's closing lines kept for quieter days.
+ * Five or six cases, two rows of three: lower bays, the first jury in small tiers and an appealed one in a
+ * single row; on each slip the photo in a column of its own and everything else beside it, the stamp in the
+ * corner, the ruling without its first words (the stamp says them), and the court's closing lines kept for
+ * quieter days.
  */
-.docket.stacked .hearing-body {
-  display: block;
+.docket.stacked .hearing-box {
+  --front: 32px;
+  padding: 6px 8px 0;
+}
+
+.docket.stacked .jury-head {
+  margin: 0;
+  padding-inline: 8px;
+}
+
+.docket.stacked .jury-past {
+  margin-bottom: 4px;
+}
+
+.docket.stacked .jury-3:not(.collapsed) .jurors {
+  gap: 2px;
+}
+
+.docket.stacked .jury-3:not(.collapsed) .juror-face,
+.docket.stacked .jury:not(.jury-3) .juror-face {
+  width: 28px;
+  height: 32px;
+}
+
+.docket.stacked .jury-3:not(.collapsed) .juror-face svg,
+.docket.stacked .jury:not(.jury-3) .juror-face svg {
+  margin: -10px 0 0 -14px;
+}
+
+.docket.stacked .jury:not(.jury-3) .jurors {
+  gap: 12px 2px;
+}
+
+.docket.stacked .jury:not(.jury-3) .juror-seat::after {
+  right: -1px;
+  left: -1px;
+}
+
+.docket.stacked .bubble {
+  padding: 0 6px 2px;
+  line-height: 22px;
+}
+
+.docket.stacked .jury-3:not(.collapsed) .bubble::after {
+  top: 4px;
+}
+
+.docket.stacked .hearing-slip {
+  grid-template-rows: none;
+  margin: 6px 0 8px;
+  padding: 8px 10px 10px 8px;
+}
+
+.docket.stacked .hearing-face {
+  grid-row: 1 / span 3;
+}
+
+.docket.stacked .hearing-slip > .hearing-heard,
+.docket.stacked .hearing-slip > .hearing-outcome {
   grid-column: 2;
-  grid-row: 1 / span 2;
-  min-width: 0;
+  margin-top: 0;
 }
 
-.docket.stacked .hearing-body > :not(h3) {
-  margin-top: 4px;
-}
-
-.docket.stacked .hearing h3 {
+/* The name keeps clear of the stamp in the corner, and what follows starts under the stamp. */
+.docket.stacked .hearing-name {
+  min-height: 30px;
   padding-right: 152px;
 }
 
-.docket.stacked .hearing[data-upheld='true'] h3 {
+.docket.stacked .hearing[data-upheld='true'] .hearing-name {
   padding-right: 112px;
 }
 
+/* The stamp in the slip's corner: out of the slip's grid, so it is placed against the slip and not a grid area. */
 .docket.stacked .ruling-stamp {
   position: absolute;
-  /* Out of the card's grid, so it is placed against the card and not a grid area. */
   grid-area: auto;
-  top: 2px;
+  top: 6px;
   right: 8px;
   margin: 0;
   padding: 2px 10px;
@@ -617,82 +1130,86 @@
   line-height: 24px;
 }
 
+.docket.stacked .hearing-ruling strong,
 .docket.stacked .court-note {
   display: none;
 }
 
-.docket.stacked .jury-3:not(.collapsed) .jurors {
-  gap: 2px;
+.docket.stacked .hearing-outcome > .appeal-key {
+  margin-top: 6px;
 }
 
-.docket.stacked .jury-3:not(.collapsed) .juror-face {
-  width: 36px;
-  height: 40px;
+/* A short room: four across keeps its slips to the ruling. */
+@container court (height < 840px) {
+  .docket.four .court-note {
+    display: none;
+  }
 }
 
-.docket.stacked .jury-3:not(.collapsed) .juror-face svg {
-  margin: -4px 0 0 -4px;
+/* A narrow room: the same; three across leave out the line that says there was no evidence (the jury in the
+   bay says so); and two rows seat their juries in a line, what they said on hover. */
+@container court (width < 1400px) {
+  .docket.four .court-note,
+  .docket.three .hearing-heard:not([data-testid='evidence-line']) {
+    display: none;
+  }
+
+  .docket.stacked .jury-3 .jurors {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 12px 2px;
+  }
+
+  .docket.stacked .jury-3 .bubble {
+    display: none;
+  }
+
+  /* An appealed case keeps the plate of the jury sitting now, as a crowded court's does. */
+  .docket.stacked .jury.past,
+  .docket.stacked .jury:not(.first) .jurors {
+    display: none;
+  }
+
+  .docket.stacked .hearing-box > .jury:not(.first) {
+    justify-content: flex-end;
+  }
+
+  /* Four across: the appealed juries' plates closer together. */
+  .docket.four .hearing-box {
+    padding-top: 8px;
+  }
+
+  .docket.four .jury-past {
+    gap: 2px 8px;
+    margin-bottom: 2px;
+  }
 }
 
 /*
- * A crowded court: a board of cases, each the photo with the stamp beside it, the name under both; each jury
- * a row of faces, what they said on hover, and a jury on appeal its tally. The stamp says what the ruling's
- * first words say.
+ * A crowded court, seven cases or more: a board of them. Each bay is a row of small heads (what they said on
+ * hover) or, once appealed, the plate of the jury sitting now; each slip the face from the photo, and beside it
+ * the name over the stamp.
  */
-.docket.crowded .hearing {
-  grid-template-rows: none;
-  column-gap: 10px;
-  padding: 4px 6px 6px;
-}
-
-.docket.crowded .hearing-face {
-  grid-row: 1;
-}
-
-.docket.crowded .hearing-no {
-  display: none;
-}
-
-.docket.crowded .hearing-body {
-  display: contents;
-}
-
-.docket.crowded .hearing h3 {
-  grid-column: 1 / -1;
-  grid-row: 2;
-  margin-top: 2px;
-}
-
-.docket.crowded .hearing h3,
-.docket.crowded .hearing[data-upheld='true'] h3 {
-  padding: 0;
-}
-
-.docket.crowded .hearing-body > :not(h3),
-.docket.crowded .hearing-outcome > * + * {
-  margin-top: 2px;
-}
-
-.docket.crowded .ruling-stamp {
-  position: relative;
-  grid-column: 2;
-  grid-row: 1;
-  align-self: center;
-  top: auto;
-  right: auto;
-}
-
-.docket.crowded .hearing-ruling strong {
-  display: none;
-}
-
-.docket.crowded .jury.first .jury-head {
-  display: none;
+.docket.crowded .hearing-box {
+  --front: 6px;
+  padding: 6px 6px 0;
 }
 
 .docket.crowded .jury.past,
+.docket.crowded .jury.first .jury-head,
 .docket.crowded .jury:not(.first) .jurors {
   display: none;
+}
+
+.docket.crowded .hearing-box > .jury {
+  justify-content: flex-end;
+  padding-bottom: var(--front);
+}
+
+.docket.crowded .jury:not(.first) .jury-head {
+  margin: 0 0 6px;
+  padding-inline: 8px;
 }
 
 .docket.crowded .juror-face {
@@ -701,27 +1218,81 @@
 }
 
 .docket.crowded .juror-face svg {
-  margin: -8px 0 0 -8px;
+  margin: -10px 0 0 -14px;
 }
 
 .docket.crowded .jurors {
-  gap: 6px 4px;
+  gap: 12px 6px;
 }
 
-/* APPEAL over its terms: the key is as wide as the card. */
-.docket.crowded .appeal-button {
-  justify-self: stretch;
-  text-align: center;
+.docket.crowded .hearing-slip {
+  column-gap: 10px;
+  width: calc(100% - 12px);
+  margin: 4px 0;
+  padding: 6px 8px 8px 6px;
 }
 
-.docket.crowded .appeal-button b {
+.docket.crowded .hearing-no,
+.docket.crowded .hearing-ruling strong,
+.docket.crowded .court-note {
+  display: none;
+}
+
+.docket.crowded .hearing-slip > .hearing-heard,
+.docket.crowded .hearing-slip > .hearing-outcome {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+}
+
+.docket.crowded .hearing-outcome > * + * {
+  margin-top: 2px;
+}
+
+.docket.crowded .ruling-stamp {
+  margin-top: 2px;
+}
+
+.docket.crowded .hearing-outcome > .appeal-key {
+  margin-top: 6px;
+}
+
+/* ---------------------------------------------- nobody challenged */
+
+.hearing.court-empty {
+  grid-column: 1 / -1;
+}
+
+.hearing.court-empty .hearing-slip {
   display: block;
+  align-self: center;
+  width: min(560px, 100% - 28px);
+  margin: 0;
+  animation: none;
+}
+
+/* ---------------------------------------------- the table's front edge, and the way on */
+
+/* The way on is placed against the screen, as on every evening screen: over this edge's right end. */
+.court-foot {
+  height: 52px;
+  margin: 0 16px;
+  background:
+    linear-gradient(var(--wood-deep) 0 0) 0 0 / 100% 2px no-repeat,
+    linear-gradient(var(--wood-light) 0 0) 0 2px / 100% 2px no-repeat,
+    linear-gradient(var(--wood) 0 0) 0 4px / 100% 8px no-repeat,
+    linear-gradient(var(--wood-deep) 0 0) 0 12px / 100% 2px no-repeat,
+    var(--wood-dark);
+}
+
+/* Out of reach until the last stamp is down: a click where it will be does not skip the court. */
+.court .court-out {
+  animation: button-in 0.1s linear both;
 }
 
 /* ------------------------------------------------------------ the statement */
 
 /*
- * The accounts: at the end of the day an adding machine at the back of the desk prints the clerk's statement
+ * The accounts: at the end of the day the adding machine at the back of the desk prints the clerk's statement
  * on a till roll, a line at a time, in two colours of ribbon, and tears it off under the total.
  */
 .statement-screen {
@@ -732,7 +1303,7 @@
   align-items: center;
   /* Centred on the desk, unless a long day's roll is taller than the room: then from the top. */
   justify-content: safe center;
-  padding: 20px 24px 24px;
+  padding: 20px 24px 76px;
   background: var(--px-baize) 0 0 / 12px 12px, var(--baize);
   box-shadow: inset 0 4px 0 var(--baize-deep);
 }
@@ -745,37 +1316,40 @@
   width: 640px;
 }
 
-/* The machine, seen from the clerk's chair: a steel top, a charcoal front with a green lamp, a brass plate
-   and a vent, and along its foot the tear bar the roll comes out under. */
+/* The machine (ScreenArt.tsx), its hard shadow on the baize. */
 .till-machine {
   position: relative;
   z-index: 1;
-  width: 100%;
-  height: 48px;
-  border: 2px solid var(--black);
-  background:
-    linear-gradient(var(--lamp-green) 0 0) 16px 22px / 6px 6px no-repeat,
-    linear-gradient(var(--black) 0 0) 14px 20px / 10px 10px no-repeat,
-    repeating-linear-gradient(90deg, var(--charcoal-deep) 0 2px, transparent 2px 6px) right 16px top 20px / 42px 10px no-repeat,
-    linear-gradient(var(--brass-light) 0 0) 50% 20px / 104px 2px no-repeat,
-    linear-gradient(var(--brass) 0 0) 50% 20px / 104px 10px no-repeat,
-    linear-gradient(var(--brass-deep) 0 0) 50% 18px / 108px 14px no-repeat,
-    linear-gradient(var(--steel-light) 0 0) 0 0 / 100% 2px no-repeat,
-    linear-gradient(var(--steel) 0 0) 0 0 / 100% 10px no-repeat,
-    linear-gradient(var(--steel-deep) 0 0) 0 10px / 100% 2px no-repeat,
-    var(--charcoal-light);
-  box-shadow:
-    inset 0 -2px 0 var(--charcoal-dark),
-    4px 4px 0 var(--baize-deep);
+  display: block;
+  filter: drop-shadow(4px 4px 0 var(--baize-deep));
 }
 
-/* The tear bar: steel teeth over the roll's way out. */
-.till-machine::after {
+/* Either side of the machine on the desk: the day's forms in the out tray, and its bills on the spike. */
+.till-tray,
+.till-spike {
+  position: absolute;
+  display: block;
+  filter: drop-shadow(4px 4px 0 var(--baize-deep));
+}
+
+.till-tray {
+  top: 196px;
+  right: calc(100% + 56px);
+}
+
+.till-spike {
+  top: 168px;
+  left: calc(100% + 80px);
+}
+
+/* The tear bar: steel teeth under the slot, over the roll's way out. */
+.till::after {
   content: '';
   position: absolute;
-  bottom: -8px;
-  left: calc(50% - 292px);
-  width: 584px;
+  z-index: 2;
+  top: 150px;
+  left: 40px;
+  width: 560px;
   height: 8px;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'%3E%3Cpath fill='%23121411' d='M0 0h8v2H6v2H4v2H2V2H0z'/%3E%3Cpath fill='%239ba5a8' d='M2 2h2v2H2z'/%3E%3C/svg%3E") 0 0 / 8px 8px repeat-x;
 }
@@ -783,7 +1357,7 @@
 /* The roll, its hard shadow following the torn edge. */
 .till-roll {
   width: 560px;
-  margin-top: -12px;
+  margin-top: -10px;
   filter: drop-shadow(4px 4px 0 var(--baize-deep));
   animation: roll-out 1s steps(12, jump-none) both;
 }
@@ -799,7 +1373,7 @@
 
 .statement {
   position: relative;
-  padding: 24px 24px 30px;
+  padding: 26px 24px 30px;
   border: 2px solid var(--till-edge);
   border-bottom: 0;
   background: linear-gradient(var(--till-shade) 0 0) 0 0 / 100% 10px no-repeat, var(--till);
@@ -924,43 +1498,37 @@
   }
 }
 
-.statement-next {
-  position: absolute;
-  bottom: 0;
-  left: calc(50% + 300px);
-  margin: 0;
-}
-
 /* ------------------------------------------------------------ the letters */
 
 /*
  * The week's last desk: the baize, and on it Human Resources' letter, Likeness's clipped to it if there is
- * one, and the Gazette's special edition beside them; the ways on lie on the baize under the papers.
+ * one, and the Gazette's special edition beside them; the ways on along the desk's front, under the papers.
  */
 .ending-screen {
   flex-direction: column;
-  align-items: center;
-  /* Centred on the desk, unless the papers are taller than the room: then from the top. */
-  justify-content: safe center;
-  padding: 16px 12px;
+  align-items: stretch;
+  padding: 16px 24px 18px;
   background: var(--px-baize) 0 0 / 12px 12px, var(--baize);
   box-shadow: inset 0 4px 0 var(--baize-deep);
 }
 
+/* The papers in the middle of the desk, and the ways on along its front, under them whatever their height. */
 .ending-desk {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  align-items: center;
-  gap: 20px;
+  min-height: 0;
   width: 100%;
 }
 
+/* Centred on the desk, unless the papers are taller than the room: then from the top. */
 .ending-papers {
   display: flex;
   align-items: flex-start;
   justify-content: center;
   gap: 24px;
   width: 100%;
+  margin: auto 0;
 }
 
 /* The papers share the desk: two across, or three with a letter clipped to the first. */
@@ -981,9 +1549,13 @@
 
 /* ---------------------------------------------- Human Resources' letter */
 
-/* Cool white letterhead: the seal, the Ministry's name and the department over a double green rule. */
+/* Cool white letterhead: the seal, the Ministry's name and the department over a double green rule. A whole
+   sheet of it: what HR typed in and its stamp at the foot of the page. */
 .hr-letter {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 560px;
   padding: 10px 18px 14px;
   border: 2px solid var(--letter-edge);
   background: var(--letter);
@@ -1042,7 +1614,7 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 10px 16px;
-  margin-top: 12px;
+  margin-top: auto;
   padding-top: 10px;
   background: repeating-linear-gradient(90deg, var(--letter-edge) 0 8px, transparent 8px 12px) top left / 100% 2px no-repeat;
 }
@@ -1292,24 +1864,121 @@
   font-weight: normal;
 }
 
-/* ---------------------------------------------- the ways on, on the baize */
 
+/*
+ * The Fired letter's desk: the notice larger, the small ad cut out beside it, and under the ad the clerk's two
+ * stamps, put out to go back as the letter asks, the green one first.
+ */
+.ending-fired .ending-papers {
+  display: grid;
+  grid-template-columns: minmax(0, 640px) 336px;
+  grid-template-rows: auto 1fr;
+  justify-content: center;
+  gap: 36px 32px;
+}
+
+/* The notice larger, with room in its margins. */
+.ending-fired .hr-letter {
+  grid-row: 1 / span 2;
+  padding: 18px 28px 22px;
+}
+
+.ending-fired .hr-letter p {
+  margin-bottom: 12px;
+}
+
+.ending-fired .letter-subject {
+  margin-bottom: 14px;
+}
+
+.ending-fired .classified {
+  margin: 56px 0 0;
+}
+
+.returned-stamps {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  margin: 12px 0 0 24px;
+  animation: land 0.32s 1.1s steps(8) both;
+}
+
+/* A stamp as the desk has it: its wooden knob, the neck, and the mount with the rubber in its ink. */
+.returned-stamp {
+  --stamp-ink: var(--accept);
+  --stamp-deep: #123520;
+  --stamp-light: #4b9a63;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 112px;
+}
+
+/* The green one first: a step ahead of the red. */
+.returned-accept {
+  margin-bottom: -12px;
+}
+
+.returned-challenge {
+  --stamp-ink: var(--challenge);
+  --stamp-deep: #4a120f;
+  --stamp-light: #d05a50;
+}
+
+.returned-stamp svg {
+  display: block;
+}
+
+.returned-neck {
+  width: 16px;
+  height: 10px;
+  border: 2px solid var(--wood-deep);
+  border-top: 0;
+  border-bottom: 0;
+  background: var(--wood-dark);
+}
+
+.returned-face {
+  width: 100%;
+  height: 42px;
+  border: 2px solid var(--stamp-deep);
+  background: var(--stamp-ink);
+  box-shadow:
+    inset 0 4px 0 var(--steel-light),
+    inset 0 6px 0 var(--stamp-light),
+    4px 4px 0 var(--baize-deep);
+}
+
+/* ---------------------------------------------- the ways on, along the desk's front */
+
+/* The desk's front: the other ways at its left, and the way on at its right, in the same corner as on every
+   evening screen. They come once the papers are down. */
 .ending-ways {
+  display: flex;
+  flex: none;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 32px;
+  margin-top: 16px;
+}
+
+.ending-others {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
+  gap: 14px 12px;
   animation: button-show 0.2s 1.6s steps(2, jump-none) both;
 }
 
-.ending-ways .screen-button {
-  margin: 0;
-  animation: none;
+.ending-ways .way-on {
+  position: static;
+  flex: none;
+  animation: button-in 0.1s 1.6s linear both;
 }
 
-.ending-ways .board-copied {
+.ending-others .board-copied {
   color: var(--buff-light);
+  font-family: var(--type);
 }
 
 /* The mornings of the week, as keys after their line. */
@@ -1318,49 +1987,135 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 12px 10px;
-  margin-left: 12px;
   color: var(--buff-light);
   font-family: var(--print);
   font-size: 20px;
   line-height: 24px;
 }
 
+.ending-mornings .steel-key {
+  padding-inline: 8px;
+}
+
 /* ---------------------------------------------- the night's end */
 
-/* The night's clock card, punched out: its figures typed at the foot, the time clock's stamp beside them. */
-.night-end-card {
+/*
+ * The night's end: the staff wall by the door, with the lights down; the time clock on it, and under it the
+ * clerk's clock card, punched out: the window closed, the night's figures and the time clock's stamp.
+ */
+.night-end {
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  padding: 20px 24px 84px;
+  background:
+    linear-gradient(#1c2219 0 0) 0 calc(100% - 118px) / 100% 2px no-repeat,
+    linear-gradient(#4a5443 0 0) 0 calc(100% - 114px) / 100% 2px no-repeat,
+    linear-gradient(#3a4336 0 0) 0 calc(100% - 106px) / 100% 8px no-repeat,
+    linear-gradient(#1c2219 0 0) 0 calc(100% - 104px) / 100% 2px no-repeat,
+    linear-gradient(#262d23 0 0) 0 100% / 100% 104px no-repeat,
+    repeating-linear-gradient(90deg, #2c3429 0 2px, transparent 2px 96px),
+    #333c30;
+}
+
+/* The time clock between its two card racks, on the wall. */
+.time-station {
+  position: relative;
+  z-index: 1;
+  display: flex;
   flex: none;
+  align-items: flex-start;
+  gap: 40px;
+}
+
+.time-station svg {
+  display: block;
+  filter: drop-shadow(4px 4px 0 #1c2219);
+}
+
+/* The racks hang a little lower than the clock. */
+.time-station svg:not(.time-clock) {
+  margin-top: 24px;
+}
+
+/*
+ * The clock card, just out of the clock's slot: buff, the night's title in the Ministry's band with the moon,
+ * the night's lines typed, the time clock's stamp beside them, and the best night at its foot.
+ */
+.punched-card {
+  display: grid;
+  flex: none;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 20px;
   width: 680px;
   max-width: 100%;
-  animation: land 0.32s steps(8) both;
+  margin-top: -4px;
+  padding: 0 20px 16px;
+  border: 2px solid var(--buff-edge);
+  background: var(--buff-light);
+  box-shadow: 4px 4px 0 #1c2219;
+  color: var(--ink);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 24px;
+  animation: card-out 0.32s steps(8, jump-none) both;
 }
 
-/* The night's moon in the band, as on the board's notice for it. */
-.night-end-title {
+/* Out of the clock's slot, a step at a time. */
+@keyframes card-out {
+  from {
+    clip-path: inset(0 -8px 100% -8px);
+    transform: translateY(-24px);
+  }
+  to {
+    clip-path: inset(0 -8px -8px -8px);
+    transform: none;
+  }
+}
+
+.punched-card p {
+  margin: 0;
+}
+
+.punched-lines p + p {
+  margin-top: 8px;
+}
+
+.punched-title {
   display: flex;
+  grid-column: 1 / -1;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+  margin: 0 -20px 14px;
+  padding: 6px 20px;
+  background: var(--ministry);
+  box-shadow: inset 0 -2px 0 #1b3021;
+  color: var(--form-light);
+  font-family: var(--stamp);
+  font-size: 20px;
+  font-weight: normal;
+  line-height: 24px;
 }
 
-.night-end-title svg {
+.punched-title svg {
   display: block;
 }
 
-.night-end-foot {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
+/* The best night, typed in its box at the card's foot. */
+.punched-card .punched-best {
+  grid-column: 1 / -1;
+  justify-self: start;
+  margin-top: 14px;
+  padding: 4px 10px;
+  border: 2px solid var(--buff-edge);
+  background: #f3ead0;
+  font-family: var(--type);
 }
 
-.clock-card .night-end-foot .clock-card-tally {
-  margin: 4px 0 0;
-}
-
-.clock-card .night-end-stamp {
+.punched-card .punched-stamp {
   position: relative;
-  flex: none;
-  margin: 0;
   padding: 2px 12px;
   border: 4px solid currentColor;
   color: var(--challenge);
@@ -1372,38 +2127,32 @@
   animation: court-stamp 0.4s 0.5s steps(2, jump-none) both;
 }
 
-.night-end-stamp::before {
+.punched-stamp::before {
   content: '';
   position: absolute;
   inset: 2px;
   border: 2px solid currentColor;
 }
 
-/* The night has no letter to read first: its ways on come once the card is stamped. */
-.night-end .ending-ways {
-  animation-delay: 0.8s;
+/* The ways on come once the card is stamped: the board at the bottom left, another night at the right. */
+.night-end-others {
+  position: absolute;
+  z-index: 2;
+  bottom: 18px;
+  left: 24px;
+  animation: button-show 0.2s 0.8s steps(2, jump-none) both;
 }
+
+.night-end .way-on {
+  animation: button-in 0.1s 0.8s linear both;
+}
+
+/* ------------------------------------------------------------ the menu */
 
 /* The generic sheet the menu's form and the board's question are printed on. */
 .notice {
   position: relative;
 }
-
-.out-of-order {
-  max-width: 560px;
-  margin: 80px auto;
-  padding: 28px;
-  background: var(--paper);
-  font-family: var(--typewriter);
-}
-
-.out-of-order pre {
-  white-space: pre-wrap;
-  color: var(--ink-soft);
-  font-size: 12px;
-}
-
-/* ------------------------------------------------------------ the menu */
 
 /*
  * The clerk's break: the window's steel shutter comes down over the whole desk, so nothing on it can be
@@ -1547,7 +2296,7 @@
   animation: none;
 }
 
-/* The ways to start again, and the settings: paper keys on the form, under a printed rule. */
+/* The ways to start again, steel keys on the form under a printed rule, and the settings. */
 .menu .menu-mornings,
 .menu .menu-restarts,
 .menu .settings {
@@ -1616,11 +2365,9 @@
 }
 
 /*
- * A paper key: a key printed on whatever it sits on, in that paper's stock and a shade darker at its edge,
- * pressed an art pixel down. A form, a notice or a switch plate sets its colours; the Ministry's form is the default.
+ * A settings switch: a key printed on whatever it sits on, in that paper's stock and a shade darker at its
+ * edge, with its lamp window; pressed an art pixel down. The form or the switch plate sets its colours.
  */
-.menu-link,
-.board-button,
 .settings-switch {
   --key: var(--form-light);
   --key-edge: var(--form-edge);
@@ -1640,21 +2387,15 @@
   cursor: pointer;
 }
 
-.menu-link:hover,
-.board-button:hover,
 .settings-switch:hover:not(:disabled) {
   background: var(--key-lit);
 }
 
-.menu-link:active,
-.board-button:active,
 .settings-switch:active:not(:disabled) {
   translate: 0 2px;
   box-shadow: 0 2px 0 var(--key-edge);
 }
 
-.menu-link:focus-visible,
-.board-button:focus-visible,
 .settings-switch:focus-visible {
   outline: 2px solid var(--marker);
   outline-offset: 2px;
@@ -1717,11 +2458,68 @@
   --key-lit: #d8dee0;
 }
 
-/* On the dark desk, the mornings of the week are keys on the Ministry's buff card. */
-.ending-mornings .menu-link,
-.ending-ways .board-button {
-  --key: var(--buff-light);
-  --key-edge: var(--buff-edge);
-  --key-ink: var(--ink);
-  --key-lit: #f3ead0;
+/* ------------------------------------------------------------ out of order */
+
+/*
+ * If the game breaks, the window's steel shutter comes down and the Ministry's notice hangs on it, printed on
+ * the Ministry's own form, the error typed in, and a brass key to start a new week.
+ */
+.out-of-order {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: min(640px, calc(100% - 48px));
+  margin: 80px auto;
+  padding: 20px 26px 26px;
+  color: var(--ministry);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* The shutter behind it, and the form it is printed on, both under its words. */
+.out-of-order::before,
+.out-of-order::after {
+  content: '';
+  z-index: -1;
+  inset: 0;
+}
+
+.out-of-order::before {
+  position: fixed;
+  background: repeating-linear-gradient(180deg, var(--steel) 0 10px, var(--steel-deep) 10px 12px, var(--steel-light) 12px 14px);
+}
+
+.out-of-order::after {
+  position: absolute;
+  border: 2px solid var(--form-edge);
+  background: var(--form);
+  box-shadow: 4px 4px 0 var(--steel-deep);
+}
+
+.out-of-order h1 {
+  margin: 0 0 12px;
+  font-family: var(--stamp);
+  font-size: 30px;
+  font-weight: normal;
+  line-height: 36px;
+}
+
+.out-of-order p {
+  margin: 0 0 12px;
+}
+
+.out-of-order pre {
+  align-self: stretch;
+  margin: 0 0 8px;
+  padding: 6px 10px;
+  border: 2px solid var(--form-edge);
+  background: var(--form-light);
+  color: var(--ink-soft);
+  font-family: var(--type);
+  font-size: 20px;
+  line-height: 24px;
+  white-space: pre-wrap;
 }

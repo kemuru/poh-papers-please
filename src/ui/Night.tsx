@@ -7,6 +7,8 @@ import { DeskSprite, MOON } from './DeskArt';
 import { AudioSwitches } from './Game';
 import { exposeGameState } from './gameState';
 import { setMusicScene, stopMusic } from './music';
+import { CARD_RACK, TIME_CLOCK } from './ScreenArt';
+import { arrived, useKeyToContinue } from './Screens';
 import { SettingsPanel } from './SettingsPanel';
 import { Shift } from './Shift';
 import { reduce, shiftOver, startWeek, type Action, type GameState } from './week';
@@ -110,6 +112,10 @@ function NightShift({ seed, best, onDone, onBoard, onAgain }: { seed: number; be
     return () => window.removeEventListener('keydown', onKey);
   }, [over]);
 
+  // At the night's end, Enter takes another night, once its key is there; a Space from the lever does not.
+  const again = useRef<HTMLButtonElement>(null);
+  useKeyToContinue(onAgain, { enter: true, shown: () => arrived(again.current) });
+
   const view: NightView = { shift: n.shift, seconds: secondsFor(n.shift), right: n.right, citations: n.citations };
   const bestNow = Math.max(best ?? 0, closed ? n.right : 0);
   return (
@@ -130,31 +136,36 @@ function NightShift({ seed, best, onDone, onBoard, onAgain }: { seed: number; be
         <AudioSwitches onMenu={() => setPaused(true)} />
       </header>
       {closed ? (
-        // The night's clock card, punched out: the window closed, the night's figures, and the time clock's stamp.
-        <main className="screen ending-screen night-end">
-          <div className="ending-desk">
-            <article className="clock-card night-end-card" aria-label={NIGHT.end.title} data-testid="night-end">
-              <h2 className="clock-card-title night-end-title">
-                {NIGHT.end.title}
-                <DeskSprite sprite={MOON} />
-              </h2>
+        // The time clock by the staff door, and the clerk's card punched out under it: the window closed, the
+        // night's figures, and the time clock's stamp.
+        <main className="screen night-end">
+          {/* The clock between its two racks of cards, every other clerk's still in. */}
+          <div className="time-station" aria-hidden="true">
+            <DeskSprite sprite={CARD_RACK} />
+            <DeskSprite sprite={TIME_CLOCK} className="time-clock" />
+            <DeskSprite sprite={CARD_RACK} />
+          </div>
+          <article className="punched-card" aria-label={NIGHT.end.title} data-testid="night-end">
+            <h2 className="punched-title">
+              {NIGHT.end.title}
+              <DeskSprite sprite={MOON} />
+            </h2>
+            <div className="punched-lines">
               {NIGHT.end.lines.map((line) => (
                 <p key={line}>{line.replace('{right}', String(n.right)).replace('{shifts}', (n.shift === 1 ? NIGHT.end.shift : NIGHT.end.shifts).replace('{n}', String(n.shift)))}</p>
               ))}
-              <div className="night-end-foot">
-                <p className="clock-card-tally">{NIGHT.end.best.replace('{best}', String(bestNow))}</p>
-                <p className="night-end-stamp">{NIGHT.end.stamp}</p>
-              </div>
-            </article>
-            <div className="ending-ways">
-              <button className="screen-button" onClick={onAgain}>
-                {NIGHT.end.again}
-              </button>
-              <button className="board-button" onClick={leave}>
-                {MENU.board}
-              </button>
             </div>
+            <p className="punched-stamp">{NIGHT.end.stamp}</p>
+            <p className="punched-best">{NIGHT.end.best.replace('{best}', String(bestNow))}</p>
+          </article>
+          <div className="night-end-others">
+            <button className="steel-key" onClick={leave}>
+              {MENU.board}
+            </button>
           </div>
+          <button ref={again} className="screen-button way-on" onClick={onAgain}>
+            {NIGHT.end.again} <kbd>Enter</kbd>
+          </button>
         </main>
       ) : (
         <Shift
@@ -203,7 +214,7 @@ function NightPause({ onBack, onBoard }: { onBack: () => void; onBoard: () => vo
           </button>
         </div>
         <div className="menu-restarts">
-          <button className="menu-link" onClick={onBoard}>
+          <button className="steel-key" onClick={onBoard}>
             {MENU.board}
           </button>
         </div>

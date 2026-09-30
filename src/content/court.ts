@@ -41,5 +41,8 @@ export const HUNCH_LINE = 'No evidence filed. The jury looked for itself.';
  */
 export const JURY_LABEL = { size: 'Jury of {size}', tally: ': {n} uphold' };
 
-/** The APPEAL button: the word stamped on it, then the next jury and its fee. */
-export const APPEAL_BUTTON = { word: 'Appeal', terms: ' to {size} jurors, {fee} PNK' };
+/**
+ * The APPEAL key: the word stamped on it and the next jury printed after, and the fee on the tag tied to it.
+ * Read out, it is one line: "Appeal to 7 jurors, 10 PNK".
+ */
+export const APPEAL_BUTTON = { word: 'Appeal', jury: ' to {size} jurors', join: ', ', fee: '{fee} PNK' };
