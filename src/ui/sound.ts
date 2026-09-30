@@ -1,32 +1,79 @@
 // Every sound effect in the game, synthesised with Web Audio, so there are no audio files to license.
-// Quiet by design: the ministry hums, it does not shout. Muting is remembered per browser.
-// The music is in music.ts, on the same audio context.
-let audio: AudioContext | undefined;
-let muted = readFlag('poh-muted');
+// Quiet by design: the ministry hums, it does not shout. Every effect goes through one gain, the sound's
+// bus, set by the clerk's sound volume (volume.ts); the level and the mute are remembered per browser.
+// The music is in music.ts, on the same audio context, with a bus of its own.
+import { audible, gainOf, readLevel, toggle, withLevel, type Channel } from './volume';
 
-export function readFlag(name: string) {
+let audio: AudioContext | undefined;
+let sound: Channel = { level: readLevel(readItem('poh-sfx-volume')), muted: readFlag('poh-muted') };
+/** The last level the sound was heard at, for the switch to bring back after the fader was put at 0. */
+let soundHeard = sound.level;
+let soundBus: GainNode | undefined;
+
+export function readItem(name: string) {
   try {
-    return localStorage.getItem(name) === '1';
+    return localStorage.getItem(name);
   } catch {
-    return false;
+    return null;
   }
 }
 
-export function saveFlag(name: string, value: boolean) {
+export function saveItem(name: string, value: string) {
   try {
-    localStorage.setItem(name, value ? '1' : '0');
+    localStorage.setItem(name, value);
   } catch {
     // Private mode: the setting lasts until the page closes.
   }
 }
 
-export function isMuted() {
-  return muted;
+export function readFlag(name: string) {
+  return readItem(name) === '1';
 }
 
-export function setMuted(value: boolean) {
-  muted = value;
-  saveFlag('poh-muted', value);
+export function saveFlag(name: string, value: boolean) {
+  saveItem(name, value ? '1' : '0');
+}
+
+// The rail's switches and the settings' faders follow both volumes, wherever they were changed.
+const listeners = new Set<() => void>();
+export function onVolumeChange(listener: () => void) {
+  listeners.add(listener);
+  return () => void listeners.delete(listener);
+}
+export const volumeChanged = () => listeners.forEach((listener) => listener());
+
+/** Glides a bus to a new gain in a few hundredths of a second: a fader dragged across never clicks. */
+export function glide(bus: GainNode | undefined, gain: number) {
+  bus?.gain.setTargetAtTime(gain, bus.context.currentTime, 0.02);
+}
+
+export const soundChannel = () => sound;
+
+/** The rail's sound switch, and M. */
+export const toggleSound = () => setSound(toggle(sound, soundHeard), true);
+
+/** The sound volume fader. `settled` once it is let go or stepped: then the level is kept, and a stamp says how loud it is. */
+export const setSoundLevel = (level: number, settled: boolean) => setSound(withLevel(level), settled);
+
+function setSound(next: Channel, settled: boolean) {
+  sound = next;
+  if (next.level > 0) soundHeard = next.level;
+  glide(soundBus, gainOf(sound));
+  if (settled) {
+    saveFlag('poh-muted', sound.muted);
+    saveItem('poh-sfx-volume', String(sound.level));
+    hear();
+  }
+  volumeChanged();
+}
+
+let heard = -Infinity;
+/** The stamp at the level just set, a moment after the bus has got there; at most five times a second. */
+function hear() {
+  const now = performance.now();
+  if (now - heard < 200) return;
+  heard = now;
+  withAudio((ctx, t) => stamp(ctx, t + 0.06));
 }
 
 /** The page's audio context, made on first use; null where there is no Web Audio. It sleeps while the tab is hidden. */
@@ -35,6 +82,10 @@ export function audioContext(): AudioContext | null {
     if (!audio) {
       const ctx = new AudioContext();
       document.addEventListener('visibilitychange', () => void (document.hidden ? ctx.suspend() : ctx.resume()));
+      // The bus starts at the saved level, not at full: the first sound after a reload is never too loud.
+      soundBus = ctx.createGain();
+      soundBus.gain.value = gainOf(sound);
+      soundBus.connect(ctx.destination);
       audio = ctx;
     }
     if (audio.state === 'suspended' && !document.hidden) void audio.resume();
@@ -44,9 +95,9 @@ export function audioContext(): AudioContext | null {
   }
 }
 
-/** Runs `play` with the audio context and the current time, unless muted or there is no Web Audio. */
+/** Runs `play` with the audio context and the current time, unless the sound cannot be heard or there is no Web Audio. */
 function withAudio(play: (ctx: AudioContext, t: number) => void) {
-  if (muted) return;
+  if (!audible(sound)) return;
   const ctx = audioContext();
   try {
     if (ctx) play(ctx, ctx.currentTime);
@@ -63,7 +114,7 @@ function tone(ctx: AudioContext, t: number, type: OscillatorType, from: number, 
   if (to !== from) osc.frequency.exponentialRampToValueAtTime(to, t + length);
   gain.gain.setValueAtTime(volume, t);
   gain.gain.exponentialRampToValueAtTime(0.0001, t + length);
-  osc.connect(gain).connect(ctx.destination);
+  osc.connect(gain).connect(soundBus ?? ctx.destination);
   osc.start(t);
   osc.stop(t + length);
 }
@@ -98,17 +149,17 @@ function hiss(ctx: AudioContext, t: number, filter: BiquadFilterType, frequency:
   band.frequency.value = frequency;
   gain.gain.setValueAtTime(volume, t);
   gain.gain.exponentialRampToValueAtTime(0.0001, t + length);
-  src.connect(band).connect(gain).connect(ctx.destination);
+  src.connect(band).connect(gain).connect(soundBus ?? ctx.destination);
   src.start(t, (t * 7) % 0.5);
   src.stop(t + length);
 }
 
-/** The stamp: a short thud. */
-export const thunk = () =>
-  withAudio((ctx, t) => {
-    tone(ctx, t, 'sine', 150, 40, 0.5, 0.2);
-    hiss(ctx, t, 'lowpass', 900, 0.25, 0.08);
-  });
+/** The stamp: a short thud. The loudest sound on the desk, so it is the one the fader plays to say how loud. */
+function stamp(ctx: AudioContext, t: number) {
+  tone(ctx, t, 'sine', 150, 40, 0.5, 0.2);
+  hiss(ctx, t, 'lowpass', 900, 0.25, 0.08);
+}
+export const thunk = () => withAudio(stamp);
 
 /** "Now serving": the two-note chime of every waiting room. */
 export const chime = () =>
@@ -126,6 +177,13 @@ export const pa = () =>
 
 /** Paper sliding across the desk. */
 export const paper = () => withAudio((ctx, t) => hiss(ctx, t, 'bandpass', 2600, 0.12, 0.18));
+
+/** The printout coming down on the blotter: continuous paper, a lighter and crisper crackle than a card's, in two parts. */
+export const rustle = () =>
+  withAudio((ctx, t) => {
+    hiss(ctx, t, 'bandpass', 3400, 0.07, 0.06);
+    hiss(ctx, t + 0.05, 'bandpass', 4300, 0.05, 0.08);
+  });
 
 /** The dot-matrix printer: a burst of clicks. */
 export const printer = () =>

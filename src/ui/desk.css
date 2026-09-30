@@ -426,7 +426,8 @@ kbd {
 
 /*
  * Whoever is at the window, three art pixels to a portrait pixel, standing behind the sill with their
- * head near the top of the glass however tall the glass is. They step up, a stride at a time.
+ * head near the top of the glass however tall the glass is. They step up, a stride at a time: five strides
+ * of 80ms, the first in the glass the moment NEXT is pulled, standing still before their form lands.
  */
 .visitor {
   position: absolute;
@@ -434,7 +435,7 @@ kbd {
   left: 50%;
   translate: -50% 0;
   line-height: 0;
-  animation: step-up 0.7s steps(7) both;
+  animation: step-up 0.4s steps(5, jump-start) both;
 }
 
 .visitor svg {
@@ -442,7 +443,7 @@ kbd {
 }
 
 .visitor.leaving {
-  animation: step-off 0.7s 0.95s steps(7) both;
+  animation: step-off 0.4s 0.95s steps(5, jump-start) both;
 }
 
 @keyframes step-up {
@@ -750,7 +751,7 @@ kbd {
 }
 
 .desk.thunked .desk-papers {
-  animation: thunk 0.24s steps(3);
+  animation: thunk 0.16s step-end;
 }
 
 /*
@@ -815,45 +816,148 @@ kbd {
   max-width: 680px;
 }
 
-/* The applicant's papers come across the counter from under the booth, a step at a time, and go back the same way. */
+/*
+ * The applicant's papers come through the slot from under the booth, out of sight until they come: Form 1 at
+ * 0.28s, the printout two frames behind it. Each comes in frames of 60ms, every one held for exactly one frame
+ * (step-end) and on the grid, the steps shrinking as it nears its place, 112, 48, 16 and 4 pixels short: slowing by
+ * spacing, not by an easing curve. Lifted, a sheet casts its long shadow (--drop) until the frame it touches the
+ * blotter, and that frame's animation (card-down, paper-down) plays its sound as it starts (Paper in Desk.tsx):
+ * the picture and the sound on one clock. Form 1 is a card and overshoots by an art pixel before it settles; the
+ * printout is floppy and does not. Both are down 0.64s after NEXT (0.48s until 30 Sep 2026: too quick to read).
+ */
 .paper-form {
-  animation: land 0.32s 0.55s steps(8) both;
+  animation:
+    paper-hidden 0.28s step-end backwards,
+    paper-in 0.24s 0.28s step-end backwards,
+    card-down 0.12s 0.52s step-end forwards;
 }
 
 .paper-video {
-  animation: land 0.32s 0.7s steps(8) both;
+  animation:
+    paper-hidden 0.4s step-end backwards,
+    paper-in 0.24s 0.4s step-end backwards,
+    paper-down 0.06s 0.64s step-end forwards;
 }
 
-.paper.returning {
-  animation: hand-back 0.4s 0.75s steps(8) both;
-  pointer-events: none;
-}
-
-@keyframes land {
-  from {
-    transform: translateX(-160px);
-  }
+@keyframes paper-hidden {
+  from,
   to {
+    visibility: hidden;
+  }
+}
+
+@keyframes paper-in {
+  0% {
+    --drop: 8px;
+    transform: translateX(-112px);
+  }
+  25% {
+    --drop: 8px;
+    transform: translateX(-48px);
+  }
+  50% {
+    --drop: 8px;
+    transform: translateX(-16px);
+  }
+  75%,
+  100% {
+    --drop: 8px;
+    transform: translateX(-4px);
+  }
+}
+
+@keyframes card-down {
+  0% {
+    --drop: 4px;
+    transform: translateX(2px);
+  }
+  50%,
+  100% {
+    --drop: 4px;
     transform: none;
   }
 }
 
-@keyframes hand-back {
+@keyframes paper-down {
+  from,
   to {
-    transform: translateX(calc(-100% - 64px));
+    --drop: 4px;
+    transform: none;
   }
 }
 
-@keyframes thunk {
-  0%,
+/*
+ * Every other paper put down on a desk (the morning's extras, the front page, the letters, the clock card): out of
+ * sight until its moment, then in from the left as the applicant's papers come, in frames of 40ms, 64, 20 and 4
+ * pixels short, and down. Until 30 Sep 2026 each sat in view 160 pixels short through its delay, then slid.
+ */
+@keyframes land {
+  0% {
+    visibility: hidden;
+    transform: translateX(-112px);
+  }
+  0.1% {
+    visibility: visible;
+    transform: translateX(-112px);
+  }
+  20% {
+    transform: translateX(-48px);
+  }
+  40% {
+    transform: translateX(-16px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80%,
   100% {
     transform: none;
   }
-  33% {
+}
+
+/*
+ * Stamped, they lie a moment as before (NEXT never waits for them: the next applicant's papers take their place),
+ * then are pulled under the booth in four frames of 40ms, faster each frame, 8, 32 and 96 pixels, and on the
+ * fourth they are under it.
+ */
+.paper.returning {
+  animation: hand-back 0.16s 0.75s step-end forwards;
+  pointer-events: none;
+}
+
+@keyframes hand-back {
+  0% {
+    transform: translateX(-8px);
+  }
+  25% {
+    transform: translateX(-32px);
+  }
+  50% {
+    transform: translateX(-96px);
+  }
+  75%,
+  100% {
+    visibility: hidden;
+    transform: translateX(-96px);
+  }
+}
+
+/*
+ * The stamp's blow on the blotter: the frame it lands (the ink, the handle at its lowest and the thunk, all at
+ * once) held a frame, then a shake of an art pixel and back, each frame 40ms, on the grid.
+ */
+@keyframes thunk {
+  0% {
+    transform: none;
+  }
+  50% {
     transform: translate(2px, 2px);
   }
-  66% {
+  75% {
     transform: translate(-2px, 0);
+  }
+  100% {
+    transform: none;
   }
 }
 
@@ -864,7 +968,8 @@ kbd {
   padding: 8px 12px 12px;
   border: 2px solid var(--doc-edge, var(--letter-edge));
   background: var(--doc-bg, var(--letter));
-  box-shadow: 4px 4px 0 var(--baize-deep);
+  /* Longer while the sheet is lifted, coming in (--drop, set by its paper's animation). */
+  box-shadow: var(--drop, 4px) var(--drop, 4px) 0 var(--baize-deep);
   color: var(--doc-ink, var(--ink));
 }
 
@@ -939,12 +1044,13 @@ kbd {
   line-height: 0;
 }
 
-.photo svg {
+.photo svg,
+.photo-picture {
   display: block;
 }
 
-/* A selfie taken in the bathroom mirror: the photo is the face the other way round. */
-.photo.mirrored svg {
+/* A selfie taken in the bathroom mirror: the photo is the face the other way round (under the magnifier too). */
+.photo-picture.mirrored svg {
   transform: scaleX(-1);
 }
 
@@ -975,28 +1081,23 @@ kbd {
   overflow-wrap: anywhere;
 }
 
-/* The stamp's impression: straight, in two frames of ink, with the gaps a rubber stamp leaves. */
+/*
+ * The stamp's impression: the word drawn in pixels by stampImpression.ts, worn, turned a few degrees and nudged off
+ * its place by the hand that set it down, in whole art pixels; the form's print shows through it. No frame, drawn or
+ * bordered: a level box round a turned word read as a stray line.
+ */
 .stamp {
   position: absolute;
   right: 14px;
   bottom: 10px;
-  padding: 2px 10px;
-  border: 4px solid currentColor;
-  font-family: var(--stamp);
-  font-size: 40px;
-  line-height: 40px;
+  line-height: 0;
   opacity: 0.88;
   mix-blend-mode: multiply;
-  mask: var(--px-speckle) 0 0 / 24px 24px;
-  animation: stamp-slam 0.1s steps(1) both;
   pointer-events: none;
 }
 
-.stamp::before {
-  content: '';
-  position: absolute;
-  inset: 2px;
-  border: 2px solid currentColor;
+.stamp svg {
+  display: block;
 }
 
 .stamp-accept {
@@ -1005,16 +1106,6 @@ kbd {
 
 .stamp-challenge {
   color: var(--challenge);
-}
-
-.stamped {
-  animation: thunk 0.24s 0.12s steps(3);
-}
-
-@keyframes stamp-slam {
-  from {
-    opacity: 0;
-  }
 }
 
 /* The video printout: continuous printer paper, pale green bands, sprocket holes down both edges. */
@@ -2055,13 +2146,23 @@ mark {
   filter: saturate(0.35) brightness(0.7);
 }
 
+/* The handle is at its lowest on the frame the ink lands, holds a frame, and comes up in two. */
 .stamp-tool.used {
-  animation: stamp-down 0.3s steps(3);
+  animation: stamp-down 0.16s step-end;
 }
 
 @keyframes stamp-down {
-  40% {
+  0% {
     translate: 0 12px;
+  }
+  50% {
+    translate: 0 6px;
+  }
+  75% {
+    translate: 0 2px;
+  }
+  100% {
+    translate: 0 0;
   }
 }
 
@@ -2347,6 +2448,78 @@ mark {
   background: var(--baize-dark);
 }
 
+/*
+ * The magnifier's lens, while Inspect is on and the clerk points at a still or the form's photo: the picture three
+ * times as big as the desk draws it, six design pixels to a portrait pixel, in a steel rim with a glint on it and a
+ * hard shadow on whatever it lies over. Desk.tsx lays it where it covers nothing the stills are held against. The
+ * glass is clear: nothing tints the picture.
+ */
+.loupe {
+  position: absolute;
+  z-index: 100001;
+  padding: 4px;
+  border: 2px solid var(--black);
+  background: var(--steel);
+  box-shadow:
+    inset 2px 2px 0 var(--steel-light),
+    inset -2px -2px 0 var(--steel-dark),
+    4px 4px 0 var(--baize-deep);
+  line-height: 0;
+  pointer-events: none;
+}
+
+.loupe::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  width: 8px;
+  height: 2px;
+  background: var(--steel-shine);
+  box-shadow: -2px 2px 0 var(--steel-shine);
+}
+
+.loupe-glass {
+  display: block;
+  border: 2px solid var(--steel-deep);
+}
+
+.loupe-glass svg {
+  display: block;
+}
+
+/* A still with two faces in it: the two side by side, as the frame prints them. */
+.loupe .frame-picture {
+  display: flex;
+}
+
+/*
+ * On a stage with the room (room.ts, evidenceX2: 1,656 design pixels wide or more, and tall enough for the doubled
+ * papers under the shortest hall), the evidence is drawn at twice the art scale: the stills and the form's photo at
+ * four design pixels to a portrait pixel, 160×192, crisp at every scale the stage takes. The two papers take a little
+ * more of the blotter's width for it, so the sign still (150 pixels at its widest) stands beside the three stills.
+ */
+.evidence-x2 .paper-form,
+.evidence-x2 .paper-video {
+  max-width: 712px;
+}
+
+.evidence-x2 .paper-video .film {
+  grid-template-columns: repeat(3, 164px);
+}
+
+.evidence-x2 .paper-form .photo svg {
+  width: 160px;
+  height: 192px;
+}
+
+/* The case number is typed beside the doubled photo, at its foot, not under it: the form grows by the photo alone. */
+.evidence-x2 .paper-form .photo-column {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 8px;
+}
+
 /* ------------------------------------------------------------ what the desk says */
 
 /*
@@ -2478,7 +2651,7 @@ mark {
   left: 18px;
   width: 236px;
   pointer-events: none;
-  animation: stick-down 0.16s steps(2) both;
+  animation: stick-down 0.16s var(--landed, 0s) steps(2) both;
 }
 
 .hint-note p {
@@ -2548,6 +2721,81 @@ mark {
   transition-delay: 0s !important;
 }
 
+/*
+ * With motion reduced, the applicant's papers keep their timeline and lose only their frames: each cuts in at
+ * its place on the frame it would have touched down, with its sound, and goes under the booth when it would have,
+ * the stamp on it seen until then. The applicant is at the window at once, and gone when their last stride would
+ * have ended. (Every other animation just ends at once, above.)
+ */
+.motion-reduced .paper-form:not(.returning) {
+  animation:
+    paper-hidden 0.52s step-end backwards,
+    paper-down 0.06s 0.52s step-end forwards !important;
+}
+
+.motion-reduced .paper-video:not(.returning) {
+  animation:
+    paper-hidden 0.64s step-end backwards,
+    paper-down 0.06s 0.64s step-end forwards !important;
+}
+
+.motion-reduced .paper.returning {
+  animation: under-booth 0.16s 0.75s step-end forwards !important;
+}
+
+.motion-reduced .visitor.leaving:not(.reflection) {
+  animation: step-off 0.4s 0.95s steps(1, jump-end) both !important;
+}
+
+/* Day 1's hint is stuck down as the papers land, then as now, without its two frames. */
+.motion-reduced .hint-note {
+  animation: stick-down 0.001s var(--landed, 0s) step-end both !important;
+}
+
+/* Nothing moves, not even for a frame: the applicant is at the window, and the stamp's handle down and up, at once. */
+.motion-reduced .visitor:not(.leaving, .reflection),
+.motion-reduced .stamp-tool.used {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .paper-form:not(.returning) {
+    animation:
+      paper-hidden 0.52s step-end backwards,
+      paper-down 0.06s 0.52s step-end forwards !important;
+  }
+
+  .paper-video:not(.returning) {
+    animation:
+      paper-hidden 0.64s step-end backwards,
+      paper-down 0.06s 0.64s step-end forwards !important;
+  }
+
+  .paper.returning {
+    animation: under-booth 0.16s 0.75s step-end forwards !important;
+  }
+
+  .visitor.leaving:not(.reflection) {
+    animation: step-off 0.4s 0.95s steps(1, jump-end) both !important;
+  }
+
+  .hint-note {
+    animation: stick-down 0.001s var(--landed, 0s) step-end both !important;
+  }
+
+  .visitor:not(.leaving, .reflection),
+  .stamp-tool.used {
+    animation: none !important;
+  }
+}
+
+@keyframes under-booth {
+  75%,
+  100% {
+    visibility: hidden;
+  }
+}
+
 /* ------------------------------------------------------------ the morning's papers */
 
 /* Until the window opens the blotter holds the morning's papers and no Inspect strip: its foot is theirs. */
@@ -2559,7 +2807,7 @@ mark {
 .paper.morning-extra {
   position: absolute;
   z-index: 5;
-  animation: land 0.32s 0.4s steps(8) both;
+  animation: land 0.3s 0.4s step-end both;
 }
 
 .at-letter {
@@ -2598,7 +2846,7 @@ mark {
   font-family: var(--print);
   font-size: 20px;
   line-height: 20px;
-  animation: land 0.32s steps(8) both;
+  animation: land 0.3s step-end both;
 }
 
 .front-page p {
@@ -2808,7 +3056,7 @@ mark {
   font-family: var(--print);
   font-size: 20px;
   line-height: 24px;
-  animation: land 0.32s steps(8) both;
+  animation: land 0.3s step-end both;
 }
 
 .letterhead p {
@@ -2974,7 +3222,7 @@ mark {
   font-family: var(--print);
   font-size: 20px;
   line-height: 24px;
-  animation: land 0.32s steps(8) both;
+  animation: land 0.3s step-end both;
 }
 
 .clock-card p {

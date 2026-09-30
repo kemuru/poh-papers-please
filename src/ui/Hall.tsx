@@ -1,9 +1,11 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from 'react';
+import { SIX } from '../content/finale';
 import { ANNOUNCEMENTS, BANNER, CLOSING, POSTERS } from '../content/hall';
 import { CAST_PORTRAITS } from '../content/portraits';
 import type { GeneratedApplicant } from '../gen/applicant';
 import { drawPortrait, type PixelImage } from '../gen/drawPortrait';
 import { LAST_DAY } from '../gen/day';
+import type { Sitter, Speaker } from '../gen/finale';
 import { generatePortrait } from '../gen/portrait';
 import { pixelPaths } from './PixelPortrait';
 import { pa } from './sound';
@@ -362,8 +364,7 @@ const byLetter = (pad: number, letters: number, drop: (letter: number) => number
   drop(Math.max(0, Math.min(letters - 1, Math.floor((x - pad) / 4))));
 
 /** Window 2 votes on leaving the Ministry (days 3 and 4), then leaves it: the real registry forked in two. */
-function WindowTwo({ day }: { day: number }) {
-  const x = 524;
+function WindowTwo({ day, x = 524 }: { day: number; x?: number }) {
   const sign = day >= 5 ? 'FORKED' : day >= 3 ? 'VOTING' : 'CLOSED';
   const label = textImage('WINDOW 2', INK);
   const plate = card(textImage(sign, '#9a2f2a'), '#efe8d2', 2);
@@ -436,11 +437,11 @@ function Banner({ day, hang }: { day: number; hang: number }) {
 }
 
 /** From day 5 the cloth hangs straight down from its left corner (its string ends at `top`) to the floor, lettered down its length. */
-function FallenBanner({ top, bottom }: { top: number; bottom: number }) {
+function FallenBanner({ top, bottom, x = BANNER_X }: { top: number; bottom: number; x?: number }) {
   const cloth = useMemo(() => turned(CLOTH, 'cw'), []);
   const length = Math.min(cloth.height, bottom - top);
   const shown = useMemo(() => ({ ...cloth, height: length, pixels: cloth.pixels.slice(0, length * cloth.width) }), [cloth, length]);
-  return <Pixels image={shown} x={BANNER_X} y={top} />;
+  return <Pixels image={shown} x={x} y={top} />;
 }
 
 function Board({ serving, hang }: { serving: number; hang: number }) {
@@ -486,8 +487,8 @@ function line(a: { x: number; y: number }, b: { x: number; y: number }) {
 }
 
 /** On the wall by the end of the queue, under the PA's horn. Its hands are drawn in pixels, by the minute. */
-function Clock({ minutes }: { minutes: number }) {
-  const at = { x: 384, y: 15 };
+function Clock({ minutes, x = 384 }: { minutes: number; x?: number }) {
+  const at = { x, y: 15 };
   const centre = { x: at.x + 9, y: at.y + 9 };
   const hand = (turn: number, length: number) =>
     line(centre, { x: centre.x + Math.round(length * Math.sin(turn * 2 * Math.PI)), y: centre.y - Math.round(length * Math.cos(turn * 2 * Math.PI)) });
@@ -517,8 +518,7 @@ function Poster({ x, text }: { x: number; text: string }) {
 }
 
 /** The Ministry plant, on a stand under the board, by how the week is going; from day 5 a card on the stand says it is fine. */
-function PlantStand({ day }: { day: number }) {
-  const x = 12;
+function PlantStand({ day, x = 12 }: { day: number; x?: number }) {
   // The stand's top, a little above the railing's, so the plant and its card are whole on the shortest strip.
   const top = RAIL - 4;
   return (
@@ -670,6 +670,369 @@ function PublicAddress({ day, opened, decided, total, over, hang }: { day: numbe
           <text className="sr-only">{text}</text>
         </g>
       )}
+    </g>
+  );
+}
+
+// ------------------------------------------------------------ six o'clock on Humanity Day
+
+// The hall at six, the first hour of the income (Finale.tsx): the same room, filling the stage at two art pixels
+// to a hall pixel, with two benches in it. Window 3's bench in front holds whoever this week's registry holds and
+// the last queue's humans; Window 2's, along the back wall by the window that left, whoever Window 3 refused, which
+// the other Ministry registered. The lights are on a timer. When they go off, every unit's night lamp comes on,
+// its eyes' cameras being in the dark, and it is drawn over the dark, as a camera sees it.
+
+/** Design pixels to a hall pixel at six: two art pixels, so the room fills the stage at twice its daytime size. */
+export const SIX_PX = 4;
+/** Hall pixels every stage shows at six: the narrowest stage, 1240 design pixels, is this wide. */
+const SIX_CORE = 310;
+/** The ceiling's tubes, which go off in turn; the two at the ends show only on wider stages. */
+export const SIX_TUBES = [8, 70, 132, 194, 256] as const;
+const SIX_END_TUBES = [-54, 318];
+/** The hall with every tube off: a blue-black, and how much of it lies over the room. */
+const NIGHT = '#070a12';
+const DARKEST = 0.78;
+/** Six o'clock, in minutes after the Ministry opened at nine. */
+const AT_SIX = 540;
+/** Standing up, a sitter's head rises this far; then they walk off to the right, two hall pixels a step. */
+const STAND = 10;
+const LEAVE_MS = 1300;
+
+export type SixSeat = { sitter: Sitter; x: number; y: number };
+
+/** Where everything is at six on a stage this size (design pixels): the room, both benches, and where each speaker's head is. */
+export type SixLayout = {
+  cols: number;
+  rows: number;
+  /** Hall pixels of wall shown left of the narrowest stage's room. */
+  left: number;
+  /** How far below the ceiling the back wall's fittings hang (drop), and the board and the PA (hang). */
+  drop: number;
+  hang: number;
+  here: SixSeat[];
+  there: SixSeat[];
+  /** The top of each speaker's head, and the PA's horn, in design pixels from the scene's top left: where their words go. */
+  heads: Partial<Record<Speaker, { x: number; y: number }>>;
+  horn: { x: number; y: number };
+};
+
+/** The board, hanging from the ceiling at six over Window 3's end of the hall, the fallen banner beside it, and the PA's horn over the clock. */
+const SIX_BOARD = { x: 6, width: 64, height: 27 };
+const SIX_BANNER_X = 72;
+const SIX_CLOCK_X = 136;
+const SIX_HORN_X = 138;
+/** Both benches stand this much further up the room than the day's hall has them, so Window 3's clears the counter. */
+const SIX_LIFT = 6;
+/** The top of a sitter on Window 3's bench, above the foot of the scene. */
+const SIX_FRONT = 56;
+
+export function sixLayout(width: number, height: number, here: readonly Sitter[], there: readonly Sitter[]): SixLayout {
+  const cols = Math.max(SIX_CORE, Math.floor(width / SIX_PX));
+  const rows = Math.max(150, Math.floor(height / SIX_PX));
+  const left = Math.floor((cols - SIX_CORE) / 2);
+  // The back wall's floor line leaves room in front of it for Window 3's bench; the ceiling takes the rest.
+  const drop = rows - 54 - SIX_LIFT - FLOOR_Y;
+  const hang = Math.floor(drop / 2);
+  const seat = (sitters: readonly Sitter[], from: number, to: number, most: number, y: number): SixSeat[] => {
+    const n = sitters.length;
+    const step = n > 1 ? Math.min(most, Math.floor((to - from - 40) / (n - 1))) : 0;
+    const start = from + Math.floor((to - from - (step * (n - 1) + 40)) / 2);
+    return sitters.map((sitter, i) => ({ sitter, x: start + i * step, y }));
+  };
+  const front = seat(here, 6, 304, 28, rows - SIX_FRONT);
+  const back = seat(there, 44, 256, 26, drop + QUEUE_Y + 6);
+  const heads: SixLayout['heads'] = {};
+  for (const { sitter, x, y } of [...back, ...front]) if (sitter.speaker) heads[sitter.speaker] = { x: (x + 20 + left) * SIX_PX, y: (y + 5) * SIX_PX };
+  return { cols, rows, left, drop, hang, here: front, there: back, heads, horn: { x: (SIX_HORN_X + 2 + left) * SIX_PX, y: (5 + hang + 9) * SIX_PX } };
+}
+
+type SixProps = {
+  layout: SixLayout;
+  /** What the board shows (the week's last ticket, a frame of its flip, or the first hour), and whether in PNK. */
+  board: string;
+  paid: boolean;
+  /** Tubes gone off so far, in turn. */
+  tubesOut: number;
+  /** The units' lamps: all off, the older units' (they switch at once), or every one (the current models wait a few seconds). */
+  lamps: 'off' | 'older' | 'all';
+  /** The units get up and go, their lamps with them; with motion reduced, the lamps go off one by one instead. */
+  leaving: boolean;
+  still: boolean;
+};
+
+export function HallAtSix({ layout, board, paid, tubesOut, lamps, leaving, still }: SixProps) {
+  const { cols, rows, left, drop, hang, here, there } = layout;
+  const edge = cols - left;
+  const dark = (DARKEST * Math.min(tubesOut, SIX_TUBES.length)) / SIX_TUBES.length;
+  const lit = (s: Sitter) => s.lamp !== null && (lamps === 'all' || (lamps === 'older' && !s.waits));
+  const units = [...there, ...here].filter((s) => s.sitter.lamp !== null);
+  const order = (s: SixSeat) => units.indexOf(s);
+  const back = { x: 40, width: 220, top: drop + QUEUE_Y + 6 };
+  const front = { x: 2, width: 306, top: rows - SIX_FRONT };
+  const sitters = (seats: readonly SixSeat[]) =>
+    seats.map((s) => <SixSitter key={s.sitter.name} seat={s} layer="body" leaving={leaving && s.sitter.lamp !== null} still={still} order={order(s)} edge={edge} />);
+  return (
+    <svg
+      className="six-scene"
+      width={cols * SIX_PX}
+      height={rows * SIX_PX}
+      viewBox={`${-left} 0 ${cols} ${rows}`}
+      shapeRendering="crispEdges"
+      aria-hidden="true"
+    >
+      <defs>
+        <pattern id="six-tiles" width="40" height="12" patternUnits="userSpaceOnUse">
+          <rect width="40" height="12" fill="#b3ad97" />
+          <rect width="20" height="6" fill="#a7a18a" />
+          <rect x="20" y="6" width="20" height="6" fill="#a7a18a" />
+        </pattern>
+      </defs>
+      <rect x={-left} width={cols} height={rows} fill={WALL} />
+      {Array.from({ length: 9 }, (_, i) => -80 + i * 80).map((x) => (
+        <rect key={x} x={x} y={4} width={1} height={drop + DADO - 4} fill="#86917a" />
+      ))}
+      {/* The back wall's lower half and the floor, and what hangs on the wall, at the back bench's height. */}
+      <g transform={`translate(0 ${drop})`}>
+        <rect x={-left} y={DADO} width={cols} height={2} fill="#4b5446" />
+        <rect x={-left} y={DADO + 2} width={cols} height={FLOOR_Y - DADO - 4} fill="#5d6858" />
+        <rect x={-left} y={FLOOR_Y - 2} width={cols} height={2} fill="#3a4136" />
+        <rect x={-left} y={FLOOR_Y} width={cols} height={rows - drop - FLOOR_Y} fill="url(#six-tiles)" />
+        {SIX_WINDOWS.map((x) => (
+          <OutsideWindow key={x} x={x} minutes={AT_SIX} rain={false} />
+        ))}
+        <Door x={332} />
+        <Clock minutes={AT_SIX} x={SIX_CLOCK_X} />
+        <Poster x={160} text={POSTERS[LAST_DAY - 1][0]} />
+        <WindowTwo day={LAST_DAY} x={262} />
+        <PlantStand day={LAST_DAY} x={-4} />
+      </g>
+
+      {/* The ceiling, its tubes, and what hangs from it: the board over Window 3's end, the banner that came down on day 5, the PA. */}
+      <rect x={-left} width={cols} height={4} fill="#26281f" />
+      {SIX_END_TUBES.map((x) => (
+        <SixTube key={x} x={x} on={tubesOut === 0} />
+      ))}
+      {SIX_TUBES.map((x, i) => (
+        <SixTube key={x} x={x} on={i >= tubesOut} />
+      ))}
+      <rect x={SIX_BANNER_X} y={4} width={1} height={hang + 1} fill="#3a3c33" />
+      <FallenBanner x={SIX_BANNER_X} top={BANNER_Y + hang} bottom={drop + FLOOR_Y} />
+      <SixBoardFrame hang={hang} />
+      <Horn x={SIX_HORN_X} hang={hang} />
+
+      {/* The dark comes down over the room a tube at a time; the windows onto the evening stay lit. */}
+      <rect className="six-night" x={-left} width={cols} height={rows} fill={NIGHT} opacity={dark} />
+      <g opacity={dark / DARKEST}>
+        {SIX_WINDOWS.map((x) => (
+          <WindowGlow key={x} x={x} drop={drop} />
+        ))}
+      </g>
+
+      {/* Window 2's bench along the back wall, then Window 3's in front: each sitter between its bench's back and seat,
+          against the windows, and as dark as the room. */}
+      <g style={dark > 0 ? { filter: `brightness(${1 - dark})` } : undefined}>
+        <BenchBack {...back} />
+        {sitters(there)}
+        <BenchSeat {...back} card={SIX.benches.there} />
+        <BenchBack {...front} />
+        {sitters(here)}
+        <BenchSeat {...front} card={SIX.benches.here} />
+      </g>
+      {/* Six o'clock's evening light, while the tubes are on. */}
+      <rect x={-left} width={cols} height={rows} fill="#ff8a4a" opacity={0.24 * (1 - dark / DARKEST)} />
+
+      {/* What shows in the dark as it is: the board's lit figures, and the lamps. */}
+      <SixBoardFigures hang={hang} board={board} paid={paid} />
+      {units.map((s) => (
+        <SixSitter key={s.sitter.name} seat={s} layer="lamp" on={lit(s.sitter)} leaving={leaving} still={still} order={order(s)} edge={edge} />
+      ))}
+    </svg>
+  );
+}
+
+/** The outside windows at six, in the room's own places; the outer two show only on wider stages. */
+const SIX_WINDOWS = [-64, 84, 208];
+
+/** A tube along the ceiling, lit or gone off. */
+function SixTube({ x, on }: { x: number; on: boolean }) {
+  return (
+    <g>
+      <rect x={x - 2} y={1} width={48} height={3} fill="#3a3c33" />
+      <rect x={x} y={2} width={44} height={1} fill={on ? '#eef5dc' : '#55584d'} />
+      {on && <rect x={x - 6} y={4} width={56} height={10} fill="#fbffe8" opacity={0.07} />}
+    </g>
+  );
+}
+
+/** A window's four panes of evening, lit from outside: over the dark, as the hall's last light. */
+function WindowGlow({ x, drop }: { x: number; drop: number }) {
+  const sky = skyAt(AT_SIX);
+  return (
+    <g transform={`translate(0 ${drop})`} opacity={0.55}>
+      {[
+        [x + 2, 10],
+        [x + 23, 10],
+        [x + 2, 27],
+        [x + 23, 27],
+      ].map(([px, py]) => (
+        <rect key={`${px}-${py}`} x={px} y={py} width={19} height={15} fill={sky} />
+      ))}
+    </g>
+  );
+}
+
+const skyAt = (minutes: number) => sky(minutes, false);
+
+/** The PA's horn on its rod from the ceiling, its mouth to the left. */
+function Horn({ x, hang }: { x: number; hang: number }) {
+  const y = 5 + hang;
+  return (
+    <g>
+      <rect x={x + 9} y={4} width={1} height={hang + 1} fill="#3a3c33" />
+      <rect x={x + 5} y={y} width={7} height={9} fill="#6f7466" />
+      <rect x={x + 2} y={y + 2} width={3} height={5} fill="#6f7466" />
+      <rect x={x} y={y + 1} width={2} height={7} fill="#2d2f29" />
+    </g>
+  );
+}
+
+/** The NOW SERVING board's case, on its two strings: dark whether or not the hall is. */
+function SixBoardFrame({ hang }: { hang: number }) {
+  const { x, width, height } = SIX_BOARD;
+  const y = 5 + hang;
+  return (
+    <g>
+      <rect x={x + 8} y={4} width={1} height={hang + 1} fill="#3a3c33" />
+      <rect x={x + width - 9} y={4} width={1} height={hang + 1} fill="#3a3c33" />
+      <rect x={x} y={y} width={width} height={height} fill="#0c0d0a" />
+      <rect x={x + 2} y={y + 2} width={width - 4} height={height - 4} fill="#161812" />
+    </g>
+  );
+}
+
+/** The board's lit figures: its painted label, and the number, twice the size, with PNK beside the first hour. */
+function SixBoardFigures({ hang, board, paid }: { hang: number; board: string; paid: boolean }) {
+  const { x, width } = SIX_BOARD;
+  const y = 5 + hang;
+  const label = useMemo(() => textImage(SIX.board.label, '#b8513a'), []);
+  const number = useMemo(() => textImage(board, '#ff6a3d'), [board]);
+  const unit = useMemo(() => textImage(SIX.board.unit, '#ff6a3d'), []);
+  const wide = board ? 2 * number.width + (paid ? 3 + unit.width : 0) : 0;
+  const start = x + Math.floor((width - wide) / 2);
+  return (
+    <g data-testid="six-board" data-shows={board}>
+      <Pixels image={label} x={x + Math.floor((width - label.width) / 2)} y={y + 4} />
+      {board && (
+        <g transform={`translate(${start} ${y + 12}) scale(2)`}>
+          <Pixels image={number} />
+        </g>
+      )}
+      {board && paid && <Pixels image={unit} x={start + 2 * number.width + 3} y={y + 17} />}
+    </g>
+  );
+}
+
+/** A bench's back, behind whoever sits on it: its end posts, a top rail and two boards, the wall showing between. */
+function BenchBack({ x, width, top }: { x: number; width: number; top: number }) {
+  const y = top + 13;
+  return (
+    <g>
+      {[x, x + width - 3].map((px) => (
+        <rect key={px} x={px} y={y} width={3} height={27} fill={WOOD.dark} />
+      ))}
+      <rect x={x + 3} y={y + 1} width={width - 6} height={3} fill={WOOD.light} />
+      <rect x={x + 3} y={y + 4} width={width - 6} height={1} fill={WOOD.seam} />
+      {[9, 17].map((dy) => (
+        <g key={dy}>
+          <rect x={x + 3} y={y + dy} width={width - 6} height={4} fill={WOOD.base} />
+          <rect x={x + 3} y={y + dy + 4} width={width - 6} height={1} fill={WOOD.seam} />
+        </g>
+      ))}
+    </g>
+  );
+}
+
+/** A bench's seat, in front of whoever sits on it, on four legs, with a card on its end saying whose it is. */
+function BenchSeat({ x, width, top, card: name }: { x: number; width: number; top: number; card: string }) {
+  const seat = top + 40;
+  const label = useMemo(() => card(textImage(name, '#9a2f2a'), '#efe8d2', 2), [name]);
+  return (
+    <g>
+      <rect x={x - 1} y={seat} width={width + 2} height={2} fill={WOOD.light} />
+      <rect x={x - 1} y={seat + 2} width={width + 2} height={2} fill={WOOD.dark} />
+      {[x + 1, x + 41, x + width - 43, x + width - 3].map((lx) => (
+        <rect key={lx} x={lx} y={seat + 4} width={2} height={7} fill={WOOD.dark} />
+      ))}
+      <Pixels image={label} x={x + 4} y={seat + 4} />
+    </g>
+  );
+}
+
+/** A unit's lamp, lit with its eyes open: what its closed-eyed frames light, laid on its open-eyed face. */
+function lampLight(face: Sitter['face'], lamp: NonNullable<Sitter['lamp']>): PixelImage {
+  const { lamp: _lamp, ...unlit } = face;
+  const lit = drawPortrait({ ...unlit, lamp }, { eyes: 'closed', mouth: 'closed' });
+  const bare = drawPortrait(unlit, { eyes: 'closed', mouth: 'closed' });
+  return { ...lit, pixels: lit.pixels.map((c, i) => (c !== bare.pixels[i] ? c : null)) };
+}
+
+/**
+ * Someone on a bench at six, drawn as its body (under the dark) or, for a unit, its lamp (over it). Leaving, a unit
+ * stands, a hall pixel at a time, and walks off to the right, two at a time, body and lamp together; with motion
+ * reduced, it stays where it is, and its lamp goes off.
+ */
+function SixSitter({
+  seat,
+  layer,
+  on = true,
+  leaving,
+  still,
+  order,
+  edge,
+}: {
+  seat: SixSeat;
+  layer: 'body' | 'lamp';
+  on?: boolean;
+  leaving: boolean;
+  still: boolean;
+  order: number;
+  edge: number;
+}) {
+  const { sitter, x, y } = seat;
+  const image = useMemo(
+    () => (layer === 'lamp' && sitter.lamp ? lampLight(sitter.face, sitter.lamp) : drawPortrait(sitter.face)),
+    [layer, sitter.face, sitter.lamp],
+  );
+  const ref = useRef<SVGGElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!leaving || !el?.animate) return;
+    const delay = Math.max(0, order) * 180;
+    if (still) {
+      // Nothing moves: the lamps go off one by one, and the units sit on in the dark.
+      if (layer === 'lamp') el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 1, delay, easing: 'step-end', fill: 'forwards' });
+      return;
+    }
+    const out = x + 2 * Math.ceil((edge + 8 - x) / 2);
+    const walk = el.animate(
+      [
+        { transform: `translate(${x}px, ${y}px)`, easing: 'steps(2)' },
+        { transform: `translate(${x}px, ${y - STAND}px)`, offset: 0.12, easing: `steps(${(out - x) / 2})` },
+        { transform: `translate(${out}px, ${y - STAND}px)` },
+      ],
+      { duration: LEAVE_MS, delay, fill: 'forwards' },
+    );
+    return () => walk.cancel();
+  }, [leaving, still, layer, order, x, y, edge]);
+  return (
+    <g
+      ref={ref}
+      className={layer === 'lamp' ? 'six-lamp' : 'six-sitter'}
+      style={{ transform: `translate(${x}px, ${y}px)` }}
+      opacity={on ? 1 : 0}
+      {...(layer === 'lamp' ? { 'data-testid': 'lamp', 'data-on': on, 'data-unit': sitter.name } : {})}
+    >
+      <Pixels image={image} />
     </g>
   );
 }

@@ -40,6 +40,8 @@ function play(seed: number, stop: (s: GameState) => boolean, decide: (i: number)
     act({ type: 'close', queue });
     act({ type: 'statement' });
     act({ type: 'next-day', queue });
+    // Six o'clock, before the letter, on every Humanity Day that is not Fired's.
+    act({ type: 'letter' });
   }
   return { s, steps, week, mornings };
 }
@@ -128,6 +130,24 @@ describe('the save', () => {
     expect(again.state).toMatchObject({ day: 3, phase: 'shift', opened: false, called: 0, decided: [], savings: mornings[3] });
     expect(again.steps).toEqual(steps.slice(0, steps.lastIndexOf('next-day') + 1));
     expect(dayBegun(again.steps, again.state)).toBe(false);
+  });
+
+  it('reads a save made at a letter before six o’clock existed on to its letter', () => {
+    // A clerk who stamps by the truth reaches Humanity Day, and six o'clock.
+    const week = generateWeek(1);
+    let day = 1;
+    const truthful = (i: number) => ({ decision: week[day - 1][i].planted.length ? ('challenge' as const) : ('accept' as const) });
+    const { s, steps } = play(1, (now) => ((day = now.day), false), truthful);
+    expect(s.phase).toBe('ending');
+    expect(s.end?.fired).toBeFalsy();
+    expect(steps.at(-1)).toBe('letter');
+    // Such a save ended at the day's last 'next-day', with the letter's fingerprint.
+    const store = fakeStore();
+    writeSave(store, saveOf({ seed: 1, startDay: 1 }, steps.slice(0, -1), s, 0));
+    const run = loadRun(store);
+    expect(run.setAside).toBe(false);
+    expect(run.state.phase).toBe('ending');
+    expect(run.steps).toEqual(steps);
   });
 
   it('after the letter, starts the day that ended the week again', () => {

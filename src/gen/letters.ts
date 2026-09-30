@@ -1,7 +1,7 @@
 // The letters at the end of the week, filled from what this week did (notes/game-design.md, Endings).
 // Pure: the same week always writes the same letters. The words are src/content's.
 import { COUNT_WORDS } from '../content/desk';
-import { ENDINGS, FIRED_COSTS, HEADHUNTED, LETTER_NOTES, VOUCHER_REMOVED } from '../content/verdicts';
+import { ENDINGS, FIRED_COSTS, HEADHUNTED, LETTER_CLOSE, LETTER_NOTES, VOUCHER_REMOVED } from '../content/verdicts';
 import { OFFER } from '../economy/economy';
 import { headhunted, unitsPaid, type EndingId, type Grade } from '../economy/endings';
 
@@ -26,7 +26,8 @@ export type WeekEnd = {
   offer: 'signed' | 'handed-in' | null;
 };
 
-export type Letter = { title: string; stamp: string; lines: string[]; grade: string | null; note: string | null };
+/** HR's letter: its subject and stamp, its lines, a note about Likeness's offer, and its last line (none for Fired's). */
+export type Letter = { title: string; stamp: string; lines: string[]; grade: string | null; note: string | null; close: string | null };
 export type Clip = { head: string; title: string; lines: string[]; sign: string };
 
 const fill = (line: string, values: Record<string, string | number>) =>
@@ -65,7 +66,7 @@ export function writeLetter(w: WeekEnd): Letter {
     return chosen ? [chosen] : [];
   });
   const grade = 'grade' in text ? fill(text.grade, values) : null;
-  return { title: text.title, stamp: text.stamp, lines, grade, note: noteFor(w) };
+  return { title: text.title, stamp: text.stamp, lines, grade, note: noteFor(w), close: w.ending === 'fired' ? null : LETTER_CLOSE };
 }
 
 /** The clerk's voucher, gone with them; and, if the clerk stamped her in first thing on day 1, who she was. */

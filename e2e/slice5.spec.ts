@@ -65,9 +65,16 @@ async function nextMorning(page: Page) {
   await expect.poll(async () => (await game(page)).day).toBe(day + 1);
 }
 
-/** The accounts' Continue on the evening the week ends, to its letter. */
+/**
+ * The accounts' Continue on the evening the week ends, to its letter. Every letter but Fired's comes after six
+ * o'clock in the hall (e2e/finale.spec.ts plays it through); these runs skip it, as a second week would.
+ */
 async function toTheLetter(page: Page, ending: string) {
   await page.getByRole('button', { name: 'Continue' }).click();
+  if (ending !== 'fired') {
+    await expect(page.getByTestId('finale')).toBeVisible();
+    await page.keyboard.press('Escape');
+  }
   await expect(page.getByTestId('ending')).toHaveAttribute('data-ending', ending);
   expect((await game(page)).ending).toBe(ending);
   // The letter lands, is stamped, and the paper follows it.
@@ -202,8 +209,11 @@ test('Reclassified: the clerk challenges their own renewal with what Inspect fou
   await expect(notice).toContainText('Hortense Cobbold, who vouched for you, has been removed from the registry with you, as the rulebook says.');
   await expect(notice).not.toContainText('first person you registered');
   await expect(page.getByTestId('grade')).toHaveText('Grade: Equipment, First Class.');
+  // Every letter after six o'clock closes on the same Ministry line.
+  await expect(page.getByTestId('letter-close')).toHaveText('Window 3 opens at nine on Monday.');
   const special = page.getByTestId('special');
-  await expect(page.getByTestId('special-headline')).toHaveText('INCOME OPENS AT FIVE. ONE UBI IS WORTH 0.0003 PNK.');
+  // The price was told once, in the hall at six: the paper reports what came after it.
+  await expect(page.getByTestId('special-headline')).toHaveText('FIRST HOUR PAID. HOME ROBOTS LEAVE THE HALL.');
   await expect(special).toContainText('No home robots were registered at Window 3 this week.');
   await expect(special).toContainText('Registry equipment, Window 3: item 3-0417, a clerk.');
   await shot(page, 'ending-reclassified.png');
@@ -263,7 +273,7 @@ test('Replaced: three units stamped in, a second note after the second, and a un
   const notice = page.getByRole('article', { name: 'Notice' });
   await expect(notice).toContainText('Notice of replacement');
   await expect(notice).toContainText('This week you stamped three home robots into the registry: Ruth Calloway (day 5), Simon Aldous (day 6) and Lydia Crane (day 7).');
-  await expect(notice).toContainText('A unit in your likeness takes your chair at nine on Monday.');
+  await expect(notice).toContainText('A unit in your likeness takes your chair. Its papers are in order.');
   await expect(page.getByRole('img', { name: /The hall camera over Window 3/ })).toBeVisible();
   await shot(page, 'ending-replaced.png');
 });

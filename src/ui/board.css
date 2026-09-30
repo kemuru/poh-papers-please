@@ -361,6 +361,24 @@
 }
 
 /* The Ministry never closes: an enamel sign, black, lettered in cream, screwed to the board at its corners. */
+/* The night notice, and the volume plate screwed on under it. */
+.board-stack {
+  flex: 1 1 380px;
+  max-width: 520px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.volume-plate {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--charcoal-deep);
+}
+
 .notice-night {
   flex: 1 1 380px;
   max-width: 520px;
@@ -393,6 +411,12 @@
 
 .notice-night.locked {
   color: var(--steel-light);
+}
+
+.board-stack > .notice-night {
+  flex: none;
+  max-width: none;
+  margin-top: 0;
 }
 
 /* The set-aside save: a note stuck to the cork, in the supervisor's pen. */

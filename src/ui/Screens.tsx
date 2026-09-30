@@ -564,6 +564,12 @@ export function Ending({ state, card, earlier, onNewWeek, onBack, onBoard }: End
               <p key={line}>{line}</p>
             ))}
             {letter.note && <p className="hr-note">{letter.note}</p>}
+            {/* The Ministry's last word, the same whatever the fate: the week is over, and Window 3 is not. */}
+            {letter.close && (
+              <p className="hr-close" data-testid="letter-close">
+                {letter.close}
+              </p>
+            )}
             {/* What HR typed in at the foot. */}
             <div className="hr-typed">
               {letter.grade && <p data-testid="grade">{letter.grade}</p>}
@@ -660,8 +666,8 @@ const PRESS_CROP = { x: 4, y: 2, width: 32, height: 36 };
 const PRESS_SCALE = 4;
 
 /**
- * The Gazette's last edition, set as its morning front page is: the masthead, the income told once, a
- * photograph with the week's report running round it, and the paper's small print.
+ * The Gazette's last edition, set as its morning front page is: the masthead, what came of the first hour (its
+ * price was told in the hall), a photograph with the week's report running round it, and the paper's small print.
  */
 function SpecialEdition({ special, ending }: { special: Special; ending: Exclude<EndingId, 'fired'> }) {
   return (
@@ -693,7 +699,6 @@ function SpecialEdition({ special, ending }: { special: Special; ending: Exclude
           {line}
         </p>
       ))}
-      <p className="special-report">{special.likeness}</p>
       <p className="front-notice special-small">{special.small}</p>
     </article>
   );

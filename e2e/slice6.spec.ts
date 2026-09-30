@@ -51,6 +51,9 @@ async function humanityDay(page: Page, query: string, self: 'accept' | 'challeng
   await stampAll(page, (a) => (a.cast === 'clerk' ? self : undefined));
   await closeTheDay(page);
   await page.getByRole('button', { name: 'Continue' }).click();
+  // Six o'clock in the hall comes first (e2e/finale.spec.ts plays it through): skipped, as a second week would.
+  await expect(page.getByTestId('finale')).toBeVisible();
+  await page.keyboard.press('Escape');
   await expect(page.getByTestId('ending')).toBeVisible();
 }
 

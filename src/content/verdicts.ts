@@ -181,7 +181,8 @@ export const LETTER_HEAD = { ministry: 'Ministry of Humanity', dept: 'Human Reso
  * The letters at the end of the week, one per ending (notes/game-design.md, Endings). Each adds up what
  * this week did: "{day}", "{savings}", "{units}", "{fakes}" and "{humans}" are filled from the run, and a
  * line that is an object is chosen by what the clerk did with their own renewal. Human Resources reports;
- * it does not joke.
+ * it does not joke. Every letter but Fired's comes after six o'clock, where the income has already been
+ * paid, and closes on the same line (LETTER_CLOSE), whatever the fate.
  */
 export const ENDINGS = {
   fired: {
@@ -200,7 +201,7 @@ export const ENDINGS = {
     lines: [
       'This week you stamped {count} home robots into the registry: {units}.',
       'The Ministry has concluded that Window 3 is being run for Likeness Robotics, and has asked Likeness Robotics to run it.',
-      'A unit in your likeness takes your chair at nine on Monday. Its papers are in order.',
+      'A unit in your likeness takes your chair. Its papers are in order.',
       'Please leave your lanyard on the desk.',
     ],
   },
@@ -210,13 +211,12 @@ export const ENDINGS = {
     lines: [
       'On day 6 the registry took in Robin Hale, who has your name, your face and a better haircut.',
       {
-        accepted: 'At five o’clock you registered yourself as well. That registration has been removed.',
+        accepted: 'At five o’clock you registered yourself as well. The registry takes each face once, and has kept his.',
         upheld: 'At five o’clock you challenged your own renewal, and the court agreed.',
-        dismissed: 'At five o’clock you challenged your own renewal, and the court registered you. That registration has been removed.',
+        dismissed: 'At five o’clock the court registered you as well. The registry takes each face once, and has kept his.',
       },
       '{voucherRemoved}',
-      'The registry takes each face once, and keeps the registration it had first. The Robin Hale on file starts at Window 3 on Monday.',
-      'Please clear the desk by five and leave the stamps. He knows where they go.',
+      'Please leave the stamps on the desk. He knows where they go.',
     ],
     grade: 'Grade: Clerk, {grade} Class, awarded to Robin Hale.',
   },
@@ -224,11 +224,10 @@ export const ENDINGS = {
     title: 'Notice of reclassification',
     stamp: 'Reclassified',
     lines: [
-      'At five o’clock the Humanity Court upheld your challenge to your own renewal. In your video you certify that you are a real clerk.',
+      'At five o’clock the Humanity Court upheld your challenge to your own renewal: in your video, you certify that you are a real clerk.',
       '{voucherRemoved}',
-      'The registry is for humans. You have been reclassified as registry equipment, with immediate effect, and added to the inventory of Window 3.',
+      'You have been reclassified as registry equipment, and added to the inventory of Window 3.',
       'Your salary continues. Equipment is not eligible for the income.',
-      'Window 3 opens at nine on Monday. Please be at it.',
     ],
     grade: 'Grade: Equipment, {grade} Class.',
   },
@@ -236,7 +235,6 @@ export const ENDINGS = {
     title: 'Notice of promotion',
     stamp: 'Promoted',
     lines: [
-      'You have completed seven days at Window 3 with your savings intact.',
       {
         accepted: 'Your own renewal was registered at five o’clock, by you. A note has been placed on your file: “Registered a clerk.”',
         dismissed: 'You challenged your own renewal, and the Humanity Court found you human. The Ministry accepts its finding, and has asked it not to look again.',
@@ -247,6 +245,9 @@ export const ENDINGS = {
     grade: 'Grade: Clerk, {grade} Class.',
   },
 } as const;
+
+/** The last line of every letter that comes after six o'clock: the promoted clerk, the equipment and the unit alike. */
+export const LETTER_CLOSE = 'Window 3 opens at nine on Monday.';
 
 /**
  * In the letter, where the clerk's own challenge was upheld: whoever vouched for the clerk went with
@@ -264,7 +265,7 @@ export const FIRED_COSTS = {
   humans: 'This week you challenged {humans} who broke no rule.',
 };
 
-/** The last line of a letter, if Likeness's offer has a bearing on it. */
+/** A line a letter adds if Likeness's offer has a bearing on it, before its last. */
 export const LETTER_NOTES = {
   handedIn: 'Your commendation of day 3 is on file.',
   signed: 'A signed letter from Likeness Robotics was found in your drawer. It has been filed.',

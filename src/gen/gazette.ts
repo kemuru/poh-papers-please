@@ -114,13 +114,14 @@ export type WeekInNumbers = {
   patDay: number | null;
   /** The day of each of Pat's visits this week, first to last. */
   patDays: readonly number[];
-  /** The clerk handed Likeness's letter in. */
-  handedIn: boolean;
 };
 
-export type Special = { masthead: string; headline: string; report: string[]; likeness: string; small: string; caption: string };
+export type Special = { masthead: string; headline: string; report: string[]; small: string; caption: string };
 
-/** The Gazette's last edition, beside the letter at the end of every week that reaches five o'clock on Humanity Day. */
+/**
+ * The Gazette's last edition, beside the letter at the end of every week that reaches six o'clock on Humanity Day:
+ * the aftermath of the first hour, and the week in numbers. The price is not in it: the hall's board told it.
+ */
 export function writeSpecial(ending: Exclude<EndingId, 'fired'>, w: WeekInNumbers): Special {
   const fill = (line: string, values: Record<string, string | number>) =>
     Object.entries(values).reduce((out, [key, value]) => out.replaceAll(`{${key}}`, String(value)), line);
@@ -135,8 +136,7 @@ export function writeSpecial(ending: Exclude<EndingId, 'fired'>, w: WeekInNumber
     masthead: SPECIAL.masthead,
     headline: SPECIAL.headline,
     report,
-    likeness: [SPECIAL.likeness, w.handedIn ? SPECIAL.apology : ''].filter(Boolean).join(' '),
-    small: SPECIAL.price,
+    small: SPECIAL.small,
     caption: SPECIAL.captions[ending],
   };
 }

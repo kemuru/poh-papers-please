@@ -2,7 +2,7 @@
 
 Times follow the course PDF. Readings are the R-codes in the PDF's resource section. After every agent run, add a row to `notes/runlog.md` straight away.
 
-Clément's guidance from Slack: the aim is to become 2 to 5 times faster afterwards, not to be productive this week. "Ambitious" means ambitious to vibecode. Failing is fine if it is diagnosed. The report can slip to Monday 5 October, so a second week is available for polish.
+The aim of the week is to become much faster afterwards, not to be productive this week. "Ambitious" means ambitious to vibecode. Failing is fine if it is diagnosed.
 
 ---
 

@@ -17,7 +17,8 @@ const SET_ASIDE_KEY = 'poh-save-set-aside';
 /**
  * One thing the clerk did. The applicant it was done to is the queue's to say, not the save's. A
  * challenge filed with evidence keeps the evidence; an appeal keeps the place in the queue of its case.
- * On day 3's morning, Likeness's letter is signed or handed in.
+ * On day 3's morning, Likeness's letter is signed or handed in; at six on Humanity Day, `letter` leaves the
+ * hall for the letter at the end.
  */
 export type Step =
   | 'open'
@@ -27,6 +28,7 @@ export type Step =
   | 'close'
   | 'statement'
   | 'next-day'
+  | 'letter'
   | 'sign'
   | 'hand-in'
   | { challenge: Evidence }
@@ -90,7 +92,7 @@ export function stepOf(action: Action): Step {
   return action.decision === 'challenge' && action.evidence ? { challenge: action.evidence } : action.decision;
 }
 
-const STEPS = new Set<string>(['open', 'call', 'accept', 'challenge', 'time-up', 'close', 'statement', 'next-day', 'sign', 'hand-in']);
+const STEPS = new Set<string>(['open', 'call', 'accept', 'challenge', 'time-up', 'close', 'statement', 'next-day', 'letter', 'sign', 'hand-in']);
 const RULES = new Set<string>(['phrase', 'face', 'sign', 'vouch', 'duplicate', 'living'] satisfies RuleId[]);
 const PLAIN_ITEMS = new Set<string>(['photo', 'transcript', 'sign', 'name', 'birth-year', 'wallet', 'voucher', 'face-record'] satisfies Item['kind'][]);
 const whole = (n: unknown): n is number => Number.isSafeInteger(n) && (n as number) >= 0;
@@ -130,7 +132,7 @@ function actionOf(step: Step, s: GameState, week: Week): Action | null {
   }
   if (step === 'close' || step === 'next-day') return { type: step, queue };
   if (step === 'sign' || step === 'hand-in') return { type: 'offer', choice: step === 'sign' ? 'signed' : 'handed-in' };
-  return { type: step as 'open' | 'call' | 'time-up' | 'statement' };
+  return { type: step as 'open' | 'call' | 'time-up' | 'statement' | 'letter' };
 }
 
 /**
@@ -217,10 +219,20 @@ export function loadRun(store: Store | null): Run {
   } catch {
     state = null;
   }
+  let steps = save?.steps ?? [];
+  // Until 30 Sep 2026 Humanity Day's evening went straight to the letter. A save made at a letter then stops at
+  // six o'clock on replay, one step short: it reads on to its letter.
+  if (save && state?.phase === 'finale' && fingerprint(state) !== save.check) {
+    const letter = reduce(state, { type: 'letter' });
+    if (fingerprint(letter) === save.check) {
+      state = letter;
+      steps = [...save.steps, 'letter'];
+    }
+  }
   if (save && week && state && fingerprint(state) === save.check) {
     // The shift clock as it stood, closing time included, once the window has opened that day.
     const clock = state.phase === 'shift' && state.opened ? save.clock : 0;
-    return { seed: save.seed, startDay: save.startDay, week, steps: save.steps, state, clock, resumed: true, setAside: false };
+    return { seed: save.seed, startDay: save.startDay, week, steps, state, clock, resumed: true, setAside: false };
   }
   try {
     store?.setItem(SET_ASIDE_KEY, raw);
@@ -254,11 +266,11 @@ function parse(raw: string): Save | null {
 }
 
 /**
- * Where today began in the steps: just after last night's. On the letter at the end, the last
- * step is the one that brought the letter, and today began before it.
+ * Where today began in the steps: just after last night's. At six o'clock and on the letter at the end, the
+ * evening's step brought them (and the letter's own step, after six), and today began before it.
  */
 function morningOf(steps: readonly Step[], state: GameState): number {
-  const before = state.phase === 'ending' ? steps.lastIndexOf('next-day') - 1 : steps.length - 1;
+  const before = state.phase === 'ending' || state.phase === 'finale' ? steps.lastIndexOf('next-day') - 1 : steps.length - 1;
   return before < 0 ? 0 : steps.lastIndexOf('next-day', before) + 1;
 }
 

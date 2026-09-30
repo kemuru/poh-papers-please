@@ -13,9 +13,12 @@ import { backTo, browserStorage, canSave, dayAgain, dayBegun, fingerprint, newRu
 import { useSettings } from './settings';
 import { Court, Ending, Statement } from './Screens';
 import { DeskSprite, NOTE, NOTE_OFF, PAUSE, SPEAKER, SPEAKER_OFF } from './DeskArt';
+import { Finale } from './Finale';
 import { Shift } from './Shift';
-import { isMusicMuted, setMusicMuted, setMusicScene, stopMusic, type Scene } from './music';
-import { isMuted, setMuted } from './sound';
+import { setMusicScene, stopMusic, toggleMusic, type Scene } from './music';
+import { useVolumes } from './SettingsPanel';
+import { toggleSound } from './sound';
+import { audible } from './volume';
 import './desk.css';
 import './hall.css';
 import './screens.css';
@@ -81,13 +84,15 @@ export function Game({ run, today, onRestart, onFinished, onBoard }: Props) {
     };
   }, []);
 
-  // Escape opens the menu; at the window, the Shift decides (it may be leaving inspect mode first).
+  // Escape opens the menu; at the window, the Shift decides (it may be leaving inspect mode first), and at six
+  // o'clock it goes straight to the letter (the menu is still on the rail).
   const phase = useRef(state.phase);
   phase.current = state.phase;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || e.repeat || (e.target as HTMLElement).closest?.('dialog')) return;
-      if (phase.current === 'shift') return;
+      // Taken already (six o'clock's Escape goes to the letter, and the letter must not then open the menu over itself).
+      if (e.key !== 'Escape' || e.repeat || e.defaultPrevented || (e.target as HTMLElement).closest?.('dialog')) return;
+      if (phase.current === 'shift' || phase.current === 'finale') return;
       // Or the browser takes the same press as a request to close the menu it opens.
       e.preventDefault();
       setMenu('paused');
@@ -117,9 +122,10 @@ export function Game({ run, today, onRestart, onFinished, onBoard }: Props) {
     setMenu('back');
   };
 
-  // The week's letter, reached here and now (not a reload of it): the record counts it once.
+  // The week's letter, reached here and now (not a reload of it): the record counts it once. Six o'clock comes
+  // before it, but the letter is what is found.
   const title = seed === today.seed ? BOARD.card.today.replace('{date}', today.label) : BOARD.card.week.replace('{seed}', String(seed));
-  const ended = weekEnd(state);
+  const ended = state.phase === 'ending' ? weekEnd(state) : null;
   const card = ended ? weekCard({ title, days: state.history.map((d) => ({ day: d.day, marks: d.marks })), ...cardLetter(ended.end.ending, ended.end.grade), savings: state.savings }) : '';
   const counted = useRef(run.state.phase === 'ending');
   useEffect(() => {
@@ -185,6 +191,10 @@ export function Game({ run, today, onRestart, onFinished, onBoard }: Props) {
           onNext={() => dispatch({ type: 'next-day', queue })}
         />
       )}
+      {state.phase === 'finale' && (
+        // Six o'clock: the first hour of the income, in the hall, then the letter.
+        <Finale state={state} week={week} paused={menu !== null} onLetter={() => dispatch({ type: 'letter' })} />
+      )}
       {state.phase === 'ending' && (
         // Nothing is left to lose at the letter: a morning is one click, with no question.
         <Ending state={state} card={card} earlier={[...earlier, state.day]} onNewWeek={newWeek} onBack={(day) => onRestart(backTo(run, steps, day))} onBoard={toBoard} />
@@ -217,6 +227,8 @@ export function Game({ run, today, onRestart, onFinished, onBoard }: Props) {
 function musicScene(s: GameState): Scene {
   if (s.phase === 'shift') return !s.opened ? 'morning' : shiftOver(s) ? 'closing' : 'open';
   if (s.phase === 'ending') return s.ending ?? 'promoted';
+  // Six o'clock: the hall's quiet, as at closing time (the lever hushes it for the beat before the number).
+  if (s.phase === 'finale') return 'closing';
   return s.phase;
 }
 
@@ -228,16 +240,10 @@ export function AudioSwitches({ onMenu }: { onMenu: () => void }) {
   const { settings } = useSettings();
   const shortcuts = useRef(settings.shortcuts);
   shortcuts.current = settings.shortcuts;
-  const [muted, setSound] = useState(isMuted);
-  const [musicMuted, setMusic] = useState(isMusicMuted);
-  const toggleSound = () => {
-    setMuted(!isMuted());
-    setSound(isMuted());
-  };
-  const toggleMusic = () => {
-    setMusicMuted(!isMusicMuted());
-    setMusic(isMusicMuted());
-  };
+  // Each switch is lit while its channel can be heard: muted, or set to 0 on its fader in the settings, it goes dark.
+  const volumes = useVolumes();
+  const muted = !audible(volumes.sound);
+  const musicMuted = !audible(volumes.music);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       // An M typed into the registry's name box is a letter, not the sound switch.

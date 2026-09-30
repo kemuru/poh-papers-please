@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
-import { RAIL, shiftFloor } from './room';
+import { evidenceX2, RAIL, shiftFloor } from './room';
 
 // Like any game, the Ministry is laid out once and scaled to fit the window: nothing ever scrolls.
 // Wider windows get a wider hall and desk; very wide ones get dark bars. The desk is drawn on one
@@ -14,8 +14,13 @@ const DESIGN = { height: 820, minWidth: 1240, maxWidth: 1760, maxScale: 2 };
  * not. The shift asks for more on a narrow stage, where its papers are tallest (shiftFloor, room.ts).
  */
 const CRISP_MIN_HEIGHT = 760;
-/** A crisp step below the fit is taken only if it keeps this much of the fit's size. */
-const CRISP_KEEP = 0.75;
+/**
+ * A crisp step below the fit is always taken at full size or more (the type reads well from scale 1, and a 1080p
+ * monitor stays crisp at 1 rather than soft at 1.32); below full size, only if it keeps this much of the fit's size.
+ * Until 30 Sep 2026 that was 0.75, and a 13-inch MacBook's window with the Dock and a bookmarks bar (1320×759) took
+ * 0.75 and set every word a quarter smaller; it now takes its fit, about 0.93.
+ */
+const CRISP_KEEP = 0.85;
 
 /** Screen pixels per design pixel. A paper dragged across the desk divides the mouse by it. */
 export const StageScale = createContext(1);
@@ -34,7 +39,7 @@ export function fit(w: number, h: number, dpr: number): Fit {
   const scale =
     above <= DESIGN.maxScale && w / above >= DESIGN.minWidth && fits(above)
       ? above
-      : below > 0 && below >= fitted * CRISP_KEEP
+      : below > 0 && (below >= 1 || below >= fitted * CRISP_KEEP)
         ? below
         : fitted;
   const width = Math.min(w / scale, DESIGN.maxWidth);
@@ -47,6 +52,9 @@ const measure = () => fit(window.innerWidth, window.innerHeight, window.devicePi
 
 export function Stage({ children }: { children: ReactNode }) {
   const [box, setBox] = useState(measure);
+  // The evidence at twice the art scale where the shift has the room (room.ts), as the hall reckons it: from the
+  // shift's whole pixels, rounded down, so the stills never grow where the hall has not made way for them.
+  const x2 = evidenceX2(Math.floor(box.width), Math.floor(box.height) - RAIL);
   useEffect(() => {
     const onResize = () => setBox(measure());
     window.addEventListener('resize', onResize);
@@ -61,7 +69,7 @@ export function Stage({ children }: { children: ReactNode }) {
   return (
     <div className="stage-frame">
       <div
-        className="stage"
+        className={x2 ? 'stage evidence-x2' : 'stage'}
         // The desk rail's height is the one the stage allows for (room.ts): desk.css draws .topbar with it.
         style={{ width: box.width, height: box.height, transform: `translate(${box.left}px, 0) scale(${box.scale})`, '--rail': `${RAIL}px` } as CSSProperties}
       >

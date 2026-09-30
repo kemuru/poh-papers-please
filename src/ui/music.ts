@@ -10,9 +10,10 @@
 // (SCENES) and the voices move to it one by one, so the music changes with the screen instead of
 // stopping. The tape is not what it was: from day 3 it wobbles, then the voices drift apart, the
 // odd note snags and plays twice, and by day 6 notes go missing.
-import { audioContext, readFlag, saveFlag, whiteNoise } from './sound';
+import { audioContext, glide, readFlag, readItem, saveFlag, saveItem, soundChannel, volumeChanged, whiteNoise } from './sound';
+import { audible, gainOf, readLevel, toggle, withLevel, type Channel } from './volume';
 
-export type Scene = 'morning' | 'open' | 'closing' | 'court' | 'statement' | 'promoted' | 'reclassified' | 'superseded' | 'replaced' | 'fired';
+export type Scene = 'morning' | 'open' | 'closing' | 'court' | 'statement' | 'promoted' | 'reclassified' | 'superseded' | 'replaced' | 'fired' | 'hush';
 
 type Kind = 'bell' | 'choir';
 
@@ -52,6 +53,8 @@ export const SCENES: Record<Scene, readonly (NoteName | null)[]> = {
   replaced: ['D3', null, 'C5', 'A3', 'E5', null, null],
   // Fired: three low voices of D minor.
   fired: ['D3', null, null, 'A3', null, 'F4', null],
+  // Six o'clock, the lever pulled: nothing, for the beat before the number, as before every citation all week.
+  hush: [null, null, null, null, null, null, null],
 };
 
 /** The pulse's tempo while the window is open. Chosen by ear, over busier and slower versions. */
@@ -120,6 +123,7 @@ const LEVELS: Record<Scene, { music: number; hall: number }> = {
   superseded: { music: 0.9, hall: 0 },
   replaced: { music: 0.85, hall: 0 },
   fired: { music: 0.85, hall: 0 },
+  hush: { music: 0, hall: 0 },
 };
 
 /** The tape, day by day, in cents: how far it wobbles, and how far the voices have drifted apart. */
@@ -224,8 +228,10 @@ export function startPlayer(ctx: BaseAudioContext, destination: AudioNode, scene
         for (const b of pulseBooked) if (b.at >= until - 1e-6) for (const osc of b.oscs) osc.stop(t);
       }
       now = { scene, day };
-      level.gain.setTargetAtTime(LEVELS[scene].music, t, 1.5);
-      murmur.level.gain.setTargetAtTime(busy(scene, day), t, 1.5);
+      // A hush falls at once, the hall's murmur and every bell's tail with it; anything else comes in over seconds.
+      const glideTime = scene === 'hush' ? 0.03 : 1.5;
+      level.gain.setTargetAtTime(LEVELS[scene].music, t, glideTime);
+      murmur.level.gain.setTargetAtTime(busy(scene, day), t, glideTime);
       wow.gain.setTargetAtTime(WOW[day - 1], t, 2);
     },
     book(ahead) {
@@ -402,20 +408,58 @@ function hallMurmur(ctx: BaseAudioContext, out: AudioNode) {
 
 /** Notes are booked this far ahead, so a quarter-second tick keeps up even on a busy page. */
 const LOOKAHEAD = 1.5;
-let musicMuted = readFlag('poh-music-muted');
+let music: Channel = { level: readLevel(readItem('poh-music-volume')), muted: readFlag('poh-music-muted') };
+/** The last level the music was heard at, for the switch to bring back after the fader was put at 0. */
+let musicHeard = music.level;
+/** The music's own gain, set by the clerk's music volume (volume.ts); the player's fades are on its own master, under it. */
+let musicBus: GainNode | undefined;
 let wanted: { scene: Scene; day: number } | null = null;
 let live: { player: Player; timer: number } | null = null;
 let waiting = false;
 
-export function isMusicMuted() {
-  return musicMuted;
+export const musicChannel = () => music;
+
+/** The rail's music switch. */
+export const toggleMusic = () => setMusic(toggle(music, musicHeard), true);
+
+/** The music volume fader: the music follows it as it moves. `settled` once it is let go or stepped: then the level is kept. */
+export const setMusicLevel = (level: number, settled: boolean) => setMusic(withLevel(level), settled);
+
+function setMusic(next: Channel, settled: boolean) {
+  music = next;
+  if (next.level > 0) musicHeard = next.level;
+  glide(musicBus, gainOf(music));
+  if (audible(music)) begin();
+  // Silence stops the score as well as its sound, but only once the fader is let go: a drag through 0 does
+  // not stop it and start it again.
+  else if (settled) silence();
+  if (settled) {
+    saveFlag('poh-music-muted', music.muted);
+    saveItem('poh-music-volume', String(music.level));
+  }
+  volumeChanged();
 }
 
-export function setMusicMuted(value: boolean) {
-  musicMuted = value;
-  saveFlag('poh-music-muted', value);
-  if (value) silence();
-  else begin();
+function musicOut(ctx: AudioContext) {
+  if (musicBus?.context !== ctx) {
+    musicBus = ctx.createGain();
+    musicBus.gain.value = gainOf(music);
+    musicBus.connect(ctx.destination);
+  }
+  return musicBus;
+}
+
+declare global {
+  interface Window {
+    /** Dev and test builds only: both volumes as the clerk set them, and the gain each bus is heading for. */
+    __audio?: () => Record<'sound' | 'music', Channel & { gain: number }>;
+  }
+}
+if ((import.meta.env.DEV || import.meta.env.MODE === 'test') && typeof window !== 'undefined') {
+  window.__audio = () => ({
+    sound: { ...soundChannel(), gain: gainOf(soundChannel()) },
+    music: { ...music, gain: gainOf(music) },
+  });
 }
 
 /** The music for this part of the day. If none is playing yet, it starts at the first click or key. */
@@ -431,12 +475,12 @@ export function stopMusic() {
 }
 
 function begin() {
-  if (live || musicMuted || !wanted) return;
+  if (live || !audible(music) || !wanted) return;
   // Browsers let a page make sound only once the player has clicked or pressed a key.
   if (navigator.userActivation?.hasBeenActive === false) return waitForGesture();
   const ctx = audioContext();
   if (!ctx) return;
-  const player = startPlayer(ctx, ctx.destination, wanted.scene, wanted.day);
+  const player = startPlayer(ctx, musicOut(ctx), wanted.scene, wanted.day);
   player.book(LOOKAHEAD);
   live = { player, timer: window.setInterval(() => player.book(LOOKAHEAD), 250) };
 }
@@ -448,15 +492,17 @@ function silence() {
   live = null;
 }
 
+// A finger lets the page make sound only when it lifts, a mouse when it presses: so pointerup as well,
+// or a phone's first tap would go unheard and the music wait for a second.
+const GESTURES = ['pointerdown', 'pointerup', 'keydown'] as const;
+
 function waitForGesture() {
   if (waiting) return;
   waiting = true;
   const go = () => {
     waiting = false;
-    window.removeEventListener('pointerdown', go, true);
-    window.removeEventListener('keydown', go, true);
+    for (const gesture of GESTURES) window.removeEventListener(gesture, go, true);
     begin();
   };
-  window.addEventListener('pointerdown', go, true);
-  window.addEventListener('keydown', go, true);
+  for (const gesture of GESTURES) window.addEventListener(gesture, go, true);
 }

@@ -112,15 +112,14 @@ export const LIKENESS_FINED = {
 };
 
 /**
- * The Humanity Day special: the Gazette's last edition, beside the letter at the end of the week. The
- * income's price is the week's last punchline, told once, here. "{name}", "{day}", "{count}" and the
- * rest are filled from the week.
+ * The Humanity Day special: the Gazette's last edition, beside the letter at the end of every week that reaches
+ * six o'clock. The income's price has been told once already, in the hall, by the board: the paper reports what
+ * came after it, and the week in numbers. "{name}", "{day}", "{count}" and the rest are filled from the week.
  */
 export const SPECIAL = {
   /** Under the masthead, across from the day. */
   masthead: 'Humanity Day special edition',
-  headline: 'INCOME OPENS AT FIVE. ONE UBI IS WORTH 0.0003 PNK.',
-  price: 'At that rate a registered human earns a day’s rent in fifteen years. The Ministry does not comment on the price of UBI.',
+  headline: 'FIRST HOUR PAID. HOME ROBOTS LEAVE THE HALL.',
   week: 'The week at Window 3: {registered} registered, {challenged} challenged, {upheld} upheld in court.',
   noUnits: 'No home robots were registered at Window 3 this week.',
   units: 'Home robots registered at Window 3 this week: {units}.',
@@ -128,9 +127,8 @@ export const SPECIAL = {
   unitByCourt: '{name} (day {day}, by the court)',
   pat: 'Pat Oakes was registered on day {day}, at the {attempt} attempt.',
   attempts: ['first', 'second', 'third', 'fourth', 'fifth'],
-  likeness: 'Likeness Robotics said it was disappointed by the price, and has withdrawn its remaining units from the queue.',
-  /** And, if the clerk handed its letter in: */
-  apology: 'It has also written to Window 3 again, to apologise for the last letter.',
+  /** The paper's small print: what Likeness said, and what the Ministry, as that morning, did not. */
+  small: 'Likeness Robotics said it was disappointed by the first hour. The Ministry has not commented on the price of UBI.',
   captions: {
     promoted: 'Robin Hale, of Window 3, promoted to Window 2.',
     reclassified: 'Registry equipment, Window 3: item 3-0417, a clerk.',

@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState, type Ref } from 'react';
 import { BOARD, LETTER_HINTS } from '../content/board';
+import { MENU } from '../content/menu';
 import { ENDINGS, HEADHUNTED } from '../content/verdicts';
 import { LETTERS, type LetterId } from '../economy/endings';
 import { CREST, CREST_LIGHT, DeskSprite, LIKENESS_MARK, MOON, PADLOCK, PIN_BRASS, PIN_RED, POSTER_TITLE } from './DeskArt';
 import { setMusicScene } from './music';
 import type { ClerkRecord } from './record';
-import { SettingsPanel } from './SettingsPanel';
+import { SettingsPanel, VolumeFaders } from './SettingsPanel';
 import './board.css';
 
 /** The week in this browser, as the board describes it. */
@@ -115,23 +116,29 @@ export function Board({ saved, setAside, record, today, onContinue, onNewWeek, o
                 onCopy={todayDone ? () => void copy(todayDone.card) : null}
                 copied={copied}
               />
-              {/* The Ministry never closes: an enamel sign screwed to the board, the moon on it, or its padlock until it opens. */}
-              <article className={nightOpen ? 'board-notice notice-night' : 'board-notice notice-night locked'} data-testid="board-night">
-                <h2>
-                  {BOARD.night.head}
-                  <DeskSprite sprite={nightOpen ? MOON : PADLOCK} className="notice-mark" />
-                </h2>
-                {(nightOpen ? [BOARD.night.line, ...(record.endless !== null ? [fill(BOARD.night.best, { count: record.endless })] : [])] : [BOARD.night.locked]).map((line) => (
-                  <p key={line}>{line}</p>
-                ))}
-                {nightOpen && (
-                  <div className="board-notice-actions">
-                    <button className="steel-key" onClick={onNight}>
-                      {BOARD.night.action}
-                    </button>
-                  </div>
-                )}
-              </article>
+              <div className="board-stack">
+                {/* The Ministry never closes: an enamel sign screwed to the board, the moon on it, or its padlock until it opens. */}
+                <article className={nightOpen ? 'board-notice notice-night' : 'board-notice notice-night locked'} data-testid="board-night">
+                  <h2>
+                    {BOARD.night.head}
+                    <DeskSprite sprite={nightOpen ? MOON : PADLOCK} className="notice-mark" />
+                  </h2>
+                  {(nightOpen ? [BOARD.night.line, ...(record.endless !== null ? [fill(BOARD.night.best, { count: record.endless })] : [])] : [BOARD.night.locked]).map((line) => (
+                    <p key={line}>{line}</p>
+                  ))}
+                  {nightOpen && (
+                    <div className="board-notice-actions">
+                      <button className="steel-key" onClick={onNight}>
+                        {BOARD.night.action}
+                      </button>
+                    </div>
+                  )}
+                </article>
+                {/* The volumes, under it: the board plays the hall's music, and its rail is not here. */}
+                <section className="switch-plate volume-plate" aria-label={MENU.settings.volume}>
+                  <VolumeFaders compact />
+                </section>
+              </div>
             </div>
           </section>
           <Letters found={record.letters} />
@@ -141,7 +148,7 @@ export function Board({ saved, setAside, record, today, onContinue, onNewWeek, o
             <Record record={record} />
             {/* The settings: two switches on a steel plate screwed to the frame. */}
             <div className="switch-plate">
-              <SettingsPanel />
+              <SettingsPanel volumes={false} />
             </div>
           </div>
         </div>

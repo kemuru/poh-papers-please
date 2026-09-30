@@ -16,6 +16,7 @@ export const MENU = {
     closing: 'Day {day}, closing time',
     court: 'Day {day}, in court',
     statement: 'Day {day}, the accounts',
+    finale: 'Day {day}, six o’clock',
     ending: 'Day {day}, the letter',
   },
   back: 'Back to the window',
@@ -48,6 +49,19 @@ export const MENU = {
   },
   settings: {
     head: 'Settings',
+    /** The two volume faders. The rail's switches ("Sound", "Music") mute; these set how loud. */
+    sound: 'Sound volume',
+    music: 'Music volume',
+    /** On the notice board's volume plate, one line each, the faders print only the first word. */
+    soundShort: 'Sound',
+    musicShort: 'Music',
+    volume: 'Volume',
+    /** A fader's − and + keys, for a screen reader: "Sound volume down". */
+    down: '{name} down',
+    up: '{name} up',
+    /** What a screen reader says a fader is at, and while its rail switch has it muted. */
+    level: '{level}%',
+    levelOff: '{level}%, off',
     shortcuts: 'Single-key shortcuts',
     motion: 'Reduce motion',
     on: 'On',

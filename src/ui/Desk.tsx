@@ -1,4 +1,4 @@
-import { useContext, useRef, useState, type PointerEvent, type ReactNode } from 'react';
+import { useContext, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode, type RefObject } from 'react';
 import { TIP_NOTE_LABEL } from '../content/desk';
 import { SUPERVISOR_NOTES } from '../content/hall';
 import type { GeneratedApplicant } from '../gen/applicant';
@@ -6,7 +6,7 @@ import type { Gazette } from '../gen/gazette';
 import type { Item } from '../rules/inspect';
 import { RULE_DAYS, type Decision } from '../rules/judge';
 import type { Registry, RuleId, Rulebook } from '../rules/types';
-import { ProfileCard, RulebookCard, VideoStrip } from './Documents';
+import { FramePicture, PhotoPicture, ProfileCard, RulebookCard, VideoStrip } from './Documents';
 import { GazettePage, WelcomeLetter } from './Gazette';
 import { InspectContext } from './Inspect';
 import { RegistryLookup, type Lookup } from './Registry';
@@ -15,6 +15,7 @@ import { Envelope, OfferLetter, SecondNote, type MorningPapers } from './Morning
 import { NIGHT } from '../content/night';
 import { CitationSlip, FilingSlip, NightChallengeSlip } from './Slips';
 import { DeskSprite, KNOB, MAGNIFIER } from './DeskArt';
+import { paper, rustle } from './sound';
 import { StageScale } from './Stage';
 
 /** The night shift, as the desk shows it: which shift, its clock, and the night's two counts, the stamp on the desk included. */
@@ -88,9 +89,25 @@ export function Desk(p: Props) {
   // When these papers were called to the desk: day 1's hint is stuck down once they have landed.
   const [called, setCalled] = useState({ visit: p.visit, at: 0 });
   if (called.visit !== p.visit) setCalled({ visit: p.visit, at: performance.now() });
+  // The still (or photo) under the pointer, and the one with the keyboard's focus: while Inspect is on, the
+  // magnifier's lens shows the first of them, else the second.
+  const desk = useRef<HTMLElement>(null);
+  const [pointed, setPointed] = useState<Still | null>(null);
+  const [focused, setFocused] = useState<Still | null>(null);
+  const still = p.inspect.on && p.papers && !p.returning ? (pointed ?? focused) : null;
   return (
     <InspectContext.Provider value={{ on: p.inspect.on, picked: p.inspect.picked, flagged: p.inspect.flagged, pick: p.onPick }}>
-      <section className={`desk${p.decided ? ' thunked' : ''}${p.inspect.on ? ' inspecting' : ''}${noted ? ' noted' : ''}`} aria-label="Desk">
+      <section
+        ref={desk}
+        className={`desk${p.decided ? ' thunked' : ''}${p.inspect.on ? ' inspecting' : ''}${noted ? ' noted' : ''}`}
+        aria-label="Desk"
+        onPointerOver={(e) => setPointed(stillOf(e.target))}
+        onPointerLeave={() => setPointed(null)}
+        onFocus={(e) => setFocused(stillOf(e.target))}
+        onBlur={(e) => {
+          if (!desk.current?.contains(e.relatedTarget as Node | null)) setFocused(null);
+        }}
+      >
         <div
           className={[
             'desk-papers',
@@ -120,7 +137,7 @@ export function Desk(p: Props) {
           )}
           {p.papers && (
             <>
-              <Paper key={`form-${p.visit}`} label="Profile card" className={p.returning ? 'paper-form returning' : 'paper-form'}>
+              <Paper key={`form-${p.visit}`} label="Profile card" className={p.returning ? 'paper-form returning' : 'paper-form'} onLand={paper}>
                 <ProfileCard
                   applicant={p.papers}
                   caseNo={p.caseNo}
@@ -128,7 +145,7 @@ export function Desk(p: Props) {
                   onLookUpVoucher={voucher ? () => p.onLookup({ by: 'name', name: voucher }) : undefined}
                 />
               </Paper>
-              <Paper key={`video-${p.visit}`} label="Video strip" className={p.returning ? 'paper-video returning' : 'paper-video'}>
+              <Paper key={`video-${p.visit}`} label="Video strip" className={p.returning ? 'paper-video returning' : 'paper-video'} onLand={rustle}>
                 <VideoStrip video={p.papers.video} onSearchFace={lookups && faceSearch ? () => p.onLookup({ by: 'face' }) : undefined} />
               </Paper>
             </>
@@ -271,6 +288,7 @@ export function Desk(p: Props) {
             )}
           </div>
         </div>
+        {still !== null && p.papers && <Loupe applicant={p.papers} still={still} desk={desk} layout={`${p.tab} ${p.page} ${p.lookup?.by ?? ''}`} />}
       </section>
     </InspectContext.Provider>
   );
@@ -297,8 +315,103 @@ function InspectSlip({ tone, text }: { tone: 'found' | 'none' | 'agree'; text: s
 }
 
 
-/** When the video printout has landed after a call: its slide (.paper-video in desk.css) starts at 0.7s and takes 0.32s. */
-const LANDED_MS = 1040;
+/** What the magnifier's lens can be over: the form's photo, or one of the video's three stills. */
+type Still = 'photo' | 1 | 2 | 3;
+
+/** The still (or the photo) on the applicant's papers that an event came from, if it came from one. */
+function stillOf(target: EventTarget | null): Still | null {
+  const key = target instanceof Element ? target.closest('.paper [data-inspect]')?.getAttribute('data-inspect') : null;
+  if (key === 'photo') return 'photo';
+  const frame = key?.match(/^frame-([123])$/);
+  return frame ? (Number(frame[1]) as 1 | 2 | 3) : null;
+}
+
+/** The lens's hard shadow, and the gap it keeps from what it lies beside (design pixels). */
+const LENS_SHADOW = 4;
+const LENS_GAP = 8;
+
+/**
+ * The magnifier's lens: while Inspect is on, the still or the photo the clerk points at (or has the keyboard's focus
+ * on), three times as big as the desk draws it, six design pixels to a portrait pixel. It lies on the desk where it
+ * covers none of what the stills are held against (placeLens), and it shows every still alike: it is the clerk's
+ * glass, not a verdict, and there is nothing on it to point at.
+ */
+function Loupe({ applicant, still, desk, layout }: { applicant: GeneratedApplicant; still: Still; desk: RefObject<HTMLElement | null>; /** Changes when the pages beside the papers do. */ layout: string }) {
+  const lens = useRef<HTMLDivElement>(null);
+  const scale = useContext(StageScale);
+  const [at, setAt] = useState<{ left: number; top: number } | null>(null);
+  useLayoutEffect(() => {
+    const place = () => desk.current && lens.current && setAt(placeLens(desk.current, lens.current, scale));
+    place();
+    // Pointed at as the papers come in: laid again where they land.
+    const coming = [...(desk.current?.querySelectorAll('.paper-form, .paper-video') ?? [])].flatMap((sheet) => sheet.getAnimations()).filter((a) => a.playState === 'running' || a.playState === 'paused');
+    if (coming.length === 0) return;
+    let shown = true;
+    Promise.all(coming.map((a) => a.finished)).then(
+      () => shown && place(),
+      () => {},
+    );
+    return () => {
+      shown = false;
+    };
+  }, [desk, still, scale, layout]);
+  return (
+    <div ref={lens} className="loupe" aria-hidden="true" data-testid="loupe" style={at ?? { visibility: 'hidden' }}>
+      <span className="loupe-glass">
+        {still === 'photo' ? <PhotoPicture applicant={applicant} scale={6} /> : <FramePicture video={applicant.video} frame={still} scale={6} />}
+      </span>
+    </div>
+  );
+}
+
+type Box = { left: number; top: number; right: number; bottom: number };
+
+/**
+ * Where the lens lies, in design pixels from the desk's corner: beside the film if the blotter has the room; else over
+ * the form, right of its photo and clear above the film (rising over the hall if it must); else on the blotter's empty
+ * foot. Never over the booth, and never over the photo, a still, Rule 2's figure or the registry's faces: failing
+ * that on every spot, wherever it covers least of them.
+ */
+function placeLens(desk: HTMLElement, lens: HTMLElement, scale: number) {
+  const origin = desk.getBoundingClientRect();
+  const box = (el: Element | null | undefined): Box | null => {
+    const b = el?.getBoundingClientRect();
+    if (!b || b.width === 0 || b.height === 0) return null;
+    return { left: (b.left - origin.left) / scale, top: (b.top - origin.top) / scale, right: (b.right - origin.left) / scale, bottom: (b.bottom - origin.top) / scale };
+  };
+  const kept = [...desk.querySelectorAll('.paper [data-inspect="photo"], .paper [data-inspect^="frame-"], .rule-figure, .record-face')]
+    .map(box)
+    .filter((b) => b !== null);
+  const [width, height] = [lens.offsetWidth + LENS_SHADOW, lens.offsetHeight + LENS_SHADOW];
+  const blotter = box(desk.querySelector('.desk-papers'));
+  const photo = box(desk.querySelector('.paper-form [data-inspect="photo"]'));
+  const film = box(desk.querySelector('.paper-video .film'));
+  const printout = box(desk.querySelector('.paper-video'));
+  const ceiling = box(desk.closest('.shift')?.querySelector('.hall'))?.top ?? 0;
+  const spots = [
+    film && { left: film.right + LENS_GAP, top: film.top },
+    photo && film && { left: photo.right + LENS_GAP, top: film.top - LENS_GAP - height },
+    blotter && printout && { left: blotter.left + 12, top: printout.bottom + LENS_GAP },
+  ]
+    .filter((spot) => !!spot)
+    .map(({ left, top }) => {
+      const r = { left, top, right: left + width, bottom: top + height };
+      const covered = kept.reduce((sum, k) => sum + Math.max(0, Math.min(r.right, k.right) - Math.max(r.left, k.left)) * Math.max(0, Math.min(r.bottom, k.bottom) - Math.max(r.top, k.top)), 0);
+      const onDesk = r.left >= 0 && r.right <= desk.offsetWidth && r.top >= ceiling && r.bottom <= desk.offsetHeight;
+      const onBlotter = onDesk && !!blotter && r.right <= blotter.right + LENS_GAP;
+      return { left, top, covered, onDesk, onBlotter };
+    });
+  const best =
+    spots.find((s) => s.onBlotter && s.covered === 0) ??
+    spots.find((s) => s.onDesk && s.covered === 0) ??
+    [...spots].filter((s) => s.onDesk).sort((a, b) => a.covered - b.covered)[0] ??
+    spots[0];
+  // On the art grid, like everything on the desk.
+  return best ? { left: Math.round(best.left / 2) * 2, top: Math.round(best.top / 2) * 2 } : { left: 0, top: 0 };
+}
+
+/** When the video printout is down after a call: its frame on the blotter (paper-down on .paper-video in desk.css). */
+const LANDED_MS = 640;
 
 /**
  * Day 1's one guided look: a note from the supervisor, stuck on the foot of the blotter under the papers it is
@@ -308,7 +421,7 @@ const LANDED_MS = 1040;
 function HintNote({ text, since }: { text: string; since: number }) {
   const [delay] = useState(() => Math.max(0, Math.round(LANDED_MS - (performance.now() - since))));
   return (
-    <aside className="hint-note" aria-label={TIP_NOTE_LABEL} style={{ animationDelay: `${delay}ms` }}>
+    <aside className="hint-note" aria-label={TIP_NOTE_LABEL} style={{ '--landed': `${delay}ms` } as CSSProperties}>
       <p role="status" data-testid="inspector">
         {text}
       </p>
@@ -348,8 +461,14 @@ type Reach = { x: [number, number]; y: [number, number] };
 /** Moved an art pixel at a time, within its reach: a paper between the desk's pixels would blur its print. */
 const clamp = (v: number, [low, high]: [number, number]) => Math.max(Math.ceil(low / 2) * 2, Math.min(Math.floor(high / 2) * 2, Math.round(v / 2) * 2));
 
-/** A sheet on the desk. Drag it with the mouse to move it; it comes to the top of the pile. Not while inspecting. */
-function Paper({ label, className, hidden, children }: { label: string; className: string; hidden?: boolean; children: ReactNode }) {
+/** The animations that put a sheet down on the blotter (desk.css): the frame each one starts on is the frame it lands. */
+const LANDINGS = new Set(['card-down', 'paper-down']);
+
+/**
+ * A sheet on the desk. Drag it with the mouse to move it; it comes to the top of the pile. Not while inspecting.
+ * `onLand` sounds it as it touches down, from the animation that draws that frame, so the two cannot drift apart.
+ */
+function Paper({ label, className, hidden, onLand, children }: { label: string; className: string; hidden?: boolean; onLand?: () => void; children: ReactNode }) {
   const [place, setPlace] = useState({ x: 0, y: 0, z: 0, lifted: false });
   const grab = useRef<{ x: number; y: number; reach: Reach } | null>(null);
   // The desk is scaled to fit the window; the mouse moves in screen pixels.
@@ -413,6 +532,9 @@ function Paper({ label, className, hidden, children }: { label: string; classNam
       onPointerMove={move}
       onPointerUp={up}
       onPointerCancel={up}
+      onAnimationStart={(e) => {
+        if (e.target === e.currentTarget && LANDINGS.has(e.animationName)) onLand?.();
+      }}
     >
       {children}
     </section>

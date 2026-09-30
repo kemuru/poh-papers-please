@@ -48,7 +48,7 @@ function playWeek(seed: number) {
       log(s);
     }
     s = reduce(s, { type: 'statement' });
-    s = reduce(s, { type: 'next-day', queue });
+    s = reduce(reduce(s, { type: 'next-day', queue }), { type: 'letter' });
     if (s.phase === 'ending') return { appeals, printed, shown: s.shown };
   }
 }

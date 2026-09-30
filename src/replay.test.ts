@@ -36,7 +36,7 @@ function runWeek(seed: number, clerk: Clerk) {
     });
     s = reduce(s, { type: 'close', queue });
     days.push({ ...s, gazette });
-    s = reduce(reduce(s, { type: 'statement' }), { type: 'next-day', queue });
+    s = reduce(reduce(reduce(s, { type: 'statement' }), { type: 'next-day', queue }), { type: 'letter' });
     if (s.phase === 'ending') return { days, final: s, week };
   }
 }

@@ -12,6 +12,11 @@ const RULE_KEY = { phrase: '1', face: '2', sign: '3', vouch: '4', duplicate: '5'
 export async function inspectFault(page: Page, a: GeneratedApplicant) {
   const fault = a.planted[0];
   if (!fault) throw new Error(`${a.name} has no planted fault to find`);
+  // The papers come in from under the booth in frames of 60ms, still between frames: point once they are down, or a
+  // click taken between two frames lands where a paper was.
+  await expect
+    .poll(() => page.evaluate(() => document.getAnimations().every((anim) => anim.playState === 'finished' || !((anim.effect as KeyframeEffect | null)?.target as Element | null)?.closest?.('.paper'))))
+    .toBe(true);
   const tool = page.getByRole('button', { name: 'Inspect', exact: true });
   if ((await tool.getAttribute('aria-pressed')) !== 'true') await tool.click();
   const point = (label: string) => page.getByRole('button', { name: `Inspect ${label}`, exact: true }).click();

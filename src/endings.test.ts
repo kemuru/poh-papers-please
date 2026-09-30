@@ -80,6 +80,8 @@ function runWeek(seed: number, clerk: Clerk, { startDay = 1, morning }: { startD
     s = reduce(reduce(s, { type: 'close', queue }), { type: 'statement' });
     evenings.push(s);
     s = reduce(s, { type: 'next-day', queue });
+    // Every letter but Fired's comes after six o'clock, played in the hall: the clerk goes on to the letter.
+    if (s.phase === 'finale') s = reduce(s, { type: 'letter' });
     if (s.phase === 'ending') return { evenings, end: s };
   }
 }
@@ -250,9 +252,9 @@ describe('Likeness’s offer', () => {
 });
 
 describe('the Humanity Day special', () => {
-  const base = { registered: [], challenged: 0, upheld: 0, patDay: 6, patDays: [1, 2, 3, 4, 6], handedIn: false };
+  const base = { registered: [], challenged: 0, upheld: 0, patDay: 6, patDays: [1, 2, 3, 4, 6] };
 
-  it('tells the income’s price once, and names every unit registered, the court’s too', () => {
+  it('reports what came of the first hour, not its price (the hall’s board told that), and names every unit registered, the court’s too', () => {
     const special = writeSpecial('promoted', {
       ...base,
       registered: [
@@ -262,6 +264,8 @@ describe('the Humanity Day special', () => {
       ],
     });
     expect(special.headline).toBe(SPECIAL.headline);
+    // Told once, in the hall at six: the paper neither repeats the price nor explains it.
+    expect(Object.values(special).join(' ')).not.toMatch(/0\.0003|fifteen years/);
     expect(special.report).toContain('Home robots registered at Window 3 this week: Clara Voss (day 1) and Ruth Calloway (day 5, by the court).');
     expect(special.report).toContain('Pat Oakes was registered on day 6, at the fifth attempt.');
     expect(special.caption).toBe(SPECIAL.captions.promoted);
@@ -270,10 +274,9 @@ describe('the Humanity Day special', () => {
   it('says which attempt got Pat in, and nothing about Pat if Pat never was', () => {
     expect(writeSpecial('reclassified', { ...base, patDay: 2 }).report).toContain('Pat Oakes was registered on day 2, at the second attempt.');
     expect(writeSpecial('reclassified', { ...base, patDay: null }).report.join(' ')).not.toContain('Pat');
-    expect(writeSpecial('replaced', { ...base, handedIn: true }).likeness).toContain(SPECIAL.apology);
   });
 
-  it('comes with every letter that reaches five o’clock, from a whole week’s numbers', () => {
+  it('comes with every letter that reaches six o’clock, from a whole week’s numbers', () => {
     const { end } = runWeek(2, careful);
     const w = weekEnd(end)!;
     const registered = w.numbers.registered.length;

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type Dispatch } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type Dispatch } from 'react';
 import { EXITS } from '../content/applicants';
 import {
   AGENT, CLONE, CUTOUT, DEEPFAKE, FIRST_APPLICANT, INFLUENCER, PAT, PAT_MOTHER, REGULARS, RENEWAL, SYBIL_FARM, TWINS, UNIT_EXITS, UNIT_OWNERS,
@@ -425,19 +425,20 @@ function useShiftClock(limit: number | null, start: number, running: boolean, on
   return elapsed;
 }
 
-/** The desk's noises, each played once when the thing it belongs to happens. */
+/**
+ * The desk's noises, each played once when the thing it belongs to happens: before the frame that shows it is
+ * drawn (a layout effect), so the stamp's thunk and its ink are one moment. The papers sound themselves as they
+ * touch down (Paper in Desk.tsx), on their own animation's clock.
+ */
 function useSounds(state: GameState, over: boolean, lastDecision: { citation: unknown; decision: Decision } | null, secondsLeft: number | null) {
   const seen = useRef({ opened: state.opened, called: state.called, decided: state.decided.length, over, second: secondsLeft });
   const timers = useRef<number[]>([]);
   useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), []);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const before = seen.current;
     const later = (play: () => void, ms: number) => timers.current.push(window.setTimeout(play, ms));
     if (state.opened && !before.opened) shutter(true);
-    if (state.called > before.called) {
-      chime();
-      later(paper, 650);
-    }
+    if (state.called > before.called) chime();
     if (state.decided.length > before.decided) {
       thunk();
       // A case slip prints at once. A citation waits a beat, in silence, after the stamp: the moment the clerk knows.

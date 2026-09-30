@@ -9,6 +9,7 @@ import { DeskSprite, MARK_NOT, MARK_OK } from './DeskArt';
 import { formatYear } from './evidence';
 import { Inspectable } from './Inspect';
 import { PixelPortrait } from './PixelPortrait';
+import { handOf, impression, inkPath } from './stampImpression';
 
 const PHOTO_BG = '#cfd8dc';
 const VIDEO_BG = '#8f9b9e';
@@ -47,8 +48,8 @@ export function ProfileCard({
       <div className="card-body">
         <div className="photo-column">
           <Inspectable item={{ kind: 'photo' }} label="the photo" className="photo-holder">
-            <span className={applicant.mirrored ? 'photo mirrored' : 'photo'}>
-              <PixelPortrait portrait={applicant.photo} scale={2} background={PHOTO_BG} title={`Photo of ${applicant.name}`} />
+            <span className="photo">
+              <PhotoPicture applicant={applicant} scale={2} title={`Photo of ${applicant.name}`} />
             </span>
           </Inspectable>
           {/* The case number, typed on by the desk. */}
@@ -94,11 +95,23 @@ export function ProfileCard({
           )}
         </dl>
       </div>
-      {stamp && (
-        <div className={`stamp stamp-${stamp}`} data-testid="stamp">
-          {stamp === 'accept' ? 'Registered' : 'Challenged'}
-        </div>
-      )}
+      {stamp && <StampImpression decision={stamp} caseNo={caseNo} />}
+    </div>
+  );
+}
+
+/** The stamp's impression on the form, set down by hand: turned and off its place as this case's stamp came down. */
+function StampImpression({ decision, caseNo }: { decision: Decision; caseNo: string }) {
+  const word = decision === 'accept' ? 'Registered' : 'Challenged';
+  const hand = handOf(caseNo);
+  const ink = useMemo(() => impression(word, hand.degrees, hand.wear), [word, hand.degrees, hand.wear]);
+  const path = useMemo(() => inkPath(ink), [ink]);
+  return (
+    <div className={`stamp stamp-${decision}`} data-testid="stamp" style={{ translate: `${hand.dx}px ${hand.dy}px` }}>
+      <span className="sr-only">{word}</span>
+      <svg aria-hidden="true" width={ink.width * 2} height={ink.height * 2} viewBox={`0 0 ${ink.width} ${ink.height}`} shapeRendering="crispEdges">
+        <path d={path} fill="currentColor" />
+      </svg>
     </div>
   );
 }
@@ -114,14 +127,25 @@ export function frameShot(video: Video, frame: number) {
 
 /**
  * One frame of the video as the camera took it: posed as Rules 2 and 6 read it, a unit's lamp drawn where its eyes
- * are shut (the twin never has one). `title` names it on the desk; the citation's reprint is not named.
+ * are shut (the twin never has one). `title` names it on the desk; the citation's reprint is not named. `scale` is
+ * design pixels to a portrait pixel for a face alone in the frame; two in one frame share its width.
  */
-export function FramePicture({ video, frame, title }: { video: Video; frame: number; title?: string }) {
+export function FramePicture({ video, frame, title, scale = 2 }: { video: Video; frame: number; title?: string; scale?: number }) {
   const { portrait, pose } = frameShot(video, frame);
+  const each = video.with ? scale / 2 : scale;
   return (
     <span className="frame-picture">
-      <PixelPortrait portrait={portrait} {...pose} scale={2} background={VIDEO_BG} title={title} />
-      {video.with && <PixelPortrait portrait={video.with} {...pose} scale={2} background={VIDEO_BG} title={title && `${title}, beside them`} />}
+      <PixelPortrait portrait={portrait} {...pose} scale={each} background={VIDEO_BG} title={title} />
+      {video.with && <PixelPortrait portrait={video.with} {...pose} scale={each} background={VIDEO_BG} title={title && `${title}, beside them`} />}
+    </span>
+  );
+}
+
+/** The form's photo as it is printed on the form: a selfie the wrong way round. */
+export function PhotoPicture({ applicant, scale, title }: { applicant: Applicant; scale: number; title?: string }) {
+  return (
+    <span className={applicant.mirrored ? 'photo-picture mirrored' : 'photo-picture'}>
+      <PixelPortrait portrait={applicant.photo} scale={scale} background={PHOTO_BG} title={title} />
     </span>
   );
 }

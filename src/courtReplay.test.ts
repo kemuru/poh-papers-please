@@ -41,7 +41,7 @@ function runWeek(seed: number, clerk: Clerk) {
       }
     }
     days.push(s);
-    s = reduce(reduce(s, { type: 'statement' }), { type: 'next-day', queue });
+    s = reduce(reduce(reduce(s, { type: 'statement' }), { type: 'next-day', queue }), { type: 'letter' });
     if (s.phase === 'ending') return days;
   }
 }

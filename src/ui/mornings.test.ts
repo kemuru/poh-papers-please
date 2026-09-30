@@ -54,10 +54,15 @@ describe('going back to an earlier morning', () => {
   it('goes back from the letter at the end of the week to any of its mornings, Humanity Day’s included', () => {
     const { run, steps, mornings } = playTo(2, 7);
     const week = generateWeek(2);
-    const ended = reduce(run.state, { type: 'next-day', queue: week[6] });
+    // Six o'clock comes first, then the letter.
+    const six = reduce(run.state, { type: 'next-day', queue: week[6] });
+    expect(six.phase).toBe('finale');
+    const ended = reduce(six, { type: 'letter' });
     expect(ended.phase).toBe('ending');
-    const all = [...steps, 'next-day' as const];
+    const all = [...steps, 'next-day' as const, 'letter' as const];
     expect(backTo({ ...run, state: ended }, all, 7).state).toEqual(mornings.get(7));
     expect(backTo({ ...run, state: ended }, all, 1).state).toEqual(mornings.get(1));
+    // And from six o'clock itself.
+    expect(backTo({ ...run, state: six }, all.slice(0, -1), 7).state).toEqual(mornings.get(7));
   });
 });
