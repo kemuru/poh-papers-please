@@ -119,7 +119,6 @@ export function Desk(p: Props) {
               </Paper>
             </>
           )}
-          {p.opened && !p.papers && <p className="desk-empty">Papers come across the counter.</p>}
           {/* The printer at the top edge of the desk: citations and case slips land where the papers were. */}
           <div className="printer" aria-live="polite">
             {p.papers && p.decided && p.night ? (

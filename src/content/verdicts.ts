@@ -174,8 +174,8 @@ export const CAST_RULINGS: Record<CastId, { upheld?: readonly string[]; dismisse
 
 export const EMPTY_COURT = 'No challenges were filed today. The court has gone home early.';
 
-/** Whose letters they are. */
-export const LETTER_HEAD = 'Ministry of Humanity · Human Resources';
+/** Whose letters they are: the Ministry's letterhead, and the department under its name. */
+export const LETTER_HEAD = { ministry: 'Ministry of Humanity', dept: 'Human Resources' };
 
 /**
  * The letters at the end of the week, one per ending (notes/game-design.md, Endings). Each adds up what
@@ -273,7 +273,8 @@ export const LETTER_NOTES = {
 
 /** Clipped to a Humanity Day letter when the clerk signed Likeness's offer and stamped in one or two units. */
 export const HEADHUNTED = {
-  head: 'Likeness Robotics Ltd · Partner programme',
+  /** Whose letter it is, for a screen reader: the letterhead itself is the company's own (OFFER_LETTER's). */
+  head: 'Likeness Robotics Ltd, Partner programme',
   title: 'An offer',
   lines: [
     'Dear Robin Hale,',

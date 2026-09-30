@@ -163,6 +163,9 @@ export const CREST: Sprite = {
   palette: { g: '#28452f' },
 };
 
+/** The seal printed pale on the Ministry's own green, as on its poster. */
+export const CREST_LIGHT: Sprite = { rows: CREST.rows, palette: { g: '#e4e9dc' } };
+
 /** Likeness Robotics' mark, on its letters and envelopes: a face, pleased to meet you. */
 export const LIKENESS_MARK: Sprite = {
   rows: [
@@ -194,6 +197,142 @@ function flap(width: number, depth: number): Sprite {
 
 /** Likeness's envelope is 308 design pixels inside its edge: the flap spans it. */
 export const ENVELOPE_FLAP: Sprite = flap(154, 16);
+
+/**
+ * The Ministry's poster capitals, for the notice board's title: heavy block letters 20 rows tall, with
+ * 4-pixel stems and bars and corners cut a pixel at a time.
+ */
+const BLOCK: Record<string, readonly string[]> = {
+  P: ['###########...', '############..', '#############.', '##############', ...Array(5).fill('####......####'), '##############', '#############.', '############..', '###########...', ...Array(7).fill('####..........')],
+  R: ['###########...', '############..', '#############.', '##############', ...Array(5).fill('####......####'), '##############', '#############.', '############..', '###########...', '####...####...', '####....####..', '####....####..', '####.....####.', '####.....####.', '####......####', '####......####'],
+  O: ['..##########..', '.############.', '##############', '##############', ...Array(12).fill('####......####'), '##############', '##############', '.############.', '..##########..'],
+  F: [...Array(4).fill('#############'), ...Array(4).fill('####.........'), ...Array(4).fill('##########...'), ...Array(8).fill('####.........')],
+  H: [...Array(8).fill('####......####'), ...Array(4).fill('##############'), ...Array(8).fill('####......####')],
+  U: [...Array(16).fill('####......####'), '##############', '##############', '.############.', '..##########..'],
+  M: ['####..........####', '#####........#####', '######......######', '#######....#######', '########..########', '####.########.####', '####..######..####', '####...####...####', '####....##....####', ...Array(11).fill('####..........####')],
+  A: ['..##########..', '.############.', '##############', '##############', ...Array(5).fill('####......####'), ...Array(4).fill('##############'), ...Array(7).fill('####......####')],
+  N: ['#####.....####', '#####.....####', '######....####', '######....####', '#######...####', '#######...####', '########..####', '########..####', '####.####.####', '####.####.####', '####..########', '####..########', '####...#######', '####...#######', '####....######', '####....######', '####.....#####', '####.....#####', '####......####', '####......####'],
+  I: Array(20).fill('####'),
+  T: [...Array(4).fill('##############'), ...Array(16).fill('.....####.....')],
+  Y: [...Array(7).fill('####......####'), '#####....#####', '.############.', '..##########..', '...########...', '....######....', ...Array(8).fill('.....####.....')],
+  ' ': Array(20).fill('........'),
+};
+
+/**
+ * Words painted as a poster's title: each letter lit along its top edges and a shade darker in its lower
+ * half, then outlined and cast down to the right by `depth` pixels, lit from the top left as the desk is.
+ */
+function posterLettering(text: string, colors: { lit: string; face: string; low: string; edge: string }, depth = 2): Sprite {
+  const set = [...text].map((ch) => BLOCK[ch]);
+  const height = set[0].length;
+  const mask = Array.from({ length: height }, (_, y) => set.map((glyph) => glyph[y]).join('..'));
+  const width = mask[0].length;
+  const ink = (x: number, y: number) => y >= 1 && y <= height && mask[y - 1][x - 1] === '#';
+  const cast = (x: number, y: number) => Array.from({ length: depth }, (_, d) => ink(x - d - 1, y - d - 1)).some(Boolean);
+  const near = (x: number, y: number) => [-1, 0, 1].some((dy) => [-1, 0, 1].some((dx) => ink(x + dx, y + dy) || cast(x + dx, y + dy)));
+  const rows = Array.from({ length: height + 2 + depth }, (_, y) =>
+    Array.from({ length: width + 2 + depth }, (_, x) => {
+      if (ink(x, y)) return !ink(x, y - 1) ? 't' : y <= height / 2 ? 'f' : 'l';
+      return cast(x, y) || near(x, y) ? 'e' : '.';
+    }).join(''),
+  );
+  return { rows, palette: { t: colors.lit, f: colors.face, l: colors.low, e: colors.edge } };
+}
+
+/** "Proof of Humanity", as the Ministry's poster on the notice board has it. */
+export const POSTER_TITLE: Sprite = posterLettering('PROOF OF HUMANITY', { lit: '#f5f4ef', face: '#e4e9dc', low: '#b9c6ad', edge: '#121411' });
+
+/** A drawing pin, from above: a round head lit from the top left, and the hard shadow it casts on what it holds. */
+function pin(palette: { o: string; d: string; m: string; h: string; w: string }): Sprite {
+  return {
+    rows: [
+      '..oooo....',
+      '.ohhmmo...',
+      'ohwhmmdo..',
+      'ohhmmmdos.',
+      'ommmmmdos.',
+      'ommmmddos.',
+      '.oddddoss.',
+      '..oooosss.',
+      '...sssss..',
+      '..........',
+    ],
+    palette: { ...palette, s: '#00000059' },
+  };
+}
+
+export const PIN_RED: Sprite = pin({ o: '#4a120f', d: '#7f2a23', m: '#b0302a', h: '#d05a50', w: '#f2b0a4' });
+export const PIN_BRASS: Sprite = pin({ o: '#4a3312', d: '#8a6220', m: '#c28f36', h: '#e2b75c', w: '#fbeec4' });
+
+/** The night shift's padlock, on its notice until a week has ended with a letter: a steel shackle, a brass body. */
+export const PADLOCK: Sprite = {
+  rows: [
+    '...ssss...',
+    '..s....s..',
+    '.s......s.',
+    '.s......s.',
+    '.s......s.',
+    'oooooooooo',
+    'obbbbbbbbo',
+    'obbbkkbbbo',
+    'obbbkkbbbo',
+    'obbbbkbbbo',
+    'oddddddddo',
+    'oooooooooo',
+  ],
+  palette: { s: '#9ba5a8', o: '#4a3312', b: '#c28f36', d: '#8a6220', k: '#4a3312' },
+};
+
+/** A crescent moon over the night shift's notice. */
+export const MOON: Sprite = {
+  rows: ['...mmmm..', '.mmmm....', '.mmm.....', 'mmm......', 'mmm......', 'mmm......', 'mmmm.....', '.mmmm...m', '..mmmmmm.', '...mmm...'],
+  palette: { m: '#e9dcb6' },
+};
+
+/** A steel paperclip, standing, as it holds one letter to another by their top edges. */
+export const PAPERCLIP: Sprite = {
+  rows: [
+    '..www..',
+    '.w...w.',
+    'w.....w',
+    'w...w.w',
+    'w.w.w.w',
+    'w.w.w.w',
+    'w.w.w.w',
+    'w.w.w.w',
+    'w.w.w.w',
+    'w.w.w.w',
+    'w.w.w.w',
+    'w.w.w.w',
+    'w.w.w.w',
+    'w.w.w.w',
+    'w.w.w.w',
+    'w.w.w.w',
+    '.w..w.w',
+    '....w.w',
+    '....w.w',
+    '.....w.',
+  ],
+  palette: { w: '#2e3438' },
+};
+
+/**
+ * The court's gavel, lying across the bench at an angle: an oak head with a brass band near each face, its
+ * lower face resting on the sound block, and the handle running down to the right. Lit from the top left.
+ */
+export const GAVEL: Sprite = (() => {
+  const part = (x: number, y: number): string | null => {
+    const [u, v] = [x + y, x - y];
+    if (u >= 10 && u <= 14 && v >= -7 && v <= 7) return Math.abs(v) === 5 ? (u === 10 ? 'B' : 'b') : u === 10 ? 'h' : u === 14 ? 'd' : 'm';
+    if (u >= 15 && u <= 31 && v >= -1 && v <= 1) return v === -1 ? 'h' : v === 1 ? 'd' : 'm';
+    if (y >= 14 && y <= 16 && x >= 1 && x <= 9) return y === 14 ? 'K' : 'k';
+    return null;
+  };
+  const rows = Array.from({ length: 18 }, (_, y) =>
+    Array.from({ length: 18 }, (_, x) => part(x, y) ?? ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => part(x + dx, y + dy)) ? 'o' : '.')).join(''),
+  );
+  return { rows, palette: { o: '#2f2117', h: '#b48a5e', m: '#8a6545', d: '#5f432d', b: '#c28f36', B: '#e2b75c', K: '#6b4e36', k: '#4a3626' } };
+})();
 
 /** A sprite at one art pixel to two design pixels, for decoration: screen readers are told nothing. */
 export const DeskSprite = memo(function DeskSprite({ sprite, className }: { sprite: Sprite; className?: string }) {

@@ -52,22 +52,31 @@ export function RegistryLookup({
     <div className="doc registry" aria-label="Registry lookup">
       <h2 className="doc-title">Registry lookup</h2>
       <form className="lookup-form" onSubmit={search}>
-        <input
-          ref={box}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              e.preventDefault();
-              box.current?.blur();
-            }
-          }}
-          aria-label="Name to look up"
-          placeholder="A name"
-          value={typed}
-          onChange={(e) => setTyped(e.target.value)}
-          spellCheck={false}
-          autoComplete="off"
-        />
-        <button type="submit" disabled={!typed.trim()}>Search</button>
+        {/* The terminal's input line: its prompt, and the name typed after it. */}
+        <span className="lookup-line">
+          <span className="lookup-prompt" aria-hidden="true">
+            &gt;
+          </span>
+          <input
+            ref={box}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                box.current?.blur();
+              }
+            }}
+            aria-label="Name to look up"
+            placeholder="A name"
+            value={typed}
+            onChange={(e) => setTyped(e.target.value)}
+            spellCheck={false}
+            autoComplete="off"
+          />
+        </span>
+        {/* The terminal's key for it, the return arrow printed after its name. */}
+        <button type="submit" disabled={!typed.trim()}>
+          Search<span className="lookup-return" aria-hidden="true" />
+        </button>
       </form>
       <div className="lookup-quick">
         <button disabled={!voucher} onClick={() => voucher && onLookup({ by: 'name', name: voucher })} onMouseDown={keepFocus}>

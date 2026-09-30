@@ -6,6 +6,7 @@ import { STATEMENT_FOOTERS } from '../content/hall';
 import { MENU } from '../content/menu';
 import { GAZETTE_TITLE, SPECIAL, VACANCY } from '../content/gazette';
 import { CLERK_PORTRAIT, CLONE_PORTRAIT } from '../content/portraits';
+import { OFFER_LETTER } from '../content/desk';
 import { EMPTY_COURT, LETTER_HEAD } from '../content/verdicts';
 import type { EndingId } from '../economy/endings';
 import { writeSpecial, type Special } from '../gen/gazette';
@@ -13,15 +14,15 @@ import { writeClip, writeLetter } from '../gen/letters';
 import { PAY, payLines, type DayEnd, type PayLine } from '../economy/economy';
 import { RULEBOOK } from '../content/rulebook';
 import type { GeneratedApplicant } from '../gen/applicant';
+import { drawPortrait } from '../gen/drawPortrait';
 import { generatePortrait, type Portrait } from '../gen/portrait';
 import { appealFee, JURY_SIZES, type Round } from './court';
 import { APPEAL_BUTTON, BUBBLES, COURT_SESSION, HUNCH_LINE, JURY_LABEL, JUROR_NAMES } from '../content/court';
 import { asPointed, evidenceLine, evidenceWords } from './evidence';
 import { pick } from './Slips';
 import { weekEnd, type GameState, type Ruling } from './week';
-import { PixelPortrait } from './PixelPortrait';
-import { DeskSprite } from './DeskArt';
-import type { Sprite } from './sprites';
+import { PixelPortrait, pixelPaths } from './PixelPortrait';
+import { CREST, DeskSprite, GAVEL, LIKENESS_MARK, MASTHEAD, PAPERCLIP } from './DeskArt';
 import { caseNumber } from './Shift';
 import { thunk, tick } from './sound';
 
@@ -72,24 +73,8 @@ const PHOTO_CROP = { x: 4, y: 2, width: 32, height: 36 };
 const PHOTO_CROP_CROWDED = { x: 8, y: 6, width: 24, height: 28 };
 /** The inside of the jury box, oak behind every juror's head. */
 const JURY_BOX = '#4a3626';
-const JUROR_CROP = { x: 10, y: 10, width: 20, height: 24 };
-
-/** The court's gavel, lying on the bench: an oak head with two brass bands, and its handle. */
-const GAVEL: Sprite = {
-  rows: [
-    '.oooooo.................',
-    'ohhhhhmo................',
-    'oBbbbbdo................',
-    'ohmmmmdooooooooooooooo..',
-    'ohmmmmdohhhhhhhhhhhhhho.',
-    'ohmmmmdommmmmmmmmmmmddo.',
-    'ohmmmmdooooooooooooooo..',
-    'oBbbbbdo................',
-    'ohmmmmdo................',
-    '.oooooo.................',
-  ],
-  palette: { o: '#2f2117', h: '#b48a5e', m: '#8a6545', d: '#5f432d', b: '#c28f36', B: '#e2b75c' },
-};
+/** A juror's head, crown to chin, as the Gazette crops a face. */
+const JUROR_CROP = { x: 9, y: 7, width: 22, height: 24 };
 
 /** Where each case's hearing sits in the docket's timeline: when it prints, and when its stamp comes down. */
 function timeline(rulings: readonly Ruling[]) {
@@ -455,7 +440,11 @@ type EndingProps = {
   onBoard: () => void;
 };
 
-/** How the week ended, laid out on the desk: Human Resources' letter, anything clipped to it, and the Gazette's last edition. */
+/**
+ * How the week ended, laid out on the desk: Human Resources' letter on the Ministry's letterhead, stamped;
+ * Likeness's letter clipped to it, if there is one; the Gazette's last edition beside them (or, for a clerk
+ * fired before Humanity Day, the small ad for the vacancy); and the ways on, on the baize under them.
+ */
 export function Ending({ state, card, earlier, onNewWeek, onBack, onBoard }: EndingProps) {
   const [copied, setCopied] = useState<string | null>(null);
   const copy = async () => {
@@ -475,53 +464,62 @@ export function Ending({ state, card, earlier, onNewWeek, onBack, onBoard }: End
   return (
     <main className={`screen ending-screen ending-${ending}`}>
       <div className="ending-desk" data-testid="ending" data-ending={ending}>
-        <div className="ending-letters">
-        <article className={`notice notice-${ending}`} aria-label="Notice">
-          <p className="notice-head">{LETTER_HEAD}</p>
-          <h2>{letter.title}</h2>
-          {letter.lines.map((line) => (
-            <p key={line}>{line}</p>
-          ))}
-          {letter.grade && (
-            <p className="notice-grade" data-testid="grade">
-              {letter.grade}
-            </p>
-          )}
-          {letter.note && <p className="notice-note">{letter.note}</p>}
-          <p className="notice-savings">Final savings: {state.savings} PNK</p>
-          <div className="notice-stamp">{letter.stamp}</div>
-        </article>
-        {clip && (
-          <aside className="notice-clip" aria-label={clip.head} data-testid="headhunted">
-            <p className="notice-clip-head">{clip.head}</p>
-            <h3>{clip.title}</h3>
-            {clip.lines.map((line) => (
+        <div className={clip ? 'ending-papers clipped' : 'ending-papers'}>
+          <article className={`hr-letter letter-${ending}`} aria-label="Notice">
+            <header className="hr-head">
+              <DeskSprite sprite={CREST} />
+              <span className="hr-ministry">{LETTER_HEAD.ministry}</span>
+              <span className="hr-dept">{LETTER_HEAD.dept}</span>
+            </header>
+            <h2 className="letter-subject">{letter.title}</h2>
+            {letter.lines.map((line) => (
               <p key={line}>{line}</p>
             ))}
-            <p className="notice-clip-sign">{clip.sign}</p>
-          </aside>
-        )}
-        </div>
-        <div className="ending-side">
-          {special ? <SpecialEdition special={special} ending={ending as Exclude<EndingId, 'fired'>} /> : <p className="classified">{VACANCY}</p>}
-          <div className="notice-actions ending-actions">
-            <div className="ending-buttons">
-              <button className="screen-button" onClick={onNewWeek}>
-                {MENU.newWeek}
-              </button>
-              <button className="board-button" onClick={() => void copy()}>
-                {BOARD.today.copy}
-              </button>
-              <button className="board-button" onClick={onBoard}>
-                {MENU.board}
-              </button>
-              {copied && (
-                <span className="board-copied" role="status">
-                  {copied}
-                </span>
-              )}
+            {letter.note && <p className="hr-note">{letter.note}</p>}
+            {/* What HR typed in at the foot, and its stamp beside it. */}
+            <div className="hr-foot">
+              <div className="hr-typed">
+                {letter.grade && <p data-testid="grade">{letter.grade}</p>}
+                <p>Final savings: {state.savings} PNK</p>
+              </div>
+              <p className="hr-stamp">{letter.stamp}</p>
             </div>
-            <div className="menu-mornings ending-mornings">
+          </article>
+          {clip && (
+            // Likeness's own letterhead, as on its letter of day 3, held to HR's by a paperclip.
+            <aside className="offer-letter hr-clip" aria-label={clip.head} data-testid="headhunted">
+              <DeskSprite sprite={PAPERCLIP} className="hr-paperclip" />
+              <header className="likeness-head">
+                <DeskSprite sprite={LIKENESS_MARK} />
+                <span className="likeness-name">{OFFER_LETTER.head}</span>
+                <span className="likeness-dept">{OFFER_LETTER.dept}</span>
+              </header>
+              <h3 className="letter-subject">{clip.title}</h3>
+              {clip.lines.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+              <p className="offer-sign">{clip.sign}</p>
+            </aside>
+          )}
+          {special ? <SpecialEdition special={special} ending={ending as Exclude<EndingId, 'fired'>} /> : <Classified />}
+        </div>
+        <div className="ending-ways">
+          <button className="screen-button" onClick={onNewWeek}>
+            {MENU.newWeek}
+          </button>
+          <button className="board-button" onClick={() => void copy()}>
+            {BOARD.today.copy}
+          </button>
+          <button className="board-button" onClick={onBoard}>
+            {MENU.board}
+          </button>
+          {copied && (
+            <span className="board-copied" role="status">
+              {copied}
+            </span>
+          )}
+          {earlier.length > 0 && (
+            <div className="ending-mornings">
               <span>{MENU.backTo}</span>
               {earlier.map((d) => (
                 <button key={d} className="menu-link" onClick={() => onBack(d)}>
@@ -529,58 +527,117 @@ export function Ending({ state, card, earlier, onNewWeek, onBack, onBoard }: End
                 </button>
               ))}
             </div>
-          </div>
+          )}
         </div>
       </div>
     </main>
   );
 }
 
+/** The Fired letter's clipping from the Gazette's small ads, its first words in bold as small ads set them. */
+function Classified() {
+  const [lead, rest] = VACANCY.split(/(?<=:) /);
+  return (
+    <p className="classified">
+      <b>{lead}</b> {rest}
+    </p>
+  );
+}
+
 /** The unit Likeness sent to take the clerk's chair: the clerk's face, and the night lamp every unit has. */
 const IN_YOUR_LIKENESS: Portrait = { ...CLERK_PORTRAIT, species: 'android', lamp: 'glow' };
 
-/** The Gazette's last edition: the income, told once, the week in numbers, and a photograph. */
+/** A press photograph, head and shoulders: four design pixels to a portrait pixel, on the newsprint's halftone. */
+const PRESS_CROP = { x: 4, y: 2, width: 32, height: 36 };
+const PRESS_SCALE = 4;
+
+/**
+ * The Gazette's last edition, set as its morning front page is: the masthead, the income told once, a
+ * photograph with the week's report running round it, and the paper's small print.
+ */
 function SpecialEdition({ special, ending }: { special: Special; ending: Exclude<EndingId, 'fired'> }) {
   return (
-    <article className="gazette special" aria-label="The Registry Gazette, Humanity Day special" data-testid="special">
-      <header className="gazette-mast">
-        <span>Day 7</span>
-        <h2>{GAZETTE_TITLE}</h2>
-        <span>{special.masthead}</span>
+    <article className="front-page special" aria-label="The Registry Gazette, Humanity Day special" data-testid="special">
+      <header className="front-mast">
+        <h2 className="front-title">
+          <DeskSprite sprite={MASTHEAD} />
+          <span className="sr-only">{GAZETTE_TITLE}</span>
+        </h2>
+        <p className="front-day">Day 7</p>
+        <p className="front-count">{special.masthead}</p>
       </header>
-      <h3 className="gazette-headline" data-testid="special-headline">
+      <h3 className="front-headline" data-testid="special-headline">
         {special.headline}
       </h3>
-      <div className="special-body">
-        <figure className={`special-photo photo-${ending}`}>
-          {ending === 'replaced' ? (
-            <span className="cctv" role="img" aria-label={SPECIAL.camera.label}>
-              <span className="cctv-frame cctv-open">
-                <PixelPortrait portrait={IN_YOUR_LIKENESS} scale={3} background="#26302a" />
-              </span>
-              <span className="cctv-frame cctv-shut">
-                <PixelPortrait portrait={IN_YOUR_LIKENESS} eyes="closed" scale={3} background="#26302a" />
-              </span>
-              <span className="cctv-stamp">{SPECIAL.camera.stamp}</span>
-            </span>
-          ) : (
-            <span className="press-photo">
-              <PixelPortrait portrait={ending === 'superseded' ? CLONE_PORTRAIT : CLERK_PORTRAIT} scale={3} background="#cfd3cf" title={special.caption} />
-              {ending === 'reclassified' && <span className="asset-tag">{SPECIAL.assetTag}</span>}
-            </span>
-          )}
-          <figcaption>{special.caption}</figcaption>
-        </figure>
-        <section className="special-report">
-          {special.report.map((line) => (
-            <p key={line}>{line}</p>
-          ))}
-          <p>{special.likeness}</p>
-        </section>
-      </div>
-      <footer className="gazette-foot">
-        <p className="gazette-small">{special.small}</p>
-      </footer>
+      <figure className={`special-photo photo-${ending}`}>
+        {ending === 'replaced' ? (
+          <CameraStill />
+        ) : (
+          <span className="press-photo">
+            <PixelPortrait portrait={ending === 'superseded' ? CLONE_PORTRAIT : CLERK_PORTRAIT} scale={PRESS_SCALE} crop={PRESS_CROP} title={special.caption} />
+            {ending === 'reclassified' && <span className="asset-tag">{SPECIAL.assetTag}</span>}
+          </span>
+        )}
+        <figcaption className="front-caption">{special.caption}</figcaption>
+      </figure>
+      {special.report.map((line) => (
+        <p key={line} className="special-report">
+          {line}
+        </p>
+      ))}
+      <p className="special-report">{special.likeness}</p>
+      <p className="front-notice special-small">{special.small}</p>
     </article>
+  );
+}
+
+/** The hall camera's greens, from its black to its brightest: everything it films is one of these, but a unit's lamp. */
+const CAMERA_GREENS = ['#0f1a12', '#26402a', '#4f8446', '#9fe08a'];
+const CAMERA_DARK = '#1a2a1d';
+
+/** A colour as the hall camera records it: one of its four greens, by how bright the colour is. */
+function camera(color: string): string {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(color.slice(i, i + 2), 16));
+  const light = 0.299 * r + 0.587 * g + 0.114 * b;
+  return CAMERA_GREENS[light < 56 ? 0 : light < 104 ? 1 : light < 170 ? 2 : 3];
+}
+
+/** One frame of the camera over Window 3: the unit in the chair in the camera's green, and whatever light its lamp gives off, as it is. */
+function cameraFrame(eyes: 'open' | 'closed') {
+  const seen = drawPortrait(IN_YOUR_LIKENESS, { eyes, mouth: 'closed' });
+  const { lamp: _lamp, ...unlit } = IN_YOUR_LIKENESS;
+  const bare = drawPortrait(unlit, { eyes, mouth: 'closed' });
+  return pixelPaths({ ...seen, pixels: seen.pixels.map((c, i) => (c !== bare.pixels[i] && c ? c : camera(c ?? CAMERA_DARK))) });
+}
+
+const CAMERA_OPEN = cameraFrame('open');
+const CAMERA_SHUT = cameraFrame('closed');
+
+/** The Replaced still: the camera's two frames, the eyes open and, every few seconds, shut, with the lamp on between the brows. */
+function CameraStill() {
+  const frame = (paths: typeof CAMERA_OPEN, className: string) => (
+    <svg
+      className={className}
+      viewBox={`${PRESS_CROP.x} ${PRESS_CROP.y} ${PRESS_CROP.width} ${PRESS_CROP.height}`}
+      width={PRESS_CROP.width * PRESS_SCALE}
+      height={PRESS_CROP.height * PRESS_SCALE}
+      shapeRendering="crispEdges"
+      aria-hidden="true"
+    >
+      <rect x={PRESS_CROP.x} y={PRESS_CROP.y} width={PRESS_CROP.width} height={PRESS_CROP.height} fill={CAMERA_GREENS[0]} />
+      {paths.map(({ color, d }) => (
+        <path key={color} fill={color} d={d} />
+      ))}
+    </svg>
+  );
+  return (
+    <span className="cctv" role="img" aria-label={SPECIAL.camera.label}>
+      {frame(CAMERA_OPEN, 'cctv-frame cctv-open')}
+      {frame(CAMERA_SHUT, 'cctv-frame cctv-shut')}
+      <span className="cctv-burn" aria-hidden="true">
+        <span>{SPECIAL.camera.name}</span>
+        <span>{SPECIAL.camera.time}</span>
+      </span>
+    </span>
   );
 }

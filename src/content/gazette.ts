@@ -117,7 +117,8 @@ export const LIKENESS_FINED = {
  * rest are filled from the week.
  */
 export const SPECIAL = {
-  masthead: 'Humanity Day · Special edition',
+  /** Under the masthead, across from the day. */
+  masthead: 'Humanity Day special edition',
   headline: 'INCOME OPENS AT FIVE. ONE UBI IS WORTH 0.0003 PNK.',
   price: 'At that rate a registered human earns a day’s rent in fifteen years. The Ministry does not comment on the price of UBI.',
   week: 'The week at Window 3: {registered} registered, {challenged} challenged, {upheld} upheld in court.',
@@ -138,9 +139,10 @@ export const SPECIAL = {
   },
   /** On the clerk's photograph, Reclassified: the inventory tag. */
   assetTag: '3-0417',
-  /** Replaced: the hall camera's still, and what it shows, for a screen reader. */
+  /** Replaced: the hall camera's still, the camera and the time burnt into its corners, and what it shows, for a screen reader. */
   camera: {
-    stamp: 'CAM 2 · 17:04',
+    name: 'CAM 2',
+    time: '17:04',
     label: 'The hall camera over Window 3: a unit with the clerk’s face in the clerk’s chair. It blinks, and a light shows between its brows.',
   },
 } as const;

@@ -152,7 +152,7 @@
 .court-gavel {
   flex: none;
   display: block;
-  margin: 0 -4px 0 -6px;
+  margin: -6px 0 -8px;
 }
 
 .court-session {
@@ -463,7 +463,7 @@
 
 .juror-face {
   display: block;
-  width: 40px;
+  width: 44px;
   height: 48px;
   overflow: hidden;
   border: 2px solid var(--wood-deep);
@@ -525,7 +525,7 @@
 
 .jury:not(.jury-3) .juror-face svg,
 .jury.collapsed .juror-face svg {
-  margin: -4px 0 0 -4px;
+  margin: -6px 0 0 -6px;
 }
 
 .jury-15 .jurors {
@@ -631,7 +631,7 @@
 }
 
 .docket.stacked .jury-3:not(.collapsed) .juror-face svg {
-  margin: -4px 0 0 -2px;
+  margin: -4px 0 0 -4px;
 }
 
 /*
@@ -701,7 +701,7 @@
 }
 
 .docket.crowded .juror-face svg {
-  margin: -6px 0 0 -6px;
+  margin: -8px 0 0 -8px;
 }
 
 .docket.crowded .jurors {
@@ -933,251 +933,311 @@
 
 /* ------------------------------------------------------------ the letters */
 
+/*
+ * The week's last desk: the baize, and on it Human Resources' letter, Likeness's clipped to it if there is
+ * one, and the Gazette's special edition beside them; the ways on lie on the baize under the papers.
+ */
 .ending-screen {
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  background: radial-gradient(ellipse at 50% 30%, #3a3d34, #161812);
+  /* Centred on the desk, unless the papers are taller than the room: then from the top. */
+  justify-content: safe center;
+  padding: 16px 12px;
+  background: var(--px-baize) 0 0 / 12px 12px, var(--baize);
+  box-shadow: inset 0 4px 0 var(--baize-deep);
 }
 
-/* The week's last desk: the letter on the left, anything clipped under it, and the paper beside them. */
 .ending-desk {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.ending-papers {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  gap: 30px;
-  width: min(1160px, 100%);
+  gap: 24px;
+  width: 100%;
 }
 
-.ending-letters {
+/* The papers share the desk: two across, or three with a letter clipped to the first. */
+.ending-papers > .hr-letter,
+.ending-papers > .special {
+  flex: 0 1 560px;
+  min-width: 0;
+}
+
+.ending-papers.clipped {
+  gap: 12px;
+}
+
+.ending-papers.clipped > .hr-letter,
+.ending-papers.clipped > .special {
+  flex-basis: 500px;
+}
+
+/* ---------------------------------------------- Human Resources' letter */
+
+/* Cool white letterhead: the seal, the Ministry's name and the department over a double green rule. */
+.hr-letter {
+  position: relative;
+  padding: 10px 18px 14px;
+  border: 2px solid var(--letter-edge);
+  background: var(--letter);
+  box-shadow: 4px 4px 0 var(--baize-deep);
+  color: var(--ink);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 24px;
+  animation: land 0.32s steps(8) both;
+}
+
+.hr-letter p {
+  margin: 0 0 8px;
+}
+
+.hr-head {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: min(560px, 100%);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 10px;
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  background:
+    linear-gradient(var(--ministry) 0 0) 0 100% / 100% 2px no-repeat,
+    linear-gradient(var(--ministry) 0 0) 0 calc(100% - 4px) / 100% 2px no-repeat;
+  color: var(--ministry);
 }
 
-.ending-side {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
+.hr-head svg {
+  display: block;
+  flex: none;
 }
 
-.ending-actions {
-  align-items: flex-start;
+.hr-ministry {
+  font-family: var(--stamp);
 }
 
-.ending-actions .screen-button {
-  animation-delay: 2.2s;
+.hr-dept {
+  margin-left: auto;
 }
 
-.notice-grade {
-  margin: 14px 0 6px;
-  font-family: var(--official);
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+/* A letter with another clipped to its edge keeps its words clear of the clip. */
+.clipped > .hr-letter {
+  padding-right: 42px;
 }
 
-.notice-note {
+.hr-note {
   color: var(--ink-soft);
   font-style: italic;
 }
 
-.notice-replaced .notice-stamp,
-.notice-superseded .notice-stamp {
-  color: var(--challenge);
+/* The foot: what HR typed in, and the stamp beside it, or under it where the line is long. */
+.hr-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-top: 12px;
+  padding-top: 10px;
+  background: repeating-linear-gradient(90deg, var(--letter-edge) 0 8px, transparent 8px 12px) top left / 100% 2px no-repeat;
 }
 
-.notice-reclassified .notice-stamp {
-  color: var(--pen);
+.hr-typed {
+  font-family: var(--type);
 }
 
-/* Likeness's letter, clipped under Human Resources': another company's paper, in another company's colours. */
-.notice-clip {
+.hr-letter .hr-typed p:last-child {
+  margin: 0;
+}
+
+/* The stamp, as it came down: straight, two frames of ink, the gaps a rubber stamp leaves. */
+.hr-letter .hr-stamp {
   position: relative;
-  z-index: 1;
-  width: 380px;
-  margin: -16px 0 0 70px;
-  padding: 14px 18px 12px;
-  background: #f4f1fb;
-  border-top: 5px solid #5b3fa6;
-  box-shadow: 0 10px 26px rgb(0 0 0 / 50%);
-  font-size: 13px;
-  line-height: 1.45;
-  rotate: 2.2deg;
-  animation: land 0.6s 1.5s both;
+  margin: 0 0 0 auto;
+  padding: 2px 12px;
+  border: 4px solid currentColor;
+  color: var(--challenge);
+  font-family: var(--stamp);
+  font-size: 40px;
+  line-height: 40px;
+  white-space: nowrap;
+  mix-blend-mode: multiply;
+  mask: var(--px-speckle) 0 0 / 24px 24px;
+  animation: court-stamp 0.4s 0.6s steps(2, jump-none) both;
 }
 
-/* The paperclip. */
-.notice-clip::before {
+.hr-stamp::before {
   content: '';
   position: absolute;
-  top: -22px;
-  left: 30px;
-  width: 12px;
-  height: 38px;
-  border: 2px solid #9aa0a6;
-  border-radius: 7px;
+  inset: 2px;
+  border: 2px solid currentColor;
 }
 
-.notice-clip p {
+.letter-promoted .hr-stamp {
+  color: var(--accept);
+}
+
+.letter-reclassified .hr-stamp {
+  color: var(--ministry);
+}
+
+/* Beside a clip, the stamp is the smaller one. */
+.clipped .hr-stamp {
+  font-size: 30px;
+  line-height: 36px;
+}
+
+/* ---------------------------------------------- Likeness's letter, clipped to it */
+
+/* On the company's bright bond (as its letter of day 3 was), over the letter's edge, held by a paperclip. */
+.hr-clip {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 348px;
+  width: auto;
+  margin: 44px 0 0 -36px;
+  animation: land 0.32s 1.1s steps(8) both;
+}
+
+.hr-clip .letter-subject {
   margin: 0 0 6px;
 }
 
-.notice-clip-head {
-  color: #5b3fa6;
-  font-family: var(--official);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.notice-clip h3 {
-  margin: 0 0 6px;
-  font-family: var(--official);
-  font-size: 17px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.notice-clip-sign {
-  font-family: var(--hand);
-  font-size: 15px;
-  text-align: right;
-}
-
-/* The Humanity Day special: the Gazette's last edition. */
-.gazette.special {
-  width: 490px;
+.hr-clip .offer-sign {
   margin: 0;
-  rotate: 0.8deg;
-  animation: land 0.6s 1s both;
 }
 
-.special .gazette-mast {
-  font-size: 10px;
+.hr-paperclip {
+  position: absolute;
+  top: -16px;
+  left: 10px;
+  filter: drop-shadow(2px 2px 0 rgb(0 0 0 / 28%));
 }
 
-.special .gazette-mast span {
-  white-space: nowrap;
-}
+/* ---------------------------------------------- the Humanity Day special */
 
-.special .gazette-mast h2 {
-  font-size: 22px;
-  white-space: nowrap;
-}
-
-/* The stamp gets the foot of the letter to itself. */
-.ending-letters .notice {
-  padding-bottom: 76px;
-  line-height: 1.5;
-}
-
-.special-body {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 14px;
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-.special-report p {
-  margin: 0 0 6px;
+/* The Gazette's front page (desk.css), the last one: a press photograph, the week's report run round it. */
+.front-page.special {
+  max-width: none;
+  margin: 0;
+  padding-bottom: 12px;
+  animation: land 0.32s 0.8s steps(8) both;
 }
 
 .special-photo {
-  margin: 0;
-  width: 124px;
+  float: left;
+  width: min-content;
+  margin: 2px 12px 4px 0;
 }
 
-.special-photo figcaption {
+.special .front-caption {
   margin-top: 4px;
-  font-size: 11px;
-  font-style: italic;
-  line-height: 1.3;
 }
 
-.press-photo {
+/* Under the tag that hangs off the photo's corner. */
+.special .photo-reclassified .front-caption {
+  margin-top: 18px;
+}
+
+.special .special-report {
+  margin: 0 0 6px;
+}
+
+.special .special-small {
+  clear: both;
+  margin-top: 8px;
+}
+
+/* A press photograph, as the paper prints the faces on its front page: framed, on the halftone, muted and a little warm. */
+.press-photo,
+.cctv {
   position: relative;
   display: block;
+  padding: 4px;
+  border: 2px solid var(--news-ink);
+  background: var(--px-halftone) 0 0 / 4px 4px;
   line-height: 0;
-  border: 1px solid var(--ink);
 }
 
-/* Printed on newsprint. */
 .press-photo svg {
-  filter: grayscale(1) sepia(0.2) contrast(1.15);
+  display: block;
+  filter: saturate(0.4) sepia(0.2) brightness(1.05);
 }
 
-/* Registry equipment has an inventory tag. */
+/* Registry equipment has an inventory tag: buff card, a punched hole, the number typed on it. */
 .asset-tag {
   position: absolute;
-  bottom: 14px;
   left: -10px;
-  padding: 3px 8px 3px 16px;
-  background: #fbf6df;
-  border: 1px solid var(--ink);
-  font-family: var(--typewriter);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.2;
-  rotate: -9deg;
-  box-shadow: 0 2px 4px rgb(0 0 0 / 35%);
+  bottom: -14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px 0 6px;
+  border: 2px solid var(--buff-edge);
+  background: var(--buff-light);
+  box-shadow: 2px 2px 0 var(--news-ink);
+  color: var(--ink);
+  font-family: var(--type);
+  font-size: 20px;
+  line-height: 24px;
 }
 
 .asset-tag::before {
   content: '';
-  position: absolute;
-  top: 50%;
-  left: 5px;
-  width: 6px;
-  height: 6px;
-  translate: 0 -50%;
-  border: 1px solid var(--ink);
-  border-radius: 50%;
+  width: 4px;
+  height: 4px;
+  border: 2px solid var(--buff-edge);
+  background: var(--news-dark);
 }
 
-/* The hall camera over Window 3, in its own grey-green: it sees what people do not. */
+/* The hall camera over Window 3, in its own greens: it sees what people do not, and it sees the lamp as it is. */
 .cctv {
-  position: relative;
-  display: block;
-  line-height: 0;
-  border: 1px solid var(--ink);
-  background: #141a16;
+  background: var(--screen);
 }
 
-.cctv-frame svg {
-  filter: grayscale(1) sepia(1) hue-rotate(55deg) saturate(1.6) contrast(1.25) brightness(0.95);
+.cctv-frame {
+  display: block;
 }
 
 .cctv-shut {
   position: absolute;
-  inset: 0;
+  top: 4px;
+  left: 4px;
   opacity: 0;
   animation: cctv-blink 4.2s 2.4s steps(1) infinite;
 }
 
-/* Scan lines. */
+/* Scan lines, an art pixel dark in every two. */
 .cctv::after {
   content: '';
   position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(0deg, rgb(0 0 0 / 22%) 0 1px, transparent 1px 3px);
+  inset: 4px;
+  background: repeating-linear-gradient(180deg, rgb(0 0 0 / 24%) 0 2px, transparent 2px 4px);
   pointer-events: none;
 }
 
-.cctv-stamp {
+/* The camera and the time, burnt into the still's corners: its name at the top, the time at the foot. */
+.cctv-burn {
   position: absolute;
-  top: 5px;
-  left: 6px;
   z-index: 1;
-  color: #d9f2d0;
-  font-family: var(--typewriter);
-  font-size: 10px;
-  line-height: 1;
+  inset: 6px 8px 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  color: var(--phosphor);
+  font-family: var(--type);
+  font-size: 20px;
+  line-height: 20px;
+}
+
+.cctv-burn span:last-child {
+  align-self: flex-end;
 }
 
 /* Every few seconds it blinks, and for as long as its eyes are shut, the light shows. */
@@ -1196,21 +1256,6 @@
   }
 }
 
-/* The Fired letter's clipping from the small ads. */
-.classified {
-  width: 250px;
-  margin: 40px 0 0;
-  padding: 12px 14px;
-  background: #e8e2cf;
-  border: 1px dashed #8d846e;
-  box-shadow: 0 8px 18px rgb(0 0 0 / 45%);
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 13px;
-  line-height: 1.4;
-  rotate: -2.5deg;
-  animation: land 0.6s 1.1s both;
-}
-
 /* The still the camera keeps, when nothing moves: the eyes shut, and the light on. */
 @media (prefers-reduced-motion: reduce) {
   .cctv-shut {
@@ -1224,63 +1269,124 @@
   opacity: 1;
 }
 
+/* The Fired letter's clipping from the small ads: newsprint, cut out along the ad's box. */
+.classified {
+  flex: 0 0 320px;
+  margin: 48px 0 0;
+  padding: 10px 12px 12px;
+  border: 2px solid var(--news-edge);
+  background: var(--px-newsprint) 0 0 / 16px 16px, var(--news);
+  box-shadow:
+    inset 0 0 0 4px var(--news),
+    inset 0 0 0 6px var(--news-ink),
+    4px 4px 0 var(--baize-deep);
+  color: var(--news-ink);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 22px;
+  animation: land 0.32s 0.8s steps(8) both;
+}
+
+.classified b {
+  font-family: var(--stamp);
+  font-weight: normal;
+}
+
+/* ---------------------------------------------- the ways on, on the baize */
+
+.ending-ways {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  animation: button-show 0.2s 1.6s steps(2, jump-none) both;
+}
+
+.ending-ways .screen-button {
+  margin: 0;
+  animation: none;
+}
+
+.ending-ways .board-copied {
+  color: var(--buff-light);
+}
+
+/* The mornings of the week, as keys after their line. */
+.ending-mornings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 10px;
+  margin-left: 12px;
+  color: var(--buff-light);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* ---------------------------------------------- the night's end */
+
+/* The night's clock card, punched out: its figures typed at the foot, the time clock's stamp beside them. */
+.night-end-card {
+  flex: none;
+  width: 680px;
+  max-width: 100%;
+  animation: land 0.32s steps(8) both;
+}
+
+/* The night's moon in the band, as on the board's notice for it. */
+.night-end-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.night-end-title svg {
+  display: block;
+}
+
+.night-end-foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.clock-card .night-end-foot .clock-card-tally {
+  margin: 4px 0 0;
+}
+
+.clock-card .night-end-stamp {
+  position: relative;
+  flex: none;
+  margin: 0;
+  padding: 2px 12px;
+  border: 4px solid currentColor;
+  color: var(--challenge);
+  font-family: var(--stamp);
+  font-size: 40px;
+  line-height: 40px;
+  mix-blend-mode: multiply;
+  mask: var(--px-speckle) 0 0 / 24px 24px;
+  animation: court-stamp 0.4s 0.5s steps(2, jump-none) both;
+}
+
+.night-end-stamp::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 2px solid currentColor;
+}
+
+/* The night has no letter to read first: its ways on come once the card is stamped. */
+.night-end .ending-ways {
+  animation-delay: 0.8s;
+}
+
+/* The generic sheet the menu's form and the board's question are printed on. */
 .notice {
   position: relative;
-  width: min(560px, 100%);
-  padding: 30px 34px 34px;
-  background: var(--paper-light);
-  box-shadow: 0 16px 40px rgb(0 0 0 / 55%);
-  font-size: 15px;
-  line-height: 1.55;
-  animation: land 0.6s both;
-}
-
-.notice-head {
-  margin: 0 0 18px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--ink);
-  font-family: var(--official);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-}
-
-.notice h2 {
-  margin: 0 0 14px;
-  font-family: var(--official);
-  font-size: 24px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.notice-savings {
-  font-weight: 700;
-}
-
-.notice-stamp {
-  position: absolute;
-  right: 44px;
-  bottom: 30px;
-  padding: 4px 14px;
-  border: 5px double currentColor;
-  border-radius: 4px;
-  font-family: var(--official);
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  opacity: 0.8;
-  transform: rotate(-10deg);
-  animation: stamp-slam 0.25s 0.7s ease-in both;
-}
-
-.notice-fired .notice-stamp {
-  color: var(--challenge);
-}
-
-.notice-promoted .notice-stamp {
-  color: var(--accept);
 }
 
 .out-of-order {
@@ -1471,83 +1577,6 @@
   margin-top: 14px;
 }
 
-.menu .menu-link,
-.menu .settings-switch {
-  padding: 2px 10px 4px;
-  border: 2px solid var(--form-edge);
-  background: var(--form-light);
-  box-shadow: 0 4px 0 var(--form-edge);
-  color: var(--ministry);
-  font-family: var(--print);
-  font-size: 20px;
-  line-height: 24px;
-  letter-spacing: 0;
-  text-decoration: none;
-  text-transform: none;
-  cursor: pointer;
-}
-
-.menu .menu-link:hover,
-.menu .settings-switch:hover:not(:disabled) {
-  background: #f1f4ec;
-  color: var(--ministry);
-}
-
-.menu .menu-link:active,
-.menu .settings-switch:active:not(:disabled) {
-  translate: 0 2px;
-  box-shadow: 0 2px 0 var(--form-edge);
-}
-
-.menu .menu-link:focus-visible,
-.menu .settings-switch:focus-visible {
-  outline: 2px solid var(--marker);
-  outline-offset: 2px;
-}
-
-/* A setting: its name, and a lamp that is lit while it is on. */
-.menu .settings-switch {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-right: 4px;
-}
-
-.menu .settings-switch b,
-.menu .settings-motion b,
-.menu .settings-switch[aria-checked='false'] b {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 8px 0 6px;
-  border: 2px solid var(--black);
-  background: var(--charcoal-deep);
-  color: var(--steel);
-  font-family: var(--stamp);
-  font-weight: normal;
-}
-
-.menu .settings-switch b::before {
-  content: '';
-  flex: none;
-  width: 6px;
-  height: 6px;
-  background: #2f3530;
-}
-
-.menu .settings-switch[aria-checked='true'] b {
-  color: var(--steel-shine);
-}
-
-.menu .settings-switch[aria-checked='true'] b::before {
-  background: var(--lamp-green);
-}
-
-.menu .settings-switch:disabled {
-  opacity: 1;
-  cursor: default;
-}
-
 /* The small print at the foot of the form. */
 .menu .menu-saved {
   margin-top: 16px;
@@ -1577,44 +1606,122 @@
     0 2px 0 #4a100d;
 }
 
-/* The letters at the end, until they are drawn: the ways on, and the mornings, as links. */
-.menu-actions,
-.notice-actions {
+/* ------------------------------------------------------------ keys and switches */
+
+.menu-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 18px;
+  gap: 12px 14px;
 }
 
-.menu-link {
-  padding: 4px 0;
-  border: 0;
-  background: none;
-  color: var(--ink-soft);
-  font-family: var(--official);
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-transform: uppercase;
+/*
+ * A paper key: a key printed on whatever it sits on, in that paper's stock and a shade darker at its edge,
+ * pressed an art pixel down. A form, a notice or a switch plate sets its colours; the Ministry's form is the default.
+ */
+.menu-link,
+.board-button,
+.settings-switch {
+  --key: var(--form-light);
+  --key-edge: var(--form-edge);
+  --key-ink: var(--ministry);
+  --key-lit: #f1f4ec;
+  padding: 2px 10px 4px;
+  border: 2px solid var(--key-edge);
+  background: var(--key);
+  box-shadow: 0 4px 0 var(--key-edge);
+  color: var(--key-ink);
+  font-family: var(--print);
+  font-size: 20px;
+  font-weight: normal;
+  line-height: 24px;
+  text-align: left;
+  white-space: nowrap;
   cursor: pointer;
 }
 
-.menu-link:hover {
-  color: var(--challenge);
+.menu-link:hover,
+.board-button:hover,
+.settings-switch:hover:not(:disabled) {
+  background: var(--key-lit);
 }
 
-.menu-link:focus-visible {
-  outline: 3px solid var(--marker);
-  outline-offset: 3px;
+.menu-link:active,
+.board-button:active,
+.settings-switch:active:not(:disabled) {
+  translate: 0 2px;
+  box-shadow: 0 2px 0 var(--key-edge);
 }
 
-/* On the letter, the second way on sits under the first, clear of the rubber stamp. */
-.notice-actions {
-  flex-direction: column;
-  align-items: flex-start;
+.menu-link:focus-visible,
+.board-button:focus-visible,
+.settings-switch:focus-visible {
+  outline: 2px solid var(--marker);
+  outline-offset: 2px;
 }
 
-.notice-actions .menu-link {
-  margin-top: 10px;
+/* The settings: a key for each, its name and a lamp window that is lit while it is on. */
+.settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 10px;
+}
+
+.settings-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-right: 4px;
+}
+
+.settings-switch b {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px 0 6px;
+  border: 2px solid var(--black);
+  background: var(--charcoal-deep);
+  color: var(--steel);
+  font-family: var(--stamp);
+  font-weight: normal;
+}
+
+.settings-switch b::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  background: #2f3530;
+}
+
+.settings-switch[aria-checked='true'] b {
+  color: var(--steel-shine);
+}
+
+.settings-switch[aria-checked='true'] b::before {
+  background: var(--lamp-green);
+}
+
+.settings-switch:disabled {
+  cursor: default;
+}
+
+/* On the board's steel plate, the keys are steel too. */
+.switch-plate .settings-switch {
+  --key: var(--steel-shine);
+  --key-edge: var(--steel-deep);
+  --key-ink: var(--charcoal-deep);
+  --key-lit: #d8dee0;
+}
+
+/* On the dark desk, the mornings of the week are keys on the Ministry's buff card. */
+.ending-mornings .menu-link,
+.ending-ways .board-button {
+  --key: var(--buff-light);
+  --key-edge: var(--buff-edge);
+  --key-ink: var(--ink);
+  --key-lit: #f3ead0;
 }

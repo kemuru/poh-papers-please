@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { MENU } from '../content/menu';
 import { NIGHT } from '../content/night';
-import { LETTER_HEAD } from '../content/verdicts';
 import { generateDay } from '../gen/day';
 import type { NightView } from './Desk';
+import { DeskSprite, MOON } from './DeskArt';
 import { AudioSwitches } from './Game';
 import { exposeGameState } from './gameState';
 import { setMusicScene, stopMusic } from './music';
@@ -130,23 +130,30 @@ function NightShift({ seed, best, onDone, onBoard, onAgain }: { seed: number; be
         <AudioSwitches onMenu={() => setPaused(true)} />
       </header>
       {closed ? (
+        // The night's clock card, punched out: the window closed, the night's figures, and the time clock's stamp.
         <main className="screen ending-screen night-end">
-          <article className="notice notice-fired" aria-label="Notice" data-testid="night-end">
-            <p className="notice-head">{LETTER_HEAD}</p>
-            <h2>{NIGHT.end.title}</h2>
-            {NIGHT.end.lines.map((line) => (
-              <p key={line}>{line.replace('{right}', String(n.right)).replace('{shifts}', (n.shift === 1 ? NIGHT.end.shift : NIGHT.end.shifts).replace('{n}', String(n.shift)))}</p>
-            ))}
-            <p className="notice-grade">{NIGHT.end.best.replace('{best}', String(bestNow))}</p>
-            <div className="notice-stamp">{NIGHT.end.stamp}</div>
-          </article>
-          <div className="ending-buttons">
-            <button className="screen-button" onClick={onAgain}>
-              {NIGHT.end.again}
-            </button>
-            <button className="board-button" onClick={leave}>
-              {MENU.board}
-            </button>
+          <div className="ending-desk">
+            <article className="clock-card night-end-card" aria-label={NIGHT.end.title} data-testid="night-end">
+              <h2 className="clock-card-title night-end-title">
+                {NIGHT.end.title}
+                <DeskSprite sprite={MOON} />
+              </h2>
+              {NIGHT.end.lines.map((line) => (
+                <p key={line}>{line.replace('{right}', String(n.right)).replace('{shifts}', (n.shift === 1 ? NIGHT.end.shift : NIGHT.end.shifts).replace('{n}', String(n.shift)))}</p>
+              ))}
+              <div className="night-end-foot">
+                <p className="clock-card-tally">{NIGHT.end.best.replace('{best}', String(bestNow))}</p>
+                <p className="night-end-stamp">{NIGHT.end.stamp}</p>
+              </div>
+            </article>
+            <div className="ending-ways">
+              <button className="screen-button" onClick={onAgain}>
+                {NIGHT.end.again}
+              </button>
+              <button className="board-button" onClick={leave}>
+                {MENU.board}
+              </button>
+            </div>
           </div>
         </main>
       ) : (

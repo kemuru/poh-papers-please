@@ -1,269 +1,405 @@
-/* The notice board in the hall, where the Ministry opens (slice 6): cork in a wooden frame, on the
-   hall's own green wall, with the week's notices pinned to it. */
+/*
+ * The notice board in the hall, where the Ministry opens (slice 6): cork in an oak frame on the hall's green
+ * wall, the Ministry's poster and the week's notices pinned to it, the letters found under them and the
+ * clerk's record beside, and the settings on a steel switch plate. Drawn to notes/art-direction.md, on the
+ * desk's grid (2 design pixels to an art pixel), in the Ministry's type, with the palette of desk.css.
+ */
 
 .board-screen {
+  position: relative;
   display: flex;
   justify-content: center;
   /* Centred, unless the board is taller than the room: then from the top, so nothing is out of reach. */
   align-items: safe center;
   height: 100%;
   min-height: 0;
-  padding: 22px 24px;
+  padding: 16px;
   overflow: hidden;
+  /* The hall's wall, in panels, with a picture rail and the darker dado below it. */
   background:
-    repeating-linear-gradient(90deg, rgb(0 0 0 / 5%) 0 1px, transparent 1px 80px),
-    linear-gradient(180deg, #8f9a83 0 80%, #5d6858 80% 90%, #3a4136 90% 91%, #a7a18a 91%);
+    linear-gradient(var(--wood-deep) 0 0) 0 calc(100% - 118px) / 100% 2px no-repeat,
+    linear-gradient(var(--wood-light) 0 0) 0 calc(100% - 114px) / 100% 2px no-repeat,
+    linear-gradient(var(--wood) 0 0) 0 calc(100% - 106px) / 100% 8px no-repeat,
+    linear-gradient(var(--wood-deep) 0 0) 0 calc(100% - 104px) / 100% 2px no-repeat,
+    linear-gradient(var(--wall-dark) 0 0) 0 100% / 100% 104px no-repeat,
+    repeating-linear-gradient(90deg, var(--wall-seam) 0 2px, transparent 2px 96px),
+    var(--wall);
 }
 
+/* The frame: oak, lit along its top and left, a hard shadow on the wall. */
 .board {
-  width: min(1140px, 100%);
-  padding: 18px 24px 22px;
-  border: 14px solid #6d5a43;
-  border-radius: 4px;
-  background:
-    radial-gradient(circle at 20% 30%, rgb(0 0 0 / 9%) 0 1px, transparent 1.6px) 0 0 / 7px 9px,
-    radial-gradient(circle at 70% 60%, rgb(255 255 255 / 9%) 0 1px, transparent 1.6px) 0 0 / 11px 8px,
-    #b38b5d;
+  width: min(1280px, 100%);
+  padding: 12px;
+  border: 2px solid var(--wood-deep);
+  background: var(--wood);
   box-shadow:
-    inset 0 0 0 2px #4a3c2d,
-    inset 0 8px 24px rgb(0 0 0 / 30%),
-    0 18px 40px rgb(0 0 0 / 45%);
+    inset 2px 2px 0 var(--wood-light),
+    inset -2px -2px 0 var(--wood-dark),
+    4px 4px 0 var(--wall-deep);
 }
 
-/* The poster at the top: the Ministry's, printed, with a red band like the hall's. */
-.board-poster {
-  position: relative;
-  margin: 0 auto;
-  width: min(620px, 100%);
-  padding: 12px 20px 12px;
-  background: linear-gradient(180deg, #b0433a 0 8px, #efe8d2 8px);
-  box-shadow: 0 8px 16px rgb(0 0 0 / 35%);
-  text-align: center;
-  rotate: -0.4deg;
-}
-
-.board-kicker {
-  margin: 4px 0 2px;
-  font-family: var(--official);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-}
-
-.board-poster h1 {
-  margin: 0;
-  font-family: var(--official);
-  font-size: 38px;
-  line-height: 1.1;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.board-subtitle {
-  margin: 0;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 22px;
-  font-style: italic;
-}
-
-.board-columns {
+/*
+ * The cork, in the frame's shadow along its top and left. Six tracks: the poster takes four and the first
+ * notice two; the other notices share the next row; the letters take four and the record the last two.
+ */
+.board-cork {
   display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
-  gap: 22px;
-  margin-top: 18px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px 18px;
+  padding: 18px 18px 20px;
+  border: 2px solid var(--wood-deep);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' shape-rendering='crispEdges'%3E%3Cpath fill='%238d6436' d='M2 4h2v2H2zM12 2h2v2h-2zM22 8h4v2h-4zM6 16h2v2H6zM16 22h2v2h-2zM26 26h2v2h-2zM0 28h2v2H0zM18 12h2v2h-2zM10 26h4v2h-4z'/%3E%3Cpath fill='%23c9a06a' d='M8 8h2v2H8zM20 2h2v2h-2zM14 16h2v2h-2zM26 18h2v2h-2zM4 22h2v2H4zM28 10h2v2h-2z'/%3E%3C/svg%3E")
+      0 0 / 32px 32px,
+    var(--cork);
+  box-shadow: inset 4px 4px 0 var(--cork-shade);
+  color: var(--ink);
+  font-family: var(--print);
+  font-size: 20px;
+  line-height: 24px;
 }
 
+.board-cork h2,
+.board-cork p {
+  margin: 0;
+}
+
+/* The notices are the cork's, laid out on its tracks. */
 .board-notices {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  align-content: start;
+  display: contents;
 }
 
-.board-notice {
-  position: relative;
-  padding: 16px 16px 12px;
-  background: var(--paper-light);
-  box-shadow: 0 6px 12px rgb(0 0 0 / 35%);
-  rotate: -0.8deg;
-}
-
-.board-notice:nth-child(even) {
-  rotate: 0.9deg;
-}
-
-.board-notice h2 {
-  margin: 0 0 6px;
-  font-family: var(--official);
-  font-size: 15px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.board-notice p {
-  margin: 0 0 4px;
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-/* The week under way is the notice everyone looks for first. */
-.notice-week {
-  grid-column: 1 / -1;
-  background: #fff8df;
-}
-
-.notice-week p {
-  font-family: var(--official);
-  font-size: 15px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.notice-night.locked {
-  opacity: 0.75;
-}
-
+/* A drawing pin through the top of each paper, casting its own shadow. */
 .board-pin {
   position: absolute;
+  z-index: 2;
   top: -6px;
-  left: 50%;
-  width: 13px;
-  height: 13px;
-  translate: -50% 0;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #f07a6a, #9a2f2a);
-  box-shadow: 0 2px 3px rgb(0 0 0 / 40%);
+  left: calc(50% - 10px);
+}
+
+/* ------------------------------------------------------------ the poster */
+
+/*
+ * The Ministry's poster: its green, a pale rule inside its edge, the seal and the Ministry's name, the title
+ * in the poster's own capitals, and the game's name on a red banner with notched ends.
+ */
+.board-poster {
+  position: relative;
+  grid-column: 1 / span 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 20px 14px;
+  border: 2px solid var(--black);
+  background: var(--ministry);
+  box-shadow:
+    inset 0 0 0 6px var(--ministry),
+    inset 0 0 0 8px var(--form-edge),
+    4px 4px 0 var(--cork-shade);
+  color: var(--form-light);
+}
+
+.board-poster .pin-left {
+  left: 16px;
+}
+
+.board-poster .pin-right {
+  left: auto;
+  right: 16px;
+}
+
+.board-poster .poster-ministry {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+  font-family: var(--stamp);
+}
+
+.poster-ministry svg,
+.poster-title svg {
+  display: block;
+}
+
+.poster-title {
+  margin: 0;
+  line-height: 0;
+}
+
+/* The banner: a red band, lit along its top, its ends cut in a notch. */
+.board-poster .poster-stamp {
+  position: relative;
+  margin-top: 12px;
+  padding: 2px 44px;
+  border-top: 2px solid #4a120f;
+  border-bottom: 2px solid #4a120f;
+  background: var(--challenge);
+  box-shadow:
+    inset 0 2px 0 #d05a50,
+    inset 0 -4px 0 #7f2a23;
+  color: #fbe9e4;
+  font-family: var(--stamp);
+  font-size: 30px;
+  line-height: 36px;
+}
+
+.poster-stamp::before,
+.poster-stamp::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  width: 14px;
+  height: 44px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='44' shape-rendering='crispEdges'%3E%3Cpath fill='%2328452f' d='M0 0h2v44H0zM2 2h2v40H2zM4 6h2v32H4zM6 10h2v24H6zM8 14h2v16H8zM10 18h2v8h-2z'/%3E%3Cpath fill='%234a120f' d='M2 0h2v2H2zM4 2h2v4H4zM6 6h2v4H6zM8 10h2v4H8zM10 14h2v4h-2zM12 18h2v8h-2zM10 26h2v4h-2zM8 30h2v4H8zM6 34h2v4H6zM4 38h2v4H4zM2 42h2v2H2z'/%3E%3C/svg%3E");
+}
+
+.poster-stamp::before {
+  left: -2px;
+}
+
+.poster-stamp::after {
+  right: -2px;
+  transform: scaleX(-1);
+}
+
+/* Where it hangs, printed small in its corner, as a form's number is. */
+.poster-window {
+  position: absolute;
+  right: 20px;
+  bottom: 14px;
+  color: #a9bc9f;
+}
+
+/* ------------------------------------------------------------ the notices */
+
+/*
+ * A notice: its stock, its printed title in a band, its lines and its keys. Clerk wanted is the Ministry's own,
+ * on Form 1's stock under its green band; the others set their stocks below.
+ */
+.board-notice {
+  --n-bg: var(--form);
+  --n-edge: var(--form-edge);
+  --n-ink: var(--ministry);
+  --n-band: var(--ministry);
+  --n-band-ink: var(--form-light);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  grid-column: span 3;
+  min-width: 0;
+  padding: 0 14px 14px;
+  border: 2px solid var(--n-edge);
+  background: var(--n-bg);
+  box-shadow: 4px 4px 0 var(--cork-shade);
+  color: var(--n-ink);
+}
+
+/* The first notice, beside the poster; the others share a row, two or three to it. */
+.board-notice:first-child {
+  grid-column: 5 / span 2;
+  grid-row: 1;
+}
+
+.board-notices.three > :not(:first-child) {
+  grid-column: span 2;
+}
+
+/* The notice's title, printed in a band across its head. */
+.board-notice h2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  align-self: stretch;
+  margin: 0 -14px 6px;
+  padding: 12px 14px 4px;
+  background: var(--n-band);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 30%);
+  color: var(--n-band-ink);
+  font-family: var(--stamp);
+  font-size: 20px;
+  font-weight: normal;
+  line-height: 24px;
+}
+
+.notice-mark {
+  flex: none;
+  display: block;
 }
 
 .board-notice-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
   align-items: center;
+  gap: 12px;
   margin-top: 8px;
 }
 
 .board-notice-actions .screen-button {
-  margin-top: 4px;
-}
-
-.board-button {
-  padding: 7px 12px;
-  border: 2px solid var(--ink);
-  border-radius: 4px;
-  background: var(--paper-light);
-  color: var(--ink);
-  font-family: var(--official);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-.board-button:hover {
-  background: #fff;
-}
-
-.board-button:focus-visible,
-.settings-switch:focus-visible {
-  outline: 3px solid var(--marker);
-  outline-offset: 2px;
-}
-
-.board-copied {
-  color: var(--accept);
-  font-family: var(--official);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.board-note {
-  grid-column: 1 / -1;
   margin: 0;
-  padding: 10px 12px;
-  background: #fff4d6;
-  box-shadow: 0 4px 10px rgb(0 0 0 / 30%);
-  font-size: 13px;
 }
 
-.board-side {
-  display: flex;
-  flex-direction: column;
+/* Your week: the clerk's time card, buff, where the week stands typed on it. */
+.notice-week {
+  --n-bg: var(--buff-light);
+  --n-edge: var(--buff-edge);
+  --n-ink: var(--ink);
+}
+
+.notice-week p {
+  font-family: var(--type);
+}
+
+/* Today's week: a leaf off the Ministry's calendar, its date typed under the red band. */
+.notice-today {
+  --n-bg: var(--letter);
+  --n-edge: var(--letter-edge);
+  --n-ink: var(--ink);
+  --n-band: var(--challenge);
+  --n-band-ink: #fbe9e4;
+}
+
+.notice-today p:first-of-type {
+  font-family: var(--type);
+}
+
+/* The Ministry never closes: printed white on black, with the moon over it, or its padlock until it opens. */
+.notice-night {
+  --n-bg: var(--charcoal);
+  --n-edge: var(--black);
+  --n-ink: var(--steel-shine);
+  --n-band: var(--charcoal-deep);
+  --n-band-ink: var(--buff-light);
+}
+
+.notice-night.locked {
+  --n-ink: var(--steel-light);
+}
+
+/* The set-aside save: a note stuck to the cork, in the supervisor's pen. */
+.board-note {
+  position: relative;
+  grid-column: span 2;
+  align-self: start;
+  padding: 10px 12px 12px;
+  border: 2px solid var(--sticky-edge);
+  background: var(--sticky);
+  box-shadow: 4px 4px 0 var(--cork-shade);
+  color: var(--pen);
+  font-family: var(--hand);
+}
+
+/* A key on a notice is a paper key (screens.css) in the notice's own stock. */
+.notice-week .board-button,
+.notice-today .board-button {
+  --key: var(--bond);
+  --key-edge: var(--letter-edge);
+  --key-ink: var(--ink);
+  --key-lit: #ffffff;
+}
+
+.notice-night .board-button {
+  --key: var(--steel-light);
+  --key-edge: var(--steel-deep);
+  --key-ink: var(--charcoal-deep);
+  --key-lit: var(--steel-shine);
+}
+
+/* "Copied.", typed in after the key, where it was pressed. */
+.board-copied {
+  font-family: var(--type);
+}
+
+/* ------------------------------------------------------------ the letters found */
+
+.board-letters {
+  grid-column: 1 / span 4;
+}
+
+/* Its label: a strip of card with the count typed on it. */
+.board-letters > h2 {
+  display: inline-flex;
   gap: 14px;
+  margin: 0 0 16px;
+  padding: 2px 10px;
+  border: 2px solid var(--buff-edge);
+  background: var(--buff-light);
+  box-shadow: 4px 4px 0 var(--cork-shade);
+  font-family: var(--stamp);
+  font-size: 20px;
+  font-weight: normal;
+  line-height: 24px;
 }
 
-.board-letters h2,
-.board-record h2 {
-  margin: 0 0 8px;
-  color: #2a1c08;
-  font-family: var(--official);
-  font-size: 14px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.board-letters h2 span {
-  margin-left: 6px;
-  color: #4a3212;
+.board-letters > h2 span {
+  font-family: var(--type);
 }
 
 .board-letters ul {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 16px 14px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+/* A letter not found yet: a blank index card, a question mark stamped on it and a hint in pencil. */
 .board-slip {
   position: relative;
-  min-height: 78px;
-  padding: 8px 9px;
-  background: #e8e2cf;
-  box-shadow: 0 4px 8px rgb(0 0 0 / 30%);
-  font-size: 12px;
-  line-height: 1.3;
-  rotate: 1deg;
-}
-
-.board-slip:nth-child(3n + 1) {
-  rotate: -1.2deg;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 10px;
+  min-height: 92px;
+  padding: 10px 10px 10px 12px;
+  border: 2px solid var(--buff-edge);
+  background: var(--buff-light);
+  box-shadow: 4px 4px 0 var(--cork-shade);
 }
 
 .board-slip strong {
-  display: block;
-  font-family: var(--official);
-  font-size: 11.5px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: normal;
 }
 
 .board-slip:not(.found) strong {
-  color: var(--ink-soft);
-  font-size: 20px;
+  color: var(--buff-dark);
+  font-family: var(--stamp);
+  font-size: 40px;
+  line-height: 40px;
 }
 
 .board-slip-hint {
-  color: var(--ink-soft);
-  font-style: italic;
+  color: var(--pen);
+  font-family: var(--hand);
+}
+
+/* A letter found: the Ministry's letterhead, its seal and title, and its stamp as it came down. */
+.board-slip.found {
+  grid-template-rows: auto auto;
+  align-items: start;
+  border-color: var(--letter-edge);
+  background: var(--letter);
+}
+
+.slip-seal {
+  display: block;
+  grid-row: 1;
 }
 
 .board-slip-stamp {
-  display: inline-block;
-  margin-top: 8px;
-  padding: 1px 6px;
-  border: 3px double currentColor;
-  border-radius: 3px;
+  grid-column: 1 / -1;
+  justify-self: end;
+  padding: 0 6px;
+  border: 4px solid currentColor;
   color: var(--challenge);
-  font-family: var(--official);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  rotate: -8deg;
+  font-family: var(--stamp);
+  line-height: 20px;
+  mix-blend-mode: multiply;
+  mask: var(--px-speckle) 0 0 / 24px 24px;
 }
 
 .slip-promoted .board-slip-stamp {
@@ -271,130 +407,119 @@
 }
 
 .slip-reclassified .board-slip-stamp {
-  color: var(--pen);
+  color: var(--ministry);
+}
+
+/* Likeness's offer, on its own bright bond, in the company's coral. */
+.board-slip.slip-headhunted {
+  border-color: var(--bond-edge);
+  background: var(--bond);
 }
 
 .slip-headhunted .board-slip-stamp {
-  color: #5b3fa6;
+  color: var(--coral);
 }
 
+/* ------------------------------------------------------------ the record and the switch plate */
+
+.board-side {
+  grid-column: 5 / span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* The clerk's record: a Ministry card, its lines ruled to the figure typed against each. */
 .board-record {
-  padding: 12px 14px;
-  background: var(--paper);
-  box-shadow: 0 6px 12px rgb(0 0 0 / 35%);
-  rotate: -0.5deg;
+  position: relative;
+  padding: 0 14px 12px;
+  border: 2px solid var(--form-edge);
+  background: var(--form);
+  box-shadow: 4px 4px 0 var(--cork-shade);
+  color: var(--ministry);
+}
+
+.board-record h2 {
+  margin: 0 -14px 8px;
+  padding: 12px 14px 4px;
+  background: var(--ministry);
+  box-shadow: inset 0 -2px 0 #1b3021;
+  color: var(--form-light);
+  font-family: var(--stamp);
+  font-size: 20px;
+  font-weight: normal;
+  line-height: 24px;
 }
 
 .board-record dl {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px 16px;
   margin: 0;
 }
 
 .board-record dl div {
   display: flex;
-  justify-content: space-between;
+  align-items: flex-end;
   gap: 8px;
-  border-bottom: 1px dotted var(--rule-line);
-  font-size: 13px;
 }
 
 .board-record dt {
-  color: var(--ink-soft);
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.board-record dt::after {
+  content: '';
+  flex: 1 0 12px;
+  height: 2px;
+  margin-bottom: 6px;
+  background: repeating-linear-gradient(90deg, var(--form-edge) 0 2px, transparent 2px 8px);
 }
 
 .board-record dd {
   margin: 0;
-  font-weight: 700;
-}
-
-/* The settings: two switches, on the board and in the menu. */
-.settings {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.settings-switch {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-  padding: 6px 10px;
-  border: 2px solid var(--ink);
-  border-radius: 4px;
-  background: var(--paper-light);
   color: var(--ink);
-  font-family: var(--official);
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
+  font-family: var(--type);
+  white-space: nowrap;
 }
 
-.settings-switch b {
-  color: var(--accept);
+/* The switch plate: brushed steel, a screw in each corner, a key and a lamp for each setting. */
+.switch-plate {
+  padding: 10px 12px;
+  border: 2px solid var(--steel-deep);
+  background:
+    linear-gradient(var(--steel-dark) 0 0) 4px 4px / 4px 4px no-repeat,
+    linear-gradient(var(--steel-dark) 0 0) right 4px top 4px / 4px 4px no-repeat,
+    linear-gradient(var(--steel-dark) 0 0) 4px calc(100% - 4px) / 4px 4px no-repeat,
+    linear-gradient(var(--steel-dark) 0 0) right 4px bottom 4px / 4px 4px no-repeat,
+    var(--steel-light);
+  box-shadow:
+    inset 2px 2px 0 var(--steel-shine),
+    inset -2px -2px 0 var(--steel),
+    4px 4px 0 var(--cork-shade);
 }
 
-.settings-switch[aria-checked='false'] b {
-  color: var(--challenge);
+.switch-plate .settings {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
 }
 
-/* Motion is a preference, not a warning: its value is in ink either way. */
-.settings-motion b,
-.settings-motion[aria-checked='false'] b {
-  color: var(--ink);
-}
+/* ------------------------------------------------------------ the board's question */
 
-.settings-switch:disabled {
-  cursor: default;
-  opacity: 0.8;
-}
-
-.board-confirm {
-  width: min(540px, 100%);
-}
-
-/* The earlier mornings, at the letter. (The menu's own, and its settings, are drawn in screens.css.) */
-.menu-mornings {
+/* Starting another week while one is under way: the form on a clipboard, hung over the board. */
+.board-ask {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 12px;
-  margin-top: 22px;
-  color: var(--ink-soft);
-  font-family: var(--official);
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-/* At the letter: the ways on, and the mornings, on the dark desk. */
-.ending-buttons {
-  display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 10px 12px;
+  justify-content: center;
+  background: rgb(18 20 17 / 62%);
 }
 
-.ending-buttons .screen-button {
-  margin-top: 0;
-}
-
-.ending-mornings {
-  margin-top: 12px;
-  color: #cfc7b0;
-}
-
-.ending-mornings .menu-link {
-  color: #e8e0c8;
-}
-
-/* The night's closing letter, with the ways on under it. */
-.night-end {
-  gap: 16px;
-}
-
-.night-end .notice {
-  padding-bottom: 80px;
+.board-clipboard {
+  position: relative;
 }
