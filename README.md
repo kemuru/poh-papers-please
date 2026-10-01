@@ -1,6 +1,6 @@
 # Proof of Humanity: Papers, Please
 
-A deadpan desk game in the browser that satirizes Kleros's Proof of Humanity. It is the week before Humanity Day, when every registered human starts receiving an income. You are the registry's newest clerk: accept or challenge each applicant against a rulebook that gains one rule a day, while everything that can pass for a human queues for the money.
+A desk game in the browser that resembles Kleros's Proof of Humanity. It is the week before Humanity Day, when every registered human starts receiving an income. You are the registry's newest clerk: accept or challenge each applicant against a rulebook that gains one rule a day, while everything that can pass for a human queues for the money.
 
 **Play it:** https://kemuru.github.io/poh-papers-please/
 
