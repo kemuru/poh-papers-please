@@ -263,6 +263,11 @@
   left: 18px;
 }
 
+/* A first visit: the vacancy under the poster, as wide as it, the way in read straight down from the title. */
+.board-row > .notice-vacancy {
+  flex: 1 1 auto;
+}
+
 .notice-form-head {
   display: flex;
   align-items: center;
@@ -455,6 +460,15 @@
 .board-letters {
   grid-column: 1;
   grid-row: 3;
+}
+
+/* A first visit: the settings beside the poster and the vacancy, and the letters across the whole cork under them. */
+.first-visit .board-side {
+  grid-row: 1 / 3;
+}
+
+.first-visit .board-letters {
+  grid-column: 1 / -1;
 }
 
 /* Its label: a strip of card with the count typed on it. */

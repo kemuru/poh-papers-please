@@ -47,9 +47,10 @@ async function boardFits(page: Page, width: number, height: number) {
   const slips = await page.getByTestId('letters').locator('li').all();
   expect(slips).toHaveLength(6);
   for (const slip of slips.slice(-3)) await inside(slip, width, height);
-  // Everything the clerk may need from the board is in the window with it.
+  // Everything the clerk may need from the board is in the window with it (a first visit has no record yet).
+  const record = page.getByTestId('record');
   for (const target of [
-    page.getByTestId('record'),
+    ...((await record.count()) > 0 ? [record] : []),
     page.getByRole('switch', { name: /Reduce motion/ }),
     page.getByRole('slider', { name: /Music/ }),
     page.getByRole('button', { name: 'Start a new week' }),
@@ -65,6 +66,7 @@ for (const { width, height, deviceScaleFactor } of WINDOWS) {
     test('fits on a first visit', async ({ page }) => {
       await page.goto('/');
       await expect(page.getByTestId('letters')).toContainText('0 of 6');
+      await expect(page.getByTestId('record')).toHaveCount(0);
       await boardFits(page, width, height);
     });
 

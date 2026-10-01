@@ -57,14 +57,18 @@ async function humanityDay(page: Page, query: string, self: 'accept' | 'challeng
   await expect(page.getByTestId('ending')).toBeVisible();
 }
 
-test('the notice board: a first visit offers the vacancy and today’s week, and every letter blank but for a hint', async ({ page }) => {
+test('the notice board: a first visit has one way in, the vacancy, and every letter blank but for a hint', async ({ page }) => {
   await page.goto('/');
   const board = page.getByRole('region', { name: 'Notice board' });
   await expect(board.getByRole('heading', { level: 1 })).toHaveText('Proof of Humanity');
   await expect(page.getByTestId('board-continue')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Start a new week' })).toBeFocused();
-  await expect(page.getByTestId('board-night')).toContainText('Opens once a week has ended with a letter.');
-  await expect(page.getByTestId('board-night').getByRole('button')).toHaveCount(0);
+  // One key begins a week; today's week is pinned up from the second visit.
+  await expect(page.getByTestId('board-today')).toHaveCount(0);
+  await expect(board.getByRole('button', { name: /week/i })).toHaveCount(1);
+  // Nothing on it yet that is not the way in: no record, no night shift, no daily week; the letters hint at the endings.
+  await expect(page.getByTestId('record')).toHaveCount(0);
+  await expect(page.getByTestId('board-night')).toHaveCount(0);
   await expect(page.getByTestId('letters')).toContainText('0 of 6');
   await expect(page.getByTestId('letters').locator('[data-found="false"]')).toHaveCount(6);
   await expect(page.getByTestId('letters')).toContainText('A letter on day 3, signed.');
@@ -78,19 +82,24 @@ test('the notice board: a first visit offers the vacancy and today’s week, and
 test('today’s week: the same date is the same week, another date another, and the board knows it is under way', async ({ page }) => {
   await page.clock.setFixedTime(new Date(2026, 8, 29, 10, 0));
   await page.goto('/');
+  // A clerk back for another week: a first visit has the vacancy alone, and no calendar leaf yet.
+  await page.evaluate(() =>
+    localStorage.setItem('poh-record', JSON.stringify({ v: 1, weeks: 1, letters: [], bestSavings: 300, bestGrade: null, today: null, endless: null, counted: null })),
+  );
+  await page.reload();
   await expect(page.getByTestId('board-today')).toContainText('Tuesday 29 September 2026');
-  await page.getByRole('button', { name: 'Begin today’s week' }).click();
+  await page.getByRole('button', { name: 'Play the daily week' }).click();
   await expect(page.getByTestId('welcome')).toBeVisible();
   const today = seedForDate({ year: 2026, month: 9, day: 29 });
   expect((await game(page)).seed).toBe(today);
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Continue today’s week' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Continue the daily week' })).toBeVisible();
   await shot(page, 'board-today-underway.png');
   // The next day: another week, and beginning it asks first, since yesterday's is under way.
   await page.clock.setFixedTime(new Date(2026, 8, 30, 10, 0));
   await page.reload();
   await expect(page.getByTestId('board-today')).toContainText('Wednesday 30 September 2026');
-  await page.getByRole('button', { name: 'Begin today’s week' }).click();
+  await page.getByRole('button', { name: 'Play the daily week' }).click();
   await expect(page.getByRole('heading', { name: 'Start another week?' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Keep my week' })).toBeFocused();
   await page.getByRole('button', { name: 'Start another week' }).click();

@@ -41,7 +41,8 @@ const fill = (line: string, values: Record<string, string | number>) =>
  * The Ministry's notice board in the hall, where the game opens: its poster, today's week, the night shift and
  * the letters the clerk has found down the left of the cork, and down the right the week under way or else the
  * vacancy, the clerk's record, and the settings on steel plates screwed to the board. The two sides are pinned
- * independently, so the board is as tall as its taller side and no taller: it fits a laptop's window.
+ * independently, so the board is as tall as its taller side and no taller: it fits a laptop's window. A first visit
+ * has one way in: the vacancy under the poster, the settings beside them and the letters' hints across the foot.
  */
 export function Board({ saved, setAside, record, today, onContinue, onNewWeek, onToday, onNight }: Props) {
   // Starting another week while one is under way asks first, as the menu does.
@@ -69,6 +70,9 @@ export function Board({ saved, setAside, record, today, onContinue, onNewWeek, o
   const todayUnderway = underway && saved.seed === today.seed;
   const todayDone = record.today?.date === today.date ? record.today : null;
   const nightOpen = record.letters.length > 0;
+  // A first visit has one way in, the vacancy: today's week is pinned up from the second, once there is a week to
+  // tell it apart from.
+  const firstVisit = !saved && !setAside && record.weeks === 0 && record.letters.length === 0 && record.today === null;
 
   const copy = async (card: string) => {
     try {
@@ -94,7 +98,7 @@ export function Board({ saved, setAside, record, today, onContinue, onNewWeek, o
   return (
     <main className="board-screen">
       <div className="board" role="region" aria-label={BOARD.regions.board} inert={asking !== null}>
-        <div className="board-cork">
+        <div className={firstVisit ? 'board-cork first-visit' : 'board-cork'}>
           <Poster />
           <section className="board-notices" aria-label={BOARD.regions.notices}>
             {/*
@@ -116,13 +120,14 @@ export function Board({ saved, setAside, record, today, onContinue, onNewWeek, o
                   </div>
                 </article>
               ) : (
-                vacancy
+                !firstVisit && vacancy
               )}
               {/* A save that could not be kept: the supervisor's note, stuck by the vacancy that begins the week again. */}
               {setAside && <p className="board-note">{BOARD.setAside}</p>}
               {saved && vacancy}
-              <Record record={record} />
-              {nightOpen && volumes}
+              {/* A first visit has nothing on record yet: the card goes up with the first week finished. */}
+              {!firstVisit && <Record record={record} />}
+              {(nightOpen || firstVisit) && volumes}
               {/* The settings: two switches on a steel plate screwed to the frame. */}
               <div className="switch-plate">
                 <SettingsPanel volumes={false} />
@@ -130,34 +135,41 @@ export function Board({ saved, setAside, record, today, onContinue, onNewWeek, o
             </div>
             {/* The rest along the row under the poster, each on its own stock, pinned where it was put up. */}
             <div className="board-row">
-              <TodayLeaf
-                label={today.label}
-                line={todayDone ? fill(BOARD.today.finished, { letter: todayDone.letter, savings: todayDone.savings }) : BOARD.today.line}
-                action={todayUnderway ? BOARD.today.resume : todayDone ? BOARD.today.again : BOARD.today.action}
-                onAction={todayUnderway ? onContinue : () => ask('today', onToday)}
-                onCopy={todayDone ? () => void copy(todayDone.card) : null}
-                copied={copied}
-              />
-              <div className="board-stack">
-                {/* The Ministry never closes: an enamel sign screwed to the board, the moon on it, or its padlock until it opens. */}
-                <article className={nightOpen ? 'board-notice notice-night' : 'board-notice notice-night locked'} data-testid="board-night">
-                  <h2>
-                    {BOARD.night.head}
-                    <DeskSprite sprite={nightOpen ? MOON : PADLOCK} className="notice-mark" />
-                  </h2>
-                  {(nightOpen ? [BOARD.night.line, ...(record.endless !== null ? [fill(BOARD.night.best, { count: record.endless })] : [])] : [BOARD.night.locked]).map((line) => (
-                    <p key={line}>{line}</p>
-                  ))}
-                  {nightOpen && (
-                    <div className="board-notice-actions">
-                      <button className="steel-key" onClick={onNight}>
-                        {BOARD.night.action}
-                      </button>
-                    </div>
-                  )}
-                </article>
-                {!nightOpen && volumes}
-              </div>
+              {/* A first visit: the vacancy under the poster, the way in from the title, and nothing else beside it. */}
+              {firstVisit ? (
+                vacancy
+              ) : (
+                <>
+                  <TodayLeaf
+                    label={today.label}
+                    line={todayDone ? fill(BOARD.today.finished, { letter: todayDone.letter, savings: todayDone.savings }) : BOARD.today.line}
+                    action={todayUnderway ? BOARD.today.resume : todayDone ? BOARD.today.again : BOARD.today.action}
+                    onAction={todayUnderway ? onContinue : () => ask('today', onToday)}
+                    onCopy={todayDone ? () => void copy(todayDone.card) : null}
+                    copied={copied}
+                  />
+                  <div className="board-stack">
+                    {/* The Ministry never closes: an enamel sign screwed to the board, the moon on it, or its padlock until it opens. */}
+                    <article className={nightOpen ? 'board-notice notice-night' : 'board-notice notice-night locked'} data-testid="board-night">
+                      <h2>
+                        {BOARD.night.head}
+                        <DeskSprite sprite={nightOpen ? MOON : PADLOCK} className="notice-mark" />
+                      </h2>
+                      {(nightOpen ? [BOARD.night.line, ...(record.endless !== null ? [fill(BOARD.night.best, { count: record.endless })] : [])] : [BOARD.night.locked]).map((line) => (
+                        <p key={line}>{line}</p>
+                      ))}
+                      {nightOpen && (
+                        <div className="board-notice-actions">
+                          <button className="steel-key" onClick={onNight}>
+                            {BOARD.night.action}
+                          </button>
+                        </div>
+                      )}
+                    </article>
+                    {!nightOpen && volumes}
+                  </div>
+                </>
+              )}
             </div>
           </section>
           <Letters found={record.letters} />
