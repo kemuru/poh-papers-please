@@ -412,7 +412,7 @@ function placeLens(desk: HTMLElement, lens: HTMLElement, scale: number) {
 }
 
 /** When the video printout is down after a call: its frame on the blotter (paper-down on .paper-video in desk.css). */
-const LANDED_MS = 640;
+const LANDED_MS = 560;
 
 /**
  * Day 1's one guided look: a note from the supervisor, stuck on the foot of the blotter under the papers it is

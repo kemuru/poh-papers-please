@@ -82,16 +82,17 @@ test('the papers come in out of sight, then a frame at a time on the grid, each 
   const expected: [number, Partial<Sheet>, Partial<Sheet>][] = [
     [20, hidden, hidden],
     [260, hidden, hidden],
-    // Form 1 from 0.28s in frames of 60ms, lifted (its shadow long), 112, 48, 16 and 4 pixels short; it overshoots by an
-    // art pixel as it lands.
-    [310, { x: -112, seen: true, shadow: 8 }, hidden],
-    [370, { x: -48, shadow: 8 }, hidden],
-    [430, { x: -16, shadow: 8 }, { x: -112, seen: true, shadow: 8 }],
-    [490, { x: -4, shadow: 8 }, { x: -48, shadow: 8 }],
-    [550, { x: 2, shadow: 4 }, { x: -16, shadow: 8 }],
-    [610, { x: 0, shadow: 4 }, { x: -4, shadow: 8 }],
-    // The printout two frames behind, with no overshoot: both down from 0.64s.
-    [670, { x: 0, seen: true, shadow: 4 }, { x: 0, seen: true, shadow: 4 }],
+    // Form 1 from 0.28s, lifted (its shadow long), 160, 104, 60, 28 and 8 pixels short; it overshoots by an art pixel as
+    // it lands.
+    [300, { x: -160, seen: true, shadow: 8 }, hidden],
+    [340, { x: -104, shadow: 8 }, hidden],
+    [380, { x: -60, shadow: 8 }, { x: -160, seen: true, shadow: 8 }],
+    [420, { x: -28, shadow: 8 }, { x: -104, shadow: 8 }],
+    [460, { x: -8, shadow: 8 }, { x: -60, shadow: 8 }],
+    [500, { x: 2, shadow: 4 }, { x: -28, shadow: 8 }],
+    [540, { x: 0, shadow: 4 }, { x: -8, shadow: 8 }],
+    // The printout two frames behind, with no overshoot: both down from 0.56s.
+    [580, { x: 0, seen: true, shadow: 4 }, { x: 0, seen: true, shadow: 4 }],
     [2000, { x: 0, seen: true, shadow: 4 }, { x: 0, seen: true, shadow: 4 }],
   ];
   for (const [ms, form, video] of expected) {
@@ -105,8 +106,8 @@ test('the papers come in out of sight, then a frame at a time on the grid, each 
     }
     // Each paper is heard as the frame it touches the blotter comes, and at no other frame.
     const sounds = await heard(page);
-    expect(sounds.includes(2600), `Form 1 heard by ${ms}ms, and not before the frame before`).toBe(ms === 550);
-    expect(sounds.includes(3400), `the printout heard by ${ms}ms, and not before the frame before`).toBe(ms === 670);
+    expect(sounds.includes(2600), `Form 1 heard by ${ms}ms, and not before the frame before`).toBe(ms === 500);
+    expect(sounds.includes(3400), `the printout heard by ${ms}ms, and not before the frame before`).toBe(ms === 580);
   }
 });
 
@@ -160,18 +161,18 @@ for (const how of ['the browser', 'the settings'] as const) {
       await openAndCall(page);
       for (const [ms, form, video] of [
         [20, false, false],
-        [490, false, false],
-        [550, true, false],
-        [610, true, false],
-        [670, true, true],
+        [460, false, false],
+        [500, true, false],
+        [540, true, false],
+        [580, true, true],
       ] as const) {
         await forget(page);
         const [f, v] = await frameAt(page, PAPERS, ms);
         expect([f.seen, v.seen], `${ms}ms`).toEqual([form, video]);
         for (const sheet of [f, v]) if (sheet.seen) expect(sheet, `${ms}ms: at its place, flat on the blotter`).toMatchObject({ x: 0, y: 0, shadow: 4 });
         const sounds = await heard(page);
-        expect(sounds.includes(2600), `Form 1 heard by ${ms}ms`).toBe(ms === 550);
-        expect(sounds.includes(3400), `the printout heard by ${ms}ms`).toBe(ms === 670);
+        expect(sounds.includes(2600), `Form 1 heard by ${ms}ms`).toBe(ms === 500);
+        expect(sounds.includes(3400), `the printout heard by ${ms}ms`).toBe(ms === 580);
       }
       // Stamped, the handle does not travel, and the papers stay in sight, still, until they would have gone under the booth.
       await page.keyboard.press('c');

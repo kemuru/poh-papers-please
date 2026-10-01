@@ -1947,7 +1947,7 @@
   font-family: var(--print);
   font-size: 20px;
   line-height: 24px;
-  animation: land 0.3s step-end both;
+  animation: land 0.24s step-end both;
 }
 
 .hr-letter p {
@@ -2072,7 +2072,7 @@
   flex: 0 0 348px;
   width: auto;
   margin: 44px 0 0 -36px;
-  animation: land 0.3s 1.1s step-end both;
+  animation: land 0.24s 1.1s step-end both;
 }
 
 .hr-clip .letter-subject {
@@ -2101,7 +2101,7 @@
   margin: 56px 0 0;
   padding-bottom: 12px;
   line-height: 20px;
-  animation: land 0.3s 0.8s step-end both;
+  animation: land 0.24s 0.8s step-end both;
 }
 
 .special .front-headline {
@@ -2265,7 +2265,7 @@
   font-family: var(--print);
   font-size: 20px;
   line-height: 20px;
-  animation: land 0.3s 0.8s step-end both;
+  animation: land 0.24s 0.8s step-end both;
 }
 
 .classified b {
@@ -2309,7 +2309,7 @@
   align-items: flex-end;
   gap: 24px;
   margin: 12px 0 0 24px;
-  animation: land 0.3s 1.1s step-end both;
+  animation: land 0.24s 1.1s step-end both;
 }
 
 /* A stamp as the desk has it: its wooden knob, the neck, and the mount with the rubber in its ink. */

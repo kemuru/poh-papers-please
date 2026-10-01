@@ -835,25 +835,27 @@ kbd {
 
 /*
  * The applicant's papers come through the slot from under the booth, out of sight until they come: Form 1 at
- * 0.28s, the printout two frames behind it. Each comes in frames of 60ms, every one held for exactly one frame
- * (step-end) and on the grid, the steps shrinking as it nears its place, 112, 48, 16 and 4 pixels short: slowing by
- * spacing, not by an easing curve. Lifted, a sheet casts its long shadow (--drop) until the frame it touches the
- * blotter, and that frame's animation (card-down, paper-down) plays its sound as it starts (Paper in Desk.tsx):
- * the picture and the sound on one clock. Form 1 is a card and overshoots by an art pixel before it settles; the
- * printout is floppy and does not. Both are down 0.64s after NEXT (0.48s until 30 Sep 2026: too quick to read).
+ * 0.28s, the printout two frames behind it. Each comes in on the desk's clock, frames of 40ms like the stamp's and
+ * the hand-back's, every one held for exactly one frame (step-end) and on the grid, the steps shrinking as it nears
+ * its place, 160, 104, 60, 28 and 8 pixels short: slowing by spacing, not by an easing curve. Lifted, a sheet casts
+ * its long shadow (--drop) until the frame it touches the blotter, and that frame's animation (card-down,
+ * paper-down) plays its sound as it starts (Paper in Desk.tsx): the picture and the sound on one clock. Form 1 is a
+ * card and overshoots by an art pixel before it settles; the printout is floppy and does not. Both are down 0.56s
+ * after NEXT. Until 30 Sep 2026 they came in three frames of 40ms, a pop too quick to read; then in four of 60ms,
+ * which read as lag beside everything else on 40ms: slower is more frames, not longer ones.
  */
 .paper-form {
   animation:
     paper-hidden 0.28s step-end backwards,
-    paper-in 0.24s 0.28s step-end backwards,
-    card-down 0.12s 0.52s step-end forwards;
+    paper-in 0.2s 0.28s step-end backwards,
+    card-down 0.08s 0.48s step-end forwards;
 }
 
 .paper-video {
   animation:
-    paper-hidden 0.4s step-end backwards,
-    paper-in 0.24s 0.4s step-end backwards,
-    paper-down 0.06s 0.64s step-end forwards;
+    paper-hidden 0.36s step-end backwards,
+    paper-in 0.2s 0.36s step-end backwards,
+    paper-down 0.04s 0.56s step-end forwards;
 }
 
 @keyframes paper-hidden {
@@ -866,20 +868,24 @@ kbd {
 @keyframes paper-in {
   0% {
     --drop: 8px;
-    transform: translateX(-112px);
+    transform: translateX(-160px);
   }
-  25% {
+  20% {
     --drop: 8px;
-    transform: translateX(-48px);
+    transform: translateX(-104px);
   }
-  50% {
+  40% {
     --drop: 8px;
-    transform: translateX(-16px);
+    transform: translateX(-60px);
   }
-  75%,
+  60% {
+    --drop: 8px;
+    transform: translateX(-28px);
+  }
+  80%,
   100% {
     --drop: 8px;
-    transform: translateX(-4px);
+    transform: translateX(-8px);
   }
 }
 
@@ -905,28 +911,31 @@ kbd {
 
 /*
  * Every other paper put down on a desk (the morning's extras, the front page, the letters, the clock card): out of
- * sight until its moment, then in from the left as the applicant's papers come, in frames of 40ms, 64, 20 and 4
- * pixels short, and down. Until 30 Sep 2026 each sat in view 160 pixels short through its delay, then slid.
+ * sight until its moment, then in from the left as the applicant's papers come, in frames of 40ms, 160, 104, 60, 28
+ * and 8 pixels short, and down. Until 30 Sep 2026 each sat in view 160 pixels short through its delay, then slid.
  */
 @keyframes land {
   0% {
     visibility: hidden;
-    transform: translateX(-112px);
+    transform: translateX(-160px);
   }
   0.1% {
     visibility: visible;
-    transform: translateX(-112px);
+    transform: translateX(-160px);
   }
-  20% {
-    transform: translateX(-48px);
+  16.667% {
+    transform: translateX(-104px);
   }
-  40% {
-    transform: translateX(-16px);
+  33.333% {
+    transform: translateX(-60px);
   }
-  60% {
-    transform: translateX(-4px);
+  50% {
+    transform: translateX(-28px);
   }
-  80%,
+  66.667% {
+    transform: translateX(-8px);
+  }
+  83.333%,
   100% {
     transform: none;
   }
@@ -2746,14 +2755,14 @@ mark {
  */
 .motion-reduced .paper-form:not(.returning) {
   animation:
-    paper-hidden 0.52s step-end backwards,
-    paper-down 0.06s 0.52s step-end forwards !important;
+    paper-hidden 0.48s step-end backwards,
+    paper-down 0.04s 0.48s step-end forwards !important;
 }
 
 .motion-reduced .paper-video:not(.returning) {
   animation:
-    paper-hidden 0.64s step-end backwards,
-    paper-down 0.06s 0.64s step-end forwards !important;
+    paper-hidden 0.56s step-end backwards,
+    paper-down 0.04s 0.56s step-end forwards !important;
 }
 
 .motion-reduced .paper.returning {
@@ -2778,14 +2787,14 @@ mark {
 @media (prefers-reduced-motion: reduce) {
   .paper-form:not(.returning) {
     animation:
-      paper-hidden 0.52s step-end backwards,
-      paper-down 0.06s 0.52s step-end forwards !important;
+      paper-hidden 0.48s step-end backwards,
+      paper-down 0.04s 0.48s step-end forwards !important;
   }
 
   .paper-video:not(.returning) {
     animation:
-      paper-hidden 0.64s step-end backwards,
-      paper-down 0.06s 0.64s step-end forwards !important;
+      paper-hidden 0.56s step-end backwards,
+      paper-down 0.04s 0.56s step-end forwards !important;
   }
 
   .paper.returning {
@@ -2824,7 +2833,7 @@ mark {
 .paper.morning-extra {
   position: absolute;
   z-index: 5;
-  animation: land 0.3s 0.4s step-end both;
+  animation: land 0.24s 0.4s step-end both;
 }
 
 .at-letter {
@@ -2863,7 +2872,7 @@ mark {
   font-family: var(--print);
   font-size: 20px;
   line-height: 20px;
-  animation: land 0.3s step-end both;
+  animation: land 0.24s step-end both;
 }
 
 .front-page p {
@@ -3078,7 +3087,7 @@ mark {
   font-family: var(--print);
   font-size: 20px;
   line-height: 24px;
-  animation: land 0.3s step-end both;
+  animation: land 0.24s step-end both;
 }
 
 .letterhead p {
@@ -3244,7 +3253,7 @@ mark {
   font-family: var(--print);
   font-size: 20px;
   line-height: 24px;
-  animation: land 0.3s step-end both;
+  animation: land 0.24s step-end both;
 }
 
 .clock-card p {
