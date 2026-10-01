@@ -12,9 +12,9 @@ So the rediscovery baseline is not shaped by what the course teaches.
 
 ## Ambition note (PDF page 2)
 **Three ideas I postponed and what stopped me:**
-1. Videogames: I saw them as too time-intensive to code, same for making the visuals/soundtracks.
-2. 
-3. 
+1. Refactoring Kleros Court v1 completely, to a modern frontend stack with modern libraries: a full rewrite of a whole app felt like too much work to take on.
+2. Redesigning the Kleros Court v2 frontend, with modern colors and a modern frontend: redoing a whole app's look as well as its code felt like too much work to take on.
+3. Videogames: I saw them as too time-intensive to code, same for making the visuals/soundtracks.
 
 **Chosen:** Proof of Humanity: Papers, Please.
 **Old obstacle:** a narrative comedy game needs lots of content, art and UI; far too much work for a side project. Would've taken too much time, would've never been done otherwise.
