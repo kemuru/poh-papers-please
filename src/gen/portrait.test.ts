@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { CAST_PORTRAITS, UNIT_FACES, UNIT_LAMPS } from '../content/portraits';
-import { drawPortrait, PORTRAIT_HEIGHT, PORTRAIT_WIDTH, type PixelImage } from './drawPortrait';
+import { CAST_PORTRAITS, FIRST_UNIT_FACE, UNIT_LAMPS } from '../content/portraits';
+import { generateWeek } from './day';
+import { drawPortrait, mix, PORTRAIT_HEIGHT, PORTRAIT_WIDTH, type PixelImage } from './drawPortrait';
 import { HAIR, INK, PROPS, SKIN } from './portraitParts';
 import {
   ACCESSORIES, AGES, BROW_STYLES, EAR_STYLES, EYE_COLORS, EYE_STYLES, FACIAL_HAIR, generatePortrait,
@@ -16,7 +17,10 @@ const changed = (a: PixelImage, b: PixelImage) =>
 const rowSpan = (points: { y: number }[]) => Math.max(...points.map((p) => p.y)) - Math.min(...points.map((p) => p.y)) + 1;
 
 const randomPeople = seeds(300).map(generatePortrait);
-const everyone: Portrait[] = [...randomPeople, ...Object.values(CAST_PORTRAITS), ...UNIT_FACES];
+/** Each day's Likeness unit over eight weeks: day 1's is the tutorial's, the rest are drawn like anyone's face (day.ts). */
+const unitWeeks = seeds(8).map((seed) => generateWeek(seed).map((queue) => queue.find((a) => a.cast === 'unit')!.photo));
+const units = unitWeeks.flat();
+const everyone: Portrait[] = [...randomPeople, ...Object.values(CAST_PORTRAITS), ...units];
 
 describe('generatePortrait', () => {
   it('gives the same portrait for the same seed', () => {
@@ -81,7 +85,7 @@ describe('drawPortrait', () => {
   });
 
   it('does not modify the portrait it draws', () => {
-    for (const p of [...randomPeople.slice(0, 20), ...UNIT_FACES]) {
+    for (const p of [...randomPeople.slice(0, 20), ...units]) {
       const before = structuredClone(p);
       drawPortrait(p, { eyes: 'closed', mouth: 'open' });
       expect(p).toEqual(before);
@@ -106,7 +110,7 @@ describe('drawPortrait', () => {
   });
 
   it('makes every accessory visible on every kind of head', () => {
-    for (const p of [...randomPeople.slice(0, 60), ...UNIT_FACES]) {
+    for (const p of [...randomPeople.slice(0, 60), ...units]) {
       const plain = drawPortrait({ ...p, accessories: [] });
       for (const item of ACCESSORIES) {
         expect(changed(plain, drawPortrait({ ...p, accessories: [item] })).length, item).toBeGreaterThanOrEqual(4);
@@ -115,7 +119,7 @@ describe('drawPortrait', () => {
   });
 
   it('draws an android exactly as a human: nothing in its face gives it away', () => {
-    for (const face of UNIT_FACES) expect(key(drawPortrait(face))).toBe(key(drawPortrait({ ...face, species: 'human' })));
+    for (const face of units) expect(key(drawPortrait(face))).toBe(key(drawPortrait({ ...face, species: 'human' })));
   });
 
   // The tell must read without colour: the core or the ring contrasts 3:1 or more with every shade of
@@ -149,7 +153,7 @@ describe('drawPortrait', () => {
   const eyeTop = (p: Portrait) => Math.min(...changed(drawPortrait(p), drawPortrait(p, { eyes: 'closed' })).map(({ y }) => y));
 
   it('lights the lamp only with the eyes shut, on every unit and 40 random heads', () => {
-    for (const p of [...UNIT_FACES, ...randomPeople.slice(0, 40)]) {
+    for (const p of [...units, ...randomPeople.slice(0, 40)]) {
       const plain = [{}, { mouth: 'open' as const }].map((pose) => key(drawPortrait(p, pose)));
       const dark = drawPortrait(p, { eyes: 'closed' });
       const eyes = eyeTop(p);
@@ -171,13 +175,15 @@ describe('drawPortrait', () => {
 
   it("lights each day's unit between the brows, on the face: never on an eye, the nose, the mouth or clothing", () => {
     let lit = 0;
-    UNIT_FACES.forEach((p, d) => {
+    for (const week of unitWeeks) week.forEach((p, d) => {
       const tell = UNIT_LAMPS[d];
       if (!tell) return;
       lit++;
       const skin = SKIN[p.face.skin];
       const hair = HAIR[p.hairColor];
-      const face = new Set([skin.hi, skin.base, skin.lo, skin.deep, hair.hi, hair.base, hair.lo, INK]);
+      // The head as drawn at the brows: the skin, a scar across a brow, the brows, the fringe (a buzz cut's is
+      // stubble on skin) and the outline; and a pair of glasses, whose frame a light between the brows falls on too.
+      const face = new Set([skin.hi, skin.base, skin.lo, skin.deep, skin.lip, hair.hi, hair.base, hair.lo, mix(skin.base, hair.base, 0.6), INK, PROPS.frame]);
       const before = drawPortrait(p, { eyes: 'closed' });
       const diff = changed(before, drawPortrait({ ...p, lamp: tell.lamp }, { eyes: 'closed' }));
       const under = diff.map(({ x, y }) => before.pixels[y * before.width + x]!);
@@ -186,7 +192,7 @@ describe('drawPortrait', () => {
       // Its light falls on the brows, as light does and paint does not; the small lamp and the slit spill none.
       if (tell.lamp === 'bloom' || tell.lamp === 'glow') expect(under, `day ${d + 1}`).toContain(hair.lo);
     });
-    expect(lit).toBe(5);
+    expect(lit).toBe(5 * unitWeeks.length);
   });
 
   it('matches the golden images', () => {
@@ -201,6 +207,6 @@ describe('drawPortrait', () => {
       return Array.from({ length: img.height }, (_, y) => img.pixels.slice(y * img.width, (y + 1) * img.width).map(char).join(''));
     };
     expect(ascii(drawPortrait(generatePortrait(1)))).toMatchSnapshot();
-    expect(ascii(drawPortrait({ ...UNIT_FACES[0], lamp: 'bloom' }, { eyes: 'closed' }))).toMatchSnapshot();
+    expect(ascii(drawPortrait({ ...FIRST_UNIT_FACE, lamp: 'bloom' }, { eyes: 'closed' }))).toMatchSnapshot();
   });
 });

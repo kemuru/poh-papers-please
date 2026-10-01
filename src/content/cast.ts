@@ -4,7 +4,7 @@
 // The Likeness units and the Agent never are valid; Pat is, in the end. Everyone is sincere.
 import type { Portrait } from '../gen/portrait';
 import { PHRASE } from '../rules/phrase';
-import { CAST_PORTRAITS, CLERK_PORTRAIT, UNIT_ON_FILE } from './portraits';
+import { CAST_PORTRAITS, CLERK_PORTRAIT } from './portraits';
 
 export type RegularId = 'brenda' | 'grandmaEthel' | 'socrates' | 'nervousNigel' | 'robOtt' | 'nightShiftDawn' | 'dave' | 'sybilVance';
 export type CastId =
@@ -203,28 +203,23 @@ export const LIKENESS = 'Likeness Robotics Ltd';
 
 /**
  * Likeness units: home robots with human faces, sold to households, some of which have heard about
- * the income. One comes to Window 3 on each of days 1 to 6, each with a new face and the ordinary
- * name its household gave it, living on an ordinary street. Nothing at the window gives a unit away,
- * its remarks are ordinary and its photo is flawless. A unit sees through cameras in its eyes, and
- * blinks for the people in the room. The units of days 1, 2, 3 and 6 are older household models:
- * whenever the lids shut, even for a blink, the cameras are in the dark and a night lamp comes on
- * between the brows. It is infrared, like a television remote's: people cannot see it, a phone camera
- * can, so their videos give them away (Rule 2), in every frame with the eyes shut. Day 1's unit breaks
- * no rule: no rule reads a face until day 2, which brings Rule 2 because of it. The lamp is smaller as the week goes on (the day 4
- * Gazette says why). Days 4 and 5 are the current model, whose lamp waits out a blink. Day 4 its
- * papers give it away: it is vouched for by its maker, which is a company, not a registered human.
- * Day 5 its face does: the factory made that face twice, and Window 7 registered the other unit
- * last month. Each unit breaks that one rule only.
+ * the income. One comes to Window 3 on each day of the week, with the ordinary name its household
+ * gave it, living on an ordinary street. Nothing at the window gives a unit away: from day 2 the
+ * generator draws its name, address, face, clothes, remark and chatter as it draws anyone's, so a
+ * clerk who met last week's units cannot pick out this week's (src/gen/day.ts). A unit sees through
+ * cameras in its eyes, and blinks for the people in the room. The units of days 1, 2, 3, 6 and 7 are
+ * older household models: whenever the lids shut, even for a blink, the cameras are in the dark and a
+ * night lamp comes on between the brows. It is infrared, like a television remote's: people cannot
+ * see it, a phone camera can, so their videos give them away (Rule 2), in every frame with the eyes
+ * shut. The lamp is smaller as the week goes on (the day 4 Gazette says why). Days 4 and 5 are the
+ * current model, whose lamp waits out a blink. Day 4 its papers give it away: it is vouched for by its
+ * maker, which is a company, not a registered human. Day 5 its face does: the factory made that face
+ * twice, and Window 7 registered the other unit last month. Each unit breaks that one rule only.
+ *
+ * Day 1's unit is the tutorial's, the same every week. It breaks no rule: no rule reads a face until
+ * day 2, which brings Rule 2 because of it, and the next morning's paper reprints its frame.
  */
-export const UNITS: readonly { name: string; address: string; birthYear: number; wallet: string; remark: string }[] = [
-  { name: 'Clara Voss', address: '48 Lower Queue Road, Greyford', birthYear: 1991, wallet: '0x215BBEC90CD9D5825C31023B411C004D3AC92F0D', remark: "Good morning. I've been looking forward to this all week." },
-  { name: 'Martin Ellery', address: '11 Rubber Stamp Mews, East Filing', birthYear: 1987, wallet: '0x1ECA3A5ED40E154FA8B39E32029E3A02290E65E4', remark: 'I brought my own pen. People like it when you bring your own pen.' },
-  { name: 'Joanna Pike', address: '30 Triplicate Avenue, Queuesbury', birthYear: 2001, wallet: '0x96359836FDDD0411E76CA08E0E3D933868CBC450', remark: "I've come straight from work. I'm in logistics." },
-  { name: 'Theo Marlow', address: '12 Inkwell Terrace, Little Ledgerby', birthYear: 1994, wallet: '0x13481A814871A50CCEAF2F0FF793A44404F8CB32', remark: "I'm on my lunch break. I've an hour, if that helps." },
-  { name: 'Ruth Calloway', address: '17 Carbon Row, Old Stampton', birthYear: 1989, wallet: '0x6017A3641E430A189E385D455E32A93E21F72AD8', remark: "I've taken the morning off. First time this year." },
-  { name: 'Simon Aldous', address: '9 Formsworth Lane, Upper Pendingham', birthYear: 1958, wallet: '0x2E5EAAC998646BA2F85AB208C1F396CAEC796D15', remark: "I'm told the income is paid by the hour. That seems fair." },
-  { name: 'Lydia Crane', address: '27 Paperclip Crescent, Greyford', birthYear: 1985, wallet: '0x7C41D0A9E3B2F58C11A6E0D94B3C27F5A08D6E91', remark: "Happy Humanity Day. I've been counting the hours." },
-];
+export const FIRST_UNIT = { name: 'Clara Voss', address: '48 Lower Queue Road, Greyford', birthYear: 1991, remark: "Good morning. I've been looking forward to this all week." };
 
 export const UNIT_EXITS = { accept: 'Thank you. That was very efficient.', challenge: "I understand. I'll wait to hear from the court." };
 
@@ -259,12 +254,14 @@ export const UNIT_OWNERS = [
   },
 ] as const;
 
-/** The unit Window 7 registered last month, next door to the Binnses, with the day 5 unit's face. Withdrawn on the morning of day 6. */
+/**
+ * The unit Window 7 registered last month, next door to the Binnses, with the day 5 unit's face in its
+ * own hair and clothes (the week draws both: src/gen/day.ts). Withdrawn on the morning of day 6.
+ */
 export const UNIT_ON_FILE_RECORD = {
   name: 'Nina Penrose',
   address: '14 Staple Street, Greyford',
   birthYear: 1990,
-  face: UNIT_ON_FILE,
   window: 'Window 7',
   withdraws: 6,
 };

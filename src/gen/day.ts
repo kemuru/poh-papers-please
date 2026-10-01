@@ -6,25 +6,29 @@
 // against the registry the clerk actually built.
 import { FIRST_NAMES, LAST_NAMES, ON_PAPER, REMARKS, STREETS, TOWNS } from '../content/applicants';
 import {
-  AGENT, CLERK, CLONE, CUTOUT, DEEPFAKE, FIRST_APPLICANT, FIRST_SLIP, INFLUENCER, LIKENESS, PAT, PAT_MOTHER, REGULARS, RENEWAL, SYBIL_FARM, TWINS,
-  TWINS_FORM, UNIT_ON_FILE_RECORD, UNIT_OWNERS, UNITS, type CastId, type RegularId,
+  AGENT, CLERK, CLONE, CUTOUT, DEEPFAKE, FIRST_APPLICANT, FIRST_SLIP, FIRST_UNIT, INFLUENCER, LIKENESS, PAT, PAT_MOTHER, REGULARS, RENEWAL,
+  SYBIL_FARM, TWINS, TWINS_FORM, UNIT_ON_FILE_RECORD, UNIT_OWNERS, type CastId, type RegularId,
 } from '../content/cast';
 import {
-  CAST_PORTRAITS, CATALOGUE_GENTLEMAN, CLONE_PORTRAIT, DEEPFAKE_SLIP, FARM_HATS, FIRST_APPLICANT_PORTRAIT, FIRST_SLIP_PORTRAIT, INFLUENCER_PHOTO,
-  TWIN_TWO, UNIT_FACES, UNIT_LAMPS,
+  CAST_PORTRAITS, CATALOGUE_GENTLEMAN, CLONE_PORTRAIT, DEEPFAKE_SLIP, FARM_HATS, FIRST_APPLICANT_PORTRAIT, FIRST_SLIP_PORTRAIT, FIRST_UNIT_FACE,
+  INFLUENCER_PHOTO, SPECIMEN, TWIN_TWO, UNIT_LAMPS,
 } from '../content/portraits';
 import { hearChallenges } from '../court/court';
+import { sameFace } from '../rules/face';
 import { RULE_DAYS } from '../rules/judge';
 import { PHRASE } from '../rules/phrase';
 import { atWindow, findName, freeVouches, register, remove } from '../rules/registry';
-import type { Registrant, Registry, Sign } from '../rules/types';
+import type { Registrant, Registry, RuleId, Sign } from '../rules/types';
 import { generateApplicant, type GeneratedApplicant, type LookAlike, type Mistakes } from './applicant';
 import { generatePortrait, type Accessory, type Portrait } from './portrait';
 import { createRng, type Rng } from './rng';
 
 export type DayPlan = {
   applicants: number;
-  /** How many of them break a rule: about 30%, as near as the queue's length allows. */
+  /**
+   * How many of the day's cast break a rule: about 30%, as near as the queue's length allows. On days 2
+   * to 5 an ordinary member of the public may make it one more (`ordinaryOffender`).
+   */
   fakes: number;
   /** How long the shift lasts, in real seconds. Null: no clock. */
   shiftSeconds: number | null;
@@ -81,7 +85,7 @@ export const morningRegistry = (seed: number, day: number): Registry => planWeek
  */
 export function morning(registry: Registry, day: number): Registry {
   let today = day === UNIT_ON_FILE_RECORD.withdraws ? remove(registry, UNIT_ON_FILE_RECORD.name) : registry;
-  if (day === FIRST_UNIT_WITHDRAWN) today = remove(today, UNITS[0].name);
+  if (day === FIRST_UNIT_WITHDRAWN) today = remove(today, FIRST_UNIT.name);
   if (day === LAST_DAY) today = today.filter((r) => !(r.name === CLERK.name && r.day === 0));
   return freeVouches(today);
 }
@@ -92,7 +96,7 @@ export const FIRST_UNIT_WITHDRAWN = 2;
 /** Everyone who is somebody in particular: no ordinary applicant gets their name or address. */
 const CAST_NAMES = [
   ...Object.values(REGULARS).flatMap((r) => [r.name, r.address]),
-  ...UNITS.flatMap((u) => [u.name, u.address]), LIKENESS,
+  FIRST_UNIT.name, FIRST_UNIT.address, LIKENESS,
   ...UNIT_OWNERS.flatMap((v) => [v.name, v.address]), UNIT_ON_FILE_RECORD.name, UNIT_ON_FILE_RECORD.address, CLERK.name, CLERK.address,
   PAT.name, PAT.address, PAT_MOTHER.name, ...TWINS.map((t) => t.name), TWINS_FORM.address,
   ...SYBIL_FARM.cousins.map((c) => c.name), SYBIL_FARM.address, AGENT.name, AGENT.address, DEEPFAKE.name, DEEPFAKE.address,
@@ -130,12 +134,15 @@ type Week = {
   refused: string[];
   /** The Binnses' faces, as the registry had them before the week: they bring the same faces back on day 7. */
   owners: Portrait[];
+  /** Each day's unit's face, day 1's first: drawn as the week begins, since the registry has day 5's on file already. */
+  units: Portrait[];
 };
 
 export function planWeek(seed: number): WeekPlan {
   const rng = createRng(seed);
-  const w: Week = { seed, rng, used: new Set(CAST_NAMES), faces: new Set(), refused: [], owners: [] };
+  const w: Week = { seed, rng, used: new Set(CAST_NAMES), faces: new Set(), refused: [], owners: [], units: [] };
   for (const p of [...Object.values(CAST_PORTRAITS), FIRST_APPLICANT_PORTRAIT, FIRST_SLIP_PORTRAIT, CATALOGUE_GENTLEMAN, CLONE_PORTRAIT]) w.faces.add(faceKey(p));
+  w.units = unitFaces(w);
 
   // Who comes when. Ethel is registered on the first morning; the other regulars come once, from
   // day 2, Socrates before the day his year catches up with him.
@@ -212,7 +219,7 @@ function startingRegistry(w: Week): Registry {
       name: UNIT_ON_FILE_RECORD.name,
       address: UNIT_ON_FILE_RECORD.address,
       birthYear: UNIT_ON_FILE_RECORD.birthYear,
-      face: UNIT_ON_FILE_RECORD.face,
+      face: unitOnFile(w),
       window: UNIT_ON_FILE_RECORD.window,
     }),
     ...owners,
@@ -220,12 +227,50 @@ function startingRegistry(w: Week): Registry {
   ];
 }
 
+/** Fig. 2's hair: the specimen points at nobody, so no unit wears it. */
+const specimenHair = (p: Portrait) => p.hair === SPECIMEN.hair && p.hairColor === SPECIMEN.hairColor;
+
+/** Each day's unit's face: day 1's the tutorial's, and from day 2 one drawn for the week. Nobody else in the week has it. */
+function unitFaces(w: Week): Portrait[] {
+  return UNIT_LAMPS.map((_, i) => {
+    const face = i === 0 ? FIRST_UNIT_FACE : drawnUnitFace(w, apart(UNIT_FACE_SALT, w.seed, i + 1));
+    w.faces.add(faceKey(face));
+    w.faces.add(faceKey({ ...face, species: 'human' }));
+    return face;
+  });
+}
+
+/**
+ * A unit's face, drawn as anyone's is, apart from the week's stream. Never a unibrow, where the lamp shows;
+ * never Fig. 2's hair or face; and never a face anyone else in the week has, android or human, since a unit
+ * is drawn as a human.
+ */
+function drawnUnitFace(w: Week, rng: Rng): Portrait {
+  for (;;) {
+    const face: Portrait = { ...generatePortrait(rng.int(0, 0xffffffff)), species: 'android' };
+    const human: Portrait = { ...face, species: 'human' };
+    if (face.face.brows === 'unibrow' || specimenHair(face) || sameFace(human, SPECIMEN)) continue;
+    if (!w.faces.has(faceKey(face)) && !w.faces.has(faceKey(human))) return face;
+  }
+}
+
+/** Nina Penrose's record: the face the factory made twice, the day 5 unit's, in its own hair and clothes. */
+function unitOnFile(w: Week): Portrait {
+  const unit = w.units[RULE_DAYS.duplicate - 1];
+  const rng = apart(ON_FILE_SALT, w.seed);
+  for (;;) {
+    const own = generatePortrait(rng.int(0, 0xffffffff));
+    const record: Portrait = { ...unit, hair: own.hair, outfit: own.outfit, outfitColor: own.outfitColor };
+    if (record.hair !== unit.hair && !specimenHair(record)) return record;
+  }
+}
+
 type Cast = { regulars: GeneratedApplicant[]; twins: boolean; influencerFirst: boolean; extras: Extra[] };
 
 /** The day's people in queue order: the scripted ones in the first half, the day's tester first. */
 function compose(w: Week, day: number, plan: DayPlan, registry: Registry, cast: Cast): GeneratedApplicant[] {
   const { rng } = w;
-  const unit = day <= UNITS.length ? unitOn(day) : null;
+  const unit = unitOn(w, day);
   const pat = PAT_DAYS.includes(day) ? patOn(w, day) : null;
   const mother = day === 4 ? patMother() : null;
   const farm = day === 5 ? SYBIL_FARM.cousins.map((_, i) => cousin(i)) : [];
@@ -253,6 +298,10 @@ function compose(w: Week, day: number, plan: DayPlan, registry: Registry, cast: 
   const tester = testerFor(w, day, { unit, pat, farm, nigel, fillIn: lookAlikes[0] });
   if (tester && tester === lookAlikes[0]) lookAlike(w, tester, day, true);
   if (lookAlikes[1] && day >= 2 && rng.next() < 0.6) lookAlike(w, lookAlikes[1], day, false);
+  // Some days someone ordinary gets something wrong as well, so a stranger is never above suspicion.
+  const taken = [pat, unit].flatMap((a) => a?.planted.map((p) => p.mistake) ?? []);
+  const offender = ordinaryOffender(w, day, registry, fillIns.filter((a) => a !== tester && !a.lookAlike), taken);
+  if (offender) fillIns[fillIns.indexOf(offender.instead)] = offender.who;
 
   const n = plan.applicants;
   let queue: GeneratedApplicant[];
@@ -261,9 +310,10 @@ function compose(w: Week, day: number, plan: DayPlan, registry: Registry, cast: 
     // clerk checks alone; Ethel and one more come last.
     queue = [first(), pat!, unit!, slip!, ...shuffle(rng, [cast.regulars.find((a) => a.cast === 'grandmaEthel')!, influencer ?? fillIns[0]])];
   } else if (day === 4) {
-    // Pat's mother is three places behind Pat, and Pat opens the day.
+    // Pat's mother is three places behind Pat, and Pat opens the day; whoever is let down by a busy voucher
+    // is already last, so moving them there below moves nobody else.
     const rest = shuffle(rng, fixed.concat(fillIns).filter((a) => a !== pat && a !== mother && a !== unit));
-    queue = [pat!, ...rest];
+    queue = [pat!, ...rest.filter((a) => !letDown(a)), ...rest.filter(letDown)];
     queue.splice(rng.int(1, 2), 0, unit!);
     queue.splice(3, 0, mother!);
   } else if (day === LAST_DAY) {
@@ -283,10 +333,39 @@ function compose(w: Week, day: number, plan: DayPlan, registry: Registry, cast: 
   // The second twin comes after the first, and whoever is let down by a busy voucher comes last.
   const [a, b] = twins;
   if (a && queue.indexOf(b) < queue.indexOf(a)) [queue[queue.indexOf(a)], queue[queue.indexOf(b)]] = [b, a];
-  const busy = queue.find((x) => x.planted[0]?.mistake === 'busy');
+  const busy = queue.find(letDown);
   if (busy) queue = [...queue.filter((x) => x !== busy), busy];
   return queue;
 }
+
+/** The days an ordinary member of the public may break a rule too, and how often they do. */
+const OFFENDER_DAYS = [2, 3, 4, 5];
+const OFFENDER_CHANCE = 0.5;
+/** What they get wrong, by the rule it breaks: never the phrase, whose jokes are Humanity Day's, and the newest rule three times as often. */
+const OFFENDERS: readonly (readonly [Exclude<FillInFault, 'phrase' | 'year-typo'>, RuleId, number])[] = [
+  ['another-face', 'face', 1], ['mirrored', 'face', 1],
+  ['two-wrong', 'sign', 1], ['no-sign', 'sign', 0.7], ['wrong-address', 'sign', 0.7],
+  ['unregistered', 'vouch', 1], ['busy', 'vouch', 1],
+  ['back-in-a-hat', 'duplicate', 1],
+];
+const NEWEST_RULE = 3;
+
+/**
+ * Days 2 to 5: on about half of them, one of the ordinary people in the queue has one ordinary fault under
+ * a rule in force, never the one Pat or the unit has that day (`taken`). Whether, who and what are drawn
+ * apart from the week's stream, so the rest of the week stays as it was.
+ */
+function ordinaryOffender(w: Week, day: number, registry: Registry, plain: readonly GeneratedApplicant[], taken: readonly string[]) {
+  const rng = apart(OFFENDER_SALT, w.seed, day);
+  if (!OFFENDER_DAYS.includes(day) || plain.length === 0 || rng.next() >= OFFENDER_CHANCE) return null;
+  const kinds = OFFENDERS.filter(([kind, rule]) => RULE_DAYS[rule] <= day && !taken.includes(kind)).map(
+    ([kind, rule, weight]) => [kind, RULE_DAYS[rule] === day ? weight * NEWEST_RULE : weight] as const,
+  );
+  return { instead: rng.pick(plain), who: faultyFillIn(w, weightedPick(rng, kinds), registry, day, rng) };
+}
+
+/** Vouched for by someone already vouching today: they come last, after whoever holds the vouch. */
+const letDown = (a: GeneratedApplicant) => a.planted[0]?.mistake === 'busy';
 
 /** The first applicant after a new rule tests it: the unit, Pat breaking it, or someone who only looks as if they do. */
 function testerFor(
@@ -351,8 +430,7 @@ function papersForSign(w: Week, a: GeneratedApplicant, queue: GeneratedApplicant
  * Whether the day's n-th applicant has their address on a phone: a draw of its own, from the week's
  * seed, the day and the place in the queue, never from the week's stream, so nothing else in the week moves.
  */
-const onPhone = (seed: number, day: number, n: number) =>
-  createRng([seed, day, n].reduce((h, part) => fmix(((h ^ part) + 0x9e3779b9) >>> 0), 0x70686f6e /* "phon" */)).next() < ON_A_PHONE;
+const onPhone = (seed: number, day: number, n: number) => apart(0x70686f6e /* "phon" */, seed, day, n).next() < ON_A_PHONE;
 
 // Murmur3's finaliser: every bit of the input moves every bit of the output.
 const fmix = (h: number) => {
@@ -360,6 +438,17 @@ const fmix = (h: number) => {
   h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
   return (h ^ (h >>> 16)) >>> 0;
 };
+
+/**
+ * Random numbers of their own, from the week's seed and what they are for (`salt`), never from the week's
+ * stream, so drawing them moves nothing else in the week: whose sign is on a phone, the units, and the
+ * day's ordinary offender.
+ */
+const apart = (salt: number, ...parts: number[]) => createRng(parts.reduce((h, part) => fmix(((h ^ part) + 0x9e3779b9) >>> 0), salt));
+const UNIT_FACE_SALT = 0x75666163; // "ufac"
+const UNIT_SALT = 0x756e6974; // "unit"
+const ON_FILE_SALT = 0x6e696e61; // "nina"
+const OFFENDER_SALT = 0x6f66666e; // "offn"
 
 /** From day 4: a voucher who is registered and free today, unless the applicant's fault is the voucher. */
 function chooseVoucher(w: Week, a: GeneratedApplicant, registry: Registry, day: number): string {
@@ -429,9 +518,9 @@ function unused(used: Set<string>, roll: () => string): string {
 }
 
 /** An ordinary face nobody else in the week has. */
-function newFace(w: Week): Portrait {
+function newFace(w: Week, rng = w.rng): Portrait {
   for (;;) {
-    const face = generatePortrait(w.rng.int(0, 0xffffffff));
+    const face = generatePortrait(rng.int(0, 0xffffffff));
     if (!w.faces.has(faceKey(face))) {
       w.faces.add(faceKey(face));
       return face;
@@ -440,9 +529,9 @@ function newFace(w: Week): Portrait {
 }
 
 /** An ordinary member of the public with a face nobody else in the week has. */
-function fillIn(w: Week, day: number, fake: boolean): GeneratedApplicant {
+function fillIn(w: Week, day: number, fake: boolean, rng = w.rng): GeneratedApplicant {
   for (;;) {
-    const a: GeneratedApplicant = generateApplicant(w.rng.int(0, 0xffffffff), { fake, day, used: w.used });
+    const a: GeneratedApplicant = generateApplicant(rng.int(0, 0xffffffff), { fake, day, used: w.used });
     if (!w.faces.has(faceKey(a.photo))) {
       w.faces.add(faceKey(a.photo));
       return a;
@@ -451,9 +540,9 @@ function fillIn(w: Week, day: number, fake: boolean): GeneratedApplicant {
 }
 
 /** A remark anyone could make, for someone whose looks were changed after their remark was chosen. */
-function plainRemark(w: Week): string {
+function plainRemark(w: Week, rng = w.rng): string {
   const fresh = REMARKS.anyone.filter((line) => !w.used.has(line));
-  const line = w.rng.pick(fresh.length > 0 ? fresh : REMARKS.anyone);
+  const line = rng.pick(fresh.length > 0 ? fresh : REMARKS.anyone);
   w.used.add(line);
   return line;
 }
@@ -475,20 +564,23 @@ function firstSlip(): GeneratedApplicant {
 }
 
 /**
- * The day's Likeness unit: a new face, an ordinary name, a flawless photo, the phrase word for word,
- * and one thing that gives it away. Day 1's lamp breaks no rule: no rule reads a face until day 2, which
- * brings Rule 2 because of it. Built without the week's random numbers, so nobody else changes.
+ * The day's Likeness unit: an ordinary name and address, a flawless photo, the phrase with whatever anyone
+ * says around it, and one thing that gives it away. Day 1's is the tutorial's, the same every week; from
+ * day 2 everything the window shows is drawn as anyone's is, apart from the week's stream, so nobody else
+ * changes. Day 1's lamp breaks no rule: no rule reads a face until day 2, which brings Rule 2 because of it.
  */
-function unitOn(day: number): GeneratedApplicant {
-  const u = UNITS[day - 1];
-  const face = UNIT_FACES[day - 1];
+function unitOn(w: Week, day: number): GeneratedApplicant {
+  const face = w.units[day - 1];
   const tell = UNIT_LAMPS[day - 1];
+  const rng = apart(UNIT_SALT, w.seed, day);
+  const { name, address, birthYear, remark, video } =
+    day === 1 ? { ...FIRST_UNIT, video: { transcript: PHRASE } } : generateApplicant(rng.int(0, 0xffffffff), { fake: false, day, used: w.used, photo: face });
   const a: GeneratedApplicant = {
-    name: u.name, address: u.address, birthYear: u.birthYear, photo: face, remark: u.remark, cast: 'unit',
-    video: { face, transcript: PHRASE, blinked: true, ...(tell ?? {}) },
+    name, address, birthYear, photo: face, remark, cast: 'unit',
+    video: { face, transcript: video.transcript, blinked: true, ...(tell ?? {}) },
     planted: tell && day >= RULE_DAYS.face ? [{ rule: 'face', mistake: 'machine' }] : [],
   };
-  if (day >= 3) a.wallet = u.wallet;
+  if (day >= 3) a.wallet = wallet(rng);
   if (day === 4) {
     a.voucher = LIKENESS;
     a.planted = [{ rule: 'vouch', mistake: 'company' }];
@@ -657,22 +749,21 @@ function extra(w: Week, kind: Extra, day: number, registry: Registry): Generated
     case 'phrase':
       return fillIn(w, day, true);
     default:
-      return faultyFillIn(w, kind, registry);
+      return faultyFillIn(w, kind, registry, day);
   }
 }
 
 /** An ordinary person with one ordinary fault. */
-function faultyFillIn(w: Week, kind: Exclude<FillInFault, 'phrase'>, registry: Registry): GeneratedApplicant {
-  const { rng } = w;
-  const a = fillIn(w, 6, false);
+function faultyFillIn(w: Week, kind: Exclude<FillInFault, 'phrase'>, registry: Registry, day: number, rng = w.rng): GeneratedApplicant {
+  const a = fillIn(w, day, false, rng);
   switch (kind) {
     case 'another-face':
-      a.photo = newFace(w);
+      a.photo = newFace(w, rng);
       a.planted = [{ rule: 'face', mistake: 'another-face' }];
       break;
     case 'mirrored': {
       // A mole shows which way round a face is. A remark about the mark it had would not fit the mole.
-      if (REMARKS.mark[a.photo.face.mark]?.includes(a.remark) && a.photo.face.mark !== 'mole') a.remark = plainRemark(w);
+      if (REMARKS.mark[a.photo.face.mark]?.includes(a.remark) && a.photo.face.mark !== 'mole') a.remark = plainRemark(w, rng);
       const face = { ...a.photo, face: { ...a.photo.face, mark: 'mole' as const } };
       a.photo = face;
       a.video = { ...a.video, face };
@@ -697,14 +788,14 @@ function faultyFillIn(w: Week, kind: Exclude<FillInFault, 'phrase'>, registry: R
       const face: Portrait = { ...them.face, accessories: [...them.face.accessories.filter((x) => x === 'glasses'), rng.pick(FARM_HATS)] };
       a.photo = face;
       a.video = { ...a.video, face };
-      a.remark = plainRemark(w);
+      a.remark = plainRemark(w, rng);
       a.planted = [{ rule: 'duplicate', mistake: 'back-in-a-hat' }];
       break;
     }
     case 'year-typo': {
       // The century slips to "11": 1997 becomes 1197, 2003 becomes 1103. A remark that says the real
       // year would give the typo away.
-      if (a.remark.includes(String(a.birthYear))) a.remark = plainRemark(w);
+      if (a.remark.includes(String(a.birthYear))) a.remark = plainRemark(w, rng);
       a.birthYear = 1100 + (Number(a.birthYear) % 100);
       a.planted = [{ rule: 'living', mistake: 'year-typo' }];
       break;

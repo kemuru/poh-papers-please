@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { UNITS } from '../content/cast';
+import { FIRST_UNIT } from '../content/cast';
 import { HEADLINES, ROBOT_STORY, WALL_STAMPS } from '../content/gazette';
 import { writeGazette, type CaseReport } from './gazette';
 import { generatePortrait } from './portrait';
@@ -80,10 +80,10 @@ describe('the Gazette after the court', () => {
 
 describe('the morning Rule 2 comes in', () => {
   it("reprints day 1's unit, registered by the stamp or by the court, and says what it was", () => {
-    const unit = (decision: 'accept' | 'challenge'): CaseReport => ({ name: UNITS[0].name, face, unit: true, decision, broke: [], ...(decision === 'challenge' ? { upheld: false, removed: null } : {}) });
+    const unit = (decision: 'accept' | 'challenge'): CaseReport => ({ name: FIRST_UNIT.name, face, unit: true, decision, broke: [], ...(decision === 'challenge' ? { upheld: false, removed: null } : {}) });
     const stamped = writeGazette(2, { day: 1, cases: [human, unit('accept')], sentHome: [] }, []);
-    expect(stamped).toMatchObject({ robot: true, wall: [], headline: ROBOT_STORY.headline, subject: UNITS[0].name });
-    expect(stamped.caption).toContain(UNITS[0].name);
+    expect(stamped).toMatchObject({ robot: true, wall: [], headline: ROBOT_STORY.headline, subject: FIRST_UNIT.name });
+    expect(stamped.caption).toContain(FIRST_UNIT.name);
     expect(writeGazette(2, { day: 1, cases: [human, unit('challenge')], sentHome: [] }, []).headline).toBe(ROBOT_STORY.challenged);
     // A week begun on day 2 still gets the Ministry's news.
     expect(writeGazette(2, null, []).headline).toBe(ROBOT_STORY.headline);

@@ -215,8 +215,9 @@ test('the registry lookup finds a voucher by name, whether they are vouching alr
 
 test('a week at the desk: the Gazette reports yesterday, the registry remembers, and the desk judges by it', async ({ page }) => {
   test.setTimeout(240_000);
-  // Seed 127: on day 3 a unit is in the queue as "Joanna Pike", and on day 6 someone names Joanna Pike as their voucher.
-  await page.goto('/?seed=127&day=1');
+  // Seed 8: on day 3 a unit is in the queue, under the name the week drew for it, and on day 6 someone names it as
+  // their voucher.
+  await page.goto('/?seed=8&day=1');
   await page.getByRole('button', { name: /Open the window/ }).click();
   const day1 = (await game(page)).queue;
   for (let i = 0; i < day1.length; i++) await stamp(page);
@@ -239,7 +240,7 @@ test('a week at the desk: the Gazette reports yesterday, the registry remembers,
   await page.getByRole('button', { name: /Open the window/ }).click();
   const day3 = (await game(page)).queue;
   const unitAt = day3.findIndex((a) => a.cast === 'unit');
-  expect(day3[unitAt].name).toBe('Joanna Pike');
+  const unit3 = day3[unitAt].name;
   for (let i = 0; i < day3.length; i++) await stamp(page, i === unitAt ? 'accept' : undefined);
   expect((await game(page)).decided[unitAt]).toMatchObject({ outcome: { correct: false }, citation: 'warning' });
   await finishDay(page);
@@ -253,7 +254,7 @@ test('a week at the desk: the Gazette reports yesterday, the registry remembers,
   const result = page.getByTestId('lookup-result');
   for (const [name, when] of [
     [day1[0].name, 'on day 1 at Window 3'],
-    ['Joanna Pike', 'on day 3 at Window 3'],
+    [unit3, 'on day 3 at Window 3'],
   ]) {
     await page.getByRole('textbox', { name: 'Name to look up' }).fill(name);
     await page.getByRole('button', { name: 'Search', exact: true }).click();
@@ -283,11 +284,12 @@ test('a week at the desk: the Gazette reports yesterday, the registry remembers,
   await expect(wall.locator(`[aria-label="${day5[unit5].name}: Refused"]`)).toHaveCount(1);
   await expect(wall.locator('[aria-label="Wendell Binns: Removed"]')).toHaveCount(1);
 
-  // Day 6: Wendell Binns is no longer registered; the applicant vouched for by Joanna Pike, registered on day 3, is valid.
+  // Day 6: Wendell Binns is no longer registered; the applicant vouched for by the day 3 unit, registered on day 3, is valid.
   await page.getByRole('button', { name: /Open the window/ }).click();
   const day6 = (await game(page)).queue;
-  const edmund = day6.findIndex((a) => a.voucher === 'Joanna Pike');
-  expect(day6[edmund].planted).toEqual([{ rule: 'vouch', mistake: 'unregistered' }]);
+  const vouched = day6.findIndex((a) => a.voucher === unit3);
+  expect(vouched, 'seed 8 changed: pick another').toBeGreaterThan(0);
+  expect(day6[vouched].planted).toEqual([{ rule: 'vouch', mistake: 'unregistered' }]);
   for (let i = 0; i < day6.length; i++) {
     if (i === 0) {
       await callNext(page);
@@ -300,16 +302,16 @@ test('a week at the desk: the Gazette reports yesterday, the registry remembers,
       if (a.planted.length > 0) await inspectFault(page, a);
       await page.getByRole('button', { name: a.planted.length === 0 ? 'Accept' : 'Challenge' }).click();
       await expect.poll(async () => (await game(page)).decided.length).toBe(1);
-    } else if (i === edmund) {
+    } else if (i === vouched) {
       await callNext(page);
-      await expect(page.getByTestId('voucher')).toHaveText('Joanna Pike');
+      await expect(page.getByTestId('voucher')).toHaveText(unit3);
       await shot(page, 'live-registry-vouch.png');
       await page.getByRole('button', { name: 'Accept' }).click();
       await expect.poll(async () => (await game(page)).decided.length).toBe(i + 1);
       await expect(page.getByTestId('citation')).toHaveCount(0);
     } else await stamp(page);
   }
-  expect((await game(page)).decided[edmund]).toEqual({ decision: 'accept', outcome: { correct: true, violations: [] }, citation: null });
+  expect((await game(page)).decided[vouched]).toEqual({ decision: 'accept', outcome: { correct: true, violations: [] }, citation: null });
 });
 
 test('the rulebook has a page per rule in force, today’s open, and fits the window', async ({ page }) => {

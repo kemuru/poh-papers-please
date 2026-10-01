@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ASIDES, SLIPS } from '../content/applicants';
 import { FIRST_APPLICANT, FIRST_SLIP, PAT, PAT_MOTHER } from '../content/cast';
-import { UNIT_FACES } from '../content/portraits';
+import { FIRST_UNIT_FACE } from '../content/portraits';
 import { endDay } from '../economy/economy';
 import { judge, RULE_DAYS, RULES, rulebookForDay } from '../rules/judge';
 import { PHRASE } from '../rules/phrase';
@@ -47,8 +47,10 @@ describe('the week', () => {
         [], ['face:machine'], ['face:machine'], ['vouch:company'], ['duplicate:unit'], ['face:machine'], ['face:machine'],
       ]);
       expect(units[0][0].video.lamp).toBe('bloom');
-      // Nothing at the window gives a unit away: its photo is its own face, and each day's face is new.
-      units.forEach(([u], i) => expect(u.photo).toEqual(UNIT_FACES[i]));
+      // Nothing at the window gives a unit away: its photo is its own face, and each day's face is new. Day 1's is the
+      // tutorial's; the rest are drawn for the week, like anyone's.
+      expect(units[0][0].photo).toEqual(FIRST_UNIT_FACE);
+      units.forEach(([u]) => expect(u.video.face).toEqual(u.photo));
       expect(new Set(units.map(([u]) => JSON.stringify(u.photo.face))).size).toBe(7);
     }
   });

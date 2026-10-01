@@ -262,9 +262,12 @@ test('Superseded: the clone let in on day 6 is the Robin Hale the registry keeps
 test('Replaced: three units stamped in, a second note after the second, and a unit in the clerk’s chair at five', async ({ page }) => {
   test.setTimeout(180_000);
   await page.goto('/?seed=1&day=5');
+  // The units' names, as the week drew them.
+  const units: string[] = [];
   for (let day = 5; day <= 7; day++) {
     if (day === 7) await expect(page.getByTestId('second-note')).toContainText('Two home robots this week. One more and Likeness will want your chair.');
     await page.getByRole('button', { name: /Open the window/ }).click();
+    units.push((await game(page)).queue.find((a) => a.cast === 'unit')!.name);
     await stampAll(page, (a) => (a.cast === 'unit' ? 'accept' : undefined));
     await toTheAccounts(page);
     if (day < 7) await nextMorning(page);
@@ -272,7 +275,7 @@ test('Replaced: three units stamped in, a second note after the second, and a un
   await toTheLetter(page, 'replaced');
   const notice = page.getByRole('article', { name: 'Notice' });
   await expect(notice).toContainText('Notice of replacement');
-  await expect(notice).toContainText('This week you stamped three home robots into the registry: Ruth Calloway (day 5), Simon Aldous (day 6) and Lydia Crane (day 7).');
+  await expect(notice).toContainText(`This week you stamped three home robots into the registry: ${units[0]} (day 5), ${units[1]} (day 6) and ${units[2]} (day 7).`);
   await expect(notice).toContainText('A unit in your likeness takes your chair. Its papers are in order.');
   await expect(page.getByRole('img', { name: /The hall camera over Window 3/ })).toBeVisible();
   await shot(page, 'ending-replaced.png');

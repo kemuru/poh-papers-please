@@ -1,9 +1,9 @@
 // The week as the UI tracks it: which day, which screen, and what the clerk has done so far.
 // It only records player actions; judgments come from src/rules, hearings from src/court, money
 // from src/economy and the words from src/content through src/gen.
-import { AGENT, CLERK, FIRST_APPLICANT, PAT, REGULARS, SYBIL_FARM, UNITS } from '../content/cast';
+import { AGENT, CLERK, FIRST_APPLICANT, PAT, REGULARS, SYBIL_FARM } from '../content/cast';
 import { ETHEL_LINES } from '../content/finale';
-import { CAST_PORTRAITS, CLONE_PORTRAIT, FARM_HATS, FIRST_APPLICANT_PORTRAIT, UNIT_FACES, UNIT_LAMPS } from '../content/portraits';
+import { CAST_PORTRAITS, CLONE_PORTRAIT, FARM_HATS, FIRST_APPLICANT_PORTRAIT, UNIT_LAMPS } from '../content/portraits';
 import { CAST_RULINGS, CITATION_MEMOS, CLERK_MEMO, DISMISSED_NOTES, FIRST_UNIT_DISMISSED, UNIT_MEMOS, UPHELD_NOTES, YEAR_MEMOS } from '../content/verdicts';
 import { stamp } from '../court/court';
 import { citationFor, endDay, OFFER, STARTING_SAVINGS, type Citation, type Credit, type DayEnd } from '../economy/economy';
@@ -377,20 +377,21 @@ export function atSix(s: GameState, week: readonly (readonly GeneratedApplicant[
 
   const sitter = (name: string, face: Portrait, speaker: Speaker | null = null, lamp: Sitter['lamp'] = null): Sitter => ({ name, face, lamp, speaker });
   // Every unit of the week but the first, which its household withdrew: on the bench of whichever Ministry has it.
-  const units = UNITS.slice(FIRST_UNIT_WITHDRAWN - 1).map((u, k) => {
+  const units = week.slice(FIRST_UNIT_WITHDRAWN - 1).map((queue, k) => {
     const day = k + FIRST_UNIT_WITHDRAWN;
-    const i = week[day - 1].findIndex((a) => a.cast === 'unit');
+    const i = queue.findIndex((a) => a.cast === 'unit');
+    const u = queue[i];
     // The current models, whose lamps wait out a blink, light up too, once the dark has lasted.
     const tell = UNIT_LAMPS[day - 1];
-    const unit: Sitter = { ...sitter(u.name, UNIT_FACES[day - 1], null, tell?.lamp ?? 'glow'), ...(tell ? {} : { waits: true as const }) };
-    return { unit, day, here: onFile(u.name, day), there: i >= 0 && refused(week[day - 1][i], day, i) };
+    const unit: Sitter = { ...sitter(u.name, u.photo, null, tell?.lamp ?? 'glow'), ...(tell ? {} : { waits: true as const }) };
+    return { unit, day, here: onFile(u.name, day), there: refused(u, day, i) };
   });
   const agent = sitter(AGENT.name, CAST_PORTRAITS.agent, 'agent');
   const robin = sitter(CLERK.name, CLONE_PORTRAIT, 'robin');
 
   const named = new Set<string>([
     REGULARS.grandmaEthel.name, FIRST_APPLICANT.name, REGULARS.socrates.name, PAT.name, AGENT.name, CLERK.name,
-    ...SYBIL_FARM.cousins.map((c) => c.name), ...UNITS.map((u) => u.name),
+    ...SYBIL_FARM.cousins.map((c) => c.name), ...week.flat().filter((a) => a.cast === 'unit').map((a) => a.name),
   ]);
   // Everyone else the registry took in this week, and everyone else Window 3 refused, by day: each once, whoever
   // came back in a hat.

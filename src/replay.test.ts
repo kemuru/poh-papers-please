@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { UNITS } from './content/cast';
+import { FIRST_UNIT } from './content/cast';
 import { HEADLINES, ROBOT_STORY } from './content/gazette';
 import { RULEBOOK } from './content/rulebook';
 import type { GeneratedApplicant } from './gen/applicant';
@@ -186,7 +186,7 @@ describe('the morning Gazette', () => {
         expect(g.day).toBe(today);
         if (today === 2) {
           expect(g.robot).toBe(true);
-          expect(g.caption).toContain(UNITS[0].name);
+          expect(g.caption).toContain(FIRST_UNIT.name);
           continue;
         }
         const queue = generateWeek(seed)[s.day - 1];
@@ -212,8 +212,8 @@ describe('the morning Gazette', () => {
     expect(g.headline).toBe(ROBOT_STORY.headline);
     expect(g.robot).toBe(true);
     // And the registry has let it go by the morning.
-    expect(days[0].registry.some((r) => r.name === UNITS[0].name)).toBe(true);
-    expect(days[1].registry.some((r) => r.name === UNITS[0].name)).toBe(false);
+    expect(days[0].registry.some((r) => r.name === FIRST_UNIT.name)).toBe(true);
+    expect(days[1].registry.some((r) => r.name === FIRST_UNIT.name)).toBe(false);
   });
 
   it('leads with a Likeness unit when the clerk registered one, and with a human sent to court when that happened', () => {

@@ -12,9 +12,9 @@ import {
   INFLUENCER_PHOTO,
   SPECIMEN,
   TWIN_TWO,
-  UNIT_FACES,
-  UNIT_ON_FILE,
+  FIRST_UNIT_FACE,
 } from '../content/portraits';
+import { UNIT_ON_FILE_RECORD } from '../content/cast';
 import { RULEBOOK } from '../content/rulebook';
 import { planWeek } from '../gen/day';
 import { drawPortrait, PORTRAIT_WIDTH, type PixelImage } from '../gen/drawPortrait';
@@ -91,8 +91,7 @@ describe("Rule 2's Fig. 2", () => {
   it('is nobody', () => {
     const cast: Portrait[] = [
       ...Object.values(CAST_PORTRAITS),
-      ...UNIT_FACES,
-      UNIT_ON_FILE,
+      FIRST_UNIT_FACE,
       CATALOGUE_GENTLEMAN,
       CLERK_PORTRAIT,
       CLONE_PORTRAIT,
@@ -132,7 +131,14 @@ describe("Rule 2's Fig. 2", () => {
   it("wears no fake's hair: no unit or scripted fake shares it, and a look-alike is no likelier a fake than anyone", () => {
     const look = (p: Portrait) => `${p.hair} ${p.hairColor}`;
     const specimen = look(SPECIMEN);
-    for (const unit of [...UNIT_FACES, UNIT_ON_FILE]) expect(look(unit), JSON.stringify(unit.face)).not.toBe(specimen);
+    // Every unit of 50 weeks, and Window 7's, which is on file with the day 5 unit's face in its own hair.
+    const units = [FIRST_UNIT_FACE];
+    for (let seed = 1; seed <= 50; seed++) {
+      const week = planWeek(seed);
+      units.push(...week.queues.flatMap((queue) => queue.filter((a) => a.cast === 'unit').map((a) => a.photo)));
+      units.push(week.mornings[0].find((r) => r.name === UNIT_ON_FILE_RECORD.name)!.face);
+    }
+    for (const unit of units) expect(look(unit), JSON.stringify(unit.face)).not.toBe(specimen);
 
     let everyone = 0;
     let fakes = 0;

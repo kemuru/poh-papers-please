@@ -93,7 +93,7 @@ const rowHalf = (m: Mask, y: number) => {
 const curlDots = mask((x, y) => y % 2 === 0 && (x + y) % 4 === 0);
 const stubbleDots = mask((x, y) => (x + 2 * y) % 3 === 0);
 /** Blend two #rrggbb colours: t = 0 gives a, t = 1 gives b. */
-const mix = (a: string, b: string, t: number) =>
+export const mix = (a: string, b: string, t: number) =>
   `#${[1, 3, 5]
     .map((i) => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t))
     .map((v) => v.toString(16).padStart(2, '0'))

@@ -86,13 +86,15 @@ type Options = {
   day?: number;
   /** Names, addresses and remarks already used this week, so nobody repeats. Added to here. */
   used?: Set<string>;
+  /** Their face, when the week has already chosen it: a Likeness unit's, which the registry may have on file. */
+  photo?: Portrait;
 };
 
 /** An ordinary member of the public, who says the phrase (with or without chatter) or gets it wrong. */
-export function generateApplicant(seed: number, { fake, day = 1, used = new Set() }: Options): FillIn {
+export function generateApplicant(seed: number, { fake, day = 1, used = new Set(), photo: chosen }: Options): FillIn {
   const rng = createRng(seed);
   // The portrait gets its own seed so its features are independent of everything rolled here.
-  const photo = generatePortrait(rng.int(0, 0xffffffff));
+  const photo = chosen ?? generatePortrait(rng.int(0, 0xffffffff));
   const [earliest, latest] = BIRTH_YEARS[photo.face.age];
   const name = unused(used, () => `${rng.pick(FIRST_NAMES)} ${rng.pick(LAST_NAMES)}`);
   const street = rng.pick(STREETS);

@@ -62,9 +62,10 @@ test('six o’clock: the lights go down, the units light up, the last queue says
   await expect(page.locator('[data-testid="lamp"][data-on="true"]')).toHaveCount(6);
   await shot(page, 'six-lamps.png');
 
-  // Nine lines, a press each: the farm, those applying for someone else, the humans.
+  // Nine lines, a press each: the farm, those applying for someone else, the humans. In seed 1 the farm's first
+  // cousin vouched on day 6 for someone who left words out of the phrase, and went from the registry with her.
   const queue: [string, string][] = [
-    ['terry', "One of us is registered, so the face gets one income. We're sharing it three ways."],
+    ['terry', "None of us is registered, so the face gets nothing. We're sharing it three ways."],
     ['kerry', "Twenty minutes each. I've got the middle twenty."],
     ['perry', 'Different hat.'],
     ['agent', "Good evening. I'm here for my principal's first hour. He isn't free until the second."],

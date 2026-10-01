@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { STREETS, TOWNS } from '../content/applicants';
-import { UNIT_FACES } from '../content/portraits';
-import { REGULARS, UNITS } from '../content/cast';
+import { FIRST_UNIT_FACE } from '../content/portraits';
+import { FIRST_UNIT, REGULARS } from '../content/cast';
+import { RULE_DAYS } from '../rules/judge';
 import { findName } from '../rules/registry';
 import { DAYS, generateDay, generateWeek, LAST_DAY, planWeek } from './day';
 
@@ -25,16 +26,40 @@ describe('generateWeek', () => {
     expect(DAYS.map((d) => d.shiftSeconds !== null)).toEqual([false, true, true, true, true, true, false]);
   });
 
-  it('keeps 65 to 75% of each day valid (day 1: 4 of 6; day 7, the six before the clerk)', () => {
+  it('keeps 65 to 75% of each day valid but for one ordinary offender on days 2 to 5, and most of it with them (day 1: 4 of 6; day 7, the six before the clerk)', () => {
     for (const week of weeks) {
       week.forEach((day, i) => {
         // The clerk's own renewal ends Humanity Day, and is not the public's queue.
         const queue = day.filter((a) => a.cast !== 'clerk');
-        const share = queue.filter(valid).length / queue.length;
+        const offenders = i >= 1 && i <= 4 ? queue.filter((a) => a.cast === null && !valid(a)).length : 0;
+        expect(offenders, `day ${i + 1}`).toBeLessThanOrEqual(1);
+        // The cast alone, counting an offender among the honest people they stand in for.
+        const share = (queue.filter(valid).length + offenders) / queue.length;
         expect(share, `day ${i + 1}`).toBeGreaterThanOrEqual(0.65);
         expect(share, `day ${i + 1}`).toBeLessThanOrEqual(0.75);
+        expect(queue.filter(valid).length / queue.length, `day ${i + 1}`).toBeGreaterThanOrEqual(0.55);
       });
     }
+  });
+
+  it('on about half of days 2 to 5 sends someone ordinary with one ordinary fault: never the phrase, never the one Pat or the unit has', () => {
+    let days = 0;
+    for (const week of weeks) {
+      week.slice(1, 5).forEach((queue, i) => {
+        const day = i + 2;
+        const offender = queue.find((a) => a.cast === null && !valid(a));
+        if (!offender) return;
+        days++;
+        expect(offender.planted, `day ${day}`).toHaveLength(1);
+        const [{ rule, mistake }] = offender.planted;
+        expect(rule, `day ${day}`).not.toBe('phrase');
+        expect(RULE_DAYS[rule], `day ${day}: ${mistake}`).toBeLessThanOrEqual(day);
+        const cast = queue.filter((a) => a.cast === 'pat' || a.cast === 'unit').flatMap((a) => a.planted.map((p) => p.mistake));
+        expect(cast, `day ${day}`).not.toContain(mistake);
+      });
+    }
+    expect(days).toBeGreaterThanOrEqual(SEEDS.length * 4 * 0.3);
+    expect(days).toBeLessThanOrEqual(SEEDS.length * 4 * 0.7);
   });
 
   it('makes at least 40% of the absurd cast appearances valid, across full weeks', () => {
@@ -47,10 +72,15 @@ describe('generateWeek', () => {
       const units = week.map((queue) => queue.filter((a) => a.cast === 'unit'));
       expect(units.map((u) => u.length)).toEqual([1, 1, 1, 1, 1, 1, 1]);
       units.forEach(([unit], i) => {
-        expect(unit.photo).toEqual(UNIT_FACES[i]);
+        // Day 1's is the tutorial's; from day 2 each is a face drawn for the week, a home robot's drawn as a human's.
+        if (i === 0) expect(unit.photo).toEqual(FIRST_UNIT_FACE);
+        else expect(unit.photo.species).toBe('android');
         expect(unit.planted).toHaveLength(i === 0 ? 0 : 1);
       });
     }
+    // And a new set each week: no face of days 2 to 7 comes back in another week.
+    const faces = weeks.flatMap((week) => week.slice(1).map((queue) => JSON.stringify(queue.find((a) => a.cast === 'unit')!.photo.face)));
+    expect(new Set(faces).size).toBe(faces.length);
   });
 
   it('brings in one or two regulars a day, always valid, taking turns', () => {
@@ -77,13 +107,19 @@ describe('generateWeek', () => {
     }
   });
 
-  it('never gives an ordinary applicant the name or address of someone in the cast', () => {
-    const cast = weeks.flat(2).filter((a) => a.cast !== null);
+  it('never gives an ordinary applicant the name or address of someone in the cast, or of one of the week’s units', () => {
+    // From day 2 the units are drawn from everyone's names and streets, a week at a time: another week may use them.
+    const drawn = (a: { cast: string | null; name: string }) => a.cast === 'unit' && a.name !== FIRST_UNIT.name;
+    const cast = weeks.flat(2).filter((a) => a.cast !== null && !drawn(a));
     const taken = new Set(cast.flatMap((a) => [a.name, a.address]));
-    for (const a of generateWeek(86).flat().concat(generateWeek(168).flat(), weeks.flat(2))) {
-      if (a.cast === null) {
-        expect(taken, a.address).not.toContain(a.address);
-        expect(taken, a.name).not.toContain(a.name);
+    for (const week of [generateWeek(86), generateWeek(168), ...weeks]) {
+      const units = new Set(week.flat().filter(drawn).flatMap((a) => [a.name, a.address]));
+      for (const a of week.flat()) {
+        if (a.cast !== null) continue;
+        for (const used of [taken, units]) {
+          expect(used, a.address).not.toContain(a.address);
+          expect(used, a.name).not.toContain(a.name);
+        }
       }
     }
   });
@@ -102,7 +138,7 @@ describe('generateWeek', () => {
 
   it('gives the units ordinary addresses, on the streets and in the towns everyone else lives in', () => {
     const ordinary = new RegExp(`^\\d+ (${STREETS.join('|')}), (${TOWNS.join('|')})$`);
-    for (const unit of UNITS) expect(unit.address, unit.name).toMatch(ordinary);
+    for (const unit of weeks.flat(2).filter((a) => a.cast === 'unit')) expect(unit.address, unit.name).toMatch(ordinary);
     for (const a of weeks.flat(2).filter((a) => a.cast === null)) expect(a.address).toMatch(ordinary);
   });
 

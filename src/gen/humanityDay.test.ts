@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CLERK, FIRST_APPLICANT, PAT, RENEWAL, UNIT_OWNERS } from '../content/cast';
-import { CLONE_PORTRAIT, UNIT_FACES } from '../content/portraits';
+import { CLONE_PORTRAIT } from '../content/portraits';
 import { litFrames } from '../rules/face';
 import { judge, rulebookForDay } from '../rules/judge';
 import { findName, remove } from '../rules/registry';
@@ -37,7 +37,9 @@ describe('Humanity Day', () => {
     for (const { seed, queue, seen } of day7) {
       const i = queue.findIndex((a) => a.cast === 'unit');
       const unit = queue[i];
-      expect(unit.photo).toEqual(UNIT_FACES[6]);
+      // Drawn like anyone's face, with nothing between the brows where the slit shows.
+      expect(unit.photo.species).toBe('android');
+      expect(unit.photo.face.brows).not.toBe('unibrow');
       expect(unit.video.lamp).toBe('slit');
       expect(litFrames(unit.video), `seed ${seed}`).toEqual([3]);
       expect(unit.planted).toEqual([{ rule: 'face', mistake: 'machine' }]);

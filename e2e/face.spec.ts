@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { FIRST_SLIP, UNITS } from '../src/content/cast';
+import { FIRST_SLIP, FIRST_UNIT } from '../src/content/cast';
 import { ROBOT_STORY, WELCOME } from '../src/content/gazette';
 import { RULEBOOK } from '../src/content/rulebook';
 import { FIRST_UNIT_DISMISSED } from '../src/content/verdicts';
@@ -114,7 +114,7 @@ test("a hunch on day 1's unit is dismissed, and the court says why; the next mor
   }
   await page.getByRole('button', { name: /End shift/ }).click();
   const court = page.getByRole('region', { name: 'Humanity Court' });
-  await expect(court.locator('article', { hasText: `The Registry v. ${UNITS[0].name}` })).toContainText(FIRST_UNIT_DISMISSED);
+  await expect(court.locator('article', { hasText: `The Registry v. ${FIRST_UNIT.name}` })).toContainText(FIRST_UNIT_DISMISSED);
   await page.getByRole('button', { name: /To the accounts/ }).click();
   await page.getByRole('button', { name: 'Begin day 2' }).click();
   await expect(page.getByTestId('headline')).toHaveText(ROBOT_STORY.challenged);
@@ -125,7 +125,7 @@ test('day 2: the paper reprints the frame, the book opens at Rule 2 with its fig
   await page.setViewportSize({ width: 1280, height: 700 });
   await page.goto('/?seed=1&day=2');
   await expect(page.getByTestId('headline')).toHaveText(ROBOT_STORY.headline);
-  await expect(page.getByTestId('gazette-still').getByRole('img', { name: `${UNITS[0].name}, frame 3` })).toBeVisible();
+  await expect(page.getByTestId('gazette-still').getByRole('img', { name: `${FIRST_UNIT.name}, frame 3` })).toBeVisible();
   await expect(page.getByTestId('gazette')).toContainText('television remote');
   await expect(tabs(page)).toHaveText(['1', '2']);
   await expect(openTab(page)).toHaveText('2');

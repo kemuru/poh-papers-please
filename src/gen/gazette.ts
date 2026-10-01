@@ -1,6 +1,6 @@
 // The morning Gazette, written from what the clerk actually did yesterday. Pure: the same day,
 // the same yesterday and the same lines already printed give the same newspaper.
-import { UNITS } from '../content/cast';
+import { FIRST_UNIT } from '../content/cast';
 import { CAPTION, countdown, HEADLINES, LIKENESS_FINED, ROBOT_STORY, SMALL_NOTICES, SPECIAL, THREAD, type WALL_STAMPS } from '../content/gazette';
 import type { EndingId } from '../economy/endings';
 import { RULEBOOK } from '../content/rulebook';
@@ -65,8 +65,8 @@ export function writeGazette(day: number, yesterday: Yesterday | null, shown: re
   if (day === RULE_DAYS.face) {
     const challenged = yesterday?.cases.some((c) => c.unit && c.decision === 'challenge') ?? false;
     const headline = challenged ? ROBOT_STORY.challenged : ROBOT_STORY.headline;
-    const caption = ROBOT_STORY.caption.replace('{name}', UNITS[0].name);
-    return { ...base, headline, headlineLine: headline, robot: true, wall: [], caption, subject: UNITS[0].name };
+    const caption = ROBOT_STORY.caption.replace('{name}', FIRST_UNIT.name);
+    return { ...base, headline, headlineLine: headline, robot: true, wall: [], caption, subject: FIRST_UNIT.name };
   }
   const { pool, name, rule, count } = story(yesterday);
   const fined = handedIn && pool !== 'unit';

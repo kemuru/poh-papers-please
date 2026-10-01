@@ -1,5 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { CAST_PORTRAITS, UNIT_FACES, UNIT_LAMPS } from '../content/portraits';
+import { CAST_PORTRAITS, UNIT_LAMPS } from '../content/portraits';
+import { generateWeek } from '../gen/day';
 import { ACCESSORIES, generatePortrait, LAMP_SIZES } from '../gen/portrait';
 import { litFrames } from '../rules/face';
 import { PHRASE } from '../rules/phrase';
@@ -15,6 +16,8 @@ export function PortraitGallery() {
   const [seed, setSeed] = useState(1);
   const portrait = useMemo(() => generatePortrait(seed), [seed]);
   const grid = useMemo(() => GRID_SEEDS.map((s) => [s, generatePortrait(s)] as const), []);
+  // Day 1's unit is the same every week; the rest are drawn with the week, so these are week `seed`'s.
+  const units = useMemo(() => generateWeek(seed).map((queue) => queue.find((a) => a.cast === 'unit')!.photo), [seed]);
 
   return (
     <main style={{ fontFamily: 'monospace', padding: 16, background: '#e4e6e3', color: '#2a2220', minHeight: '100vh' }}>
@@ -70,9 +73,9 @@ export function PortraitGallery() {
             </Tile>
           ))}
         </Row>
-        <h3>The Likeness units, days 1 to 6, and the lamp each shows in the game</h3>
+        <h3>The Likeness units of week {seed}, days 1 to 7, and the lamp each shows in the game</h3>
         <Row>
-          {UNIT_FACES.map((face, i) => {
+          {units.map((face, i) => {
             const tell = UNIT_LAMPS[i];
             const lit = litFrames({ face, transcript: PHRASE, blinked: true, ...(tell ?? {}) });
             return (

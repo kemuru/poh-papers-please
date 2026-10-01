@@ -1,6 +1,6 @@
-import { UNITS } from '../content/cast';
+import { FIRST_UNIT } from '../content/cast';
 import { GAZETTE_TITLE, WALL_STAMPS, WELCOME } from '../content/gazette';
-import { UNIT_FACES, UNIT_LAMPS } from '../content/portraits';
+import { FIRST_UNIT_FACE, UNIT_LAMPS } from '../content/portraits';
 import { drawPortrait, PORTRAIT_HEIGHT, PORTRAIT_WIDTH } from '../gen/drawPortrait';
 import type { Gazette, WallEntry } from '../gen/gazette';
 import { PHRASE } from '../rules/phrase';
@@ -10,7 +10,7 @@ import { FramePicture, frameShot } from './Documents';
 import { PixelPortrait, pixelPaths } from './PixelPortrait';
 
 /** Day 1's unit, as its video filmed it: the frame its night lamp came on in, which the day 2 paper reprints. */
-const FIRST_UNIT_VIDEO: Video = { face: UNIT_FACES[0], transcript: PHRASE, blinked: true, ...(UNIT_LAMPS[0] ?? {}) };
+const FIRST_UNIT_VIDEO: Video = { face: FIRST_UNIT_FACE, transcript: PHRASE, blinked: true, ...(UNIT_LAMPS[0] ?? {}) };
 const REPRINTED_FRAME = 3;
 
 /**
@@ -54,7 +54,7 @@ export function GazettePage({ gazette }: { gazette: Gazette }) {
         {gazette.robot ? (
           // The frame the clerk saw, reprinted large in newsprint's tones, and its light in colour; the story runs round it.
           <span className="front-still" data-testid="gazette-still">
-            <FramePicture video={FIRST_UNIT_VIDEO} frame={REPRINTED_FRAME} title={`${UNITS[0].name}, frame ${REPRINTED_FRAME}`} />
+            <FramePicture video={FIRST_UNIT_VIDEO} frame={REPRINTED_FRAME} title={`${FIRST_UNIT.name}, frame ${REPRINTED_FRAME}`} />
             <svg className="front-lamp" viewBox={`0 0 ${PORTRAIT_WIDTH} ${PORTRAIT_HEIGHT}`} shapeRendering="crispEdges" aria-hidden="true">
               {REPRINTED_LAMP.map(({ color, d }) => (
                 <path key={color} fill={color} d={d} />

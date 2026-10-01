@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AGENT, CLERK, FIRST_APPLICANT, PAT, REGULARS, SYBIL_FARM, UNITS } from './content/cast';
+import { AGENT, CLERK, FIRST_APPLICANT, PAT, REGULARS, SYBIL_FARM } from './content/cast';
 import { AGENT_LINES, ETHEL_LINES, FARM_LINES, HORTENSE_LINES, LIKENESS_LINES, PAT_LINES, ROBIN_LINES, SIX, SOCRATES_LINES } from './content/finale';
 import { LETTER_CLOSE } from './content/verdicts';
 import type { Evidence } from './court/types';
@@ -58,6 +58,9 @@ const unless =
   };
 
 /** A week from `startDay` to six o'clock on Humanity Day (or to a fired clerk's letter), with every step taken. */
+/** The week's Likeness units by name, day 1's first: from day 2 each week draws its own. */
+const unitNames = (week: readonly (readonly GeneratedApplicant[])[]) => week.map((queue) => queue.find((a) => a.cast === 'unit')!.name);
+
 function toSix(seed: number, clerk: Clerk, { startDay = 1, morning }: { startDay?: number; morning?: (s: GameState) => Action | null } = {}) {
   const week = generateWeek(seed);
   let s = startWeek(seed, startDay);
@@ -181,14 +184,14 @@ describe('the hall at six, read from the week', () => {
       const { s, week } = toSix(seed, careful);
       const six = atSix(s, week)!;
       expect(six.here.filter((x) => x.lamp), `seed ${seed}`).toEqual([]);
-      expect(six.there.filter((x) => x.lamp).map((x) => x.name)).toEqual(UNITS.slice(1).map((u) => u.name));
+      expect(six.there.filter((x) => x.lamp).map((x) => x.name)).toEqual(unitNames(week).slice(1));
       // The current models' lamps (days 4 and 5) wait out the dark first.
-      expect(six.there.filter((x) => x.waits).map((x) => x.name)).toEqual([UNITS[3].name, UNITS[4].name]);
+      expect(six.there.filter((x) => x.waits).map((x) => x.name)).toEqual(unitNames(week).slice(3, 5));
       // The clerk went with their voucher; Pat got in on day 6, at the fifth attempt.
       expect(six.facts).toMatchObject({ robinOnFile: false, hortenseRemoved: true, socratesRegistered: true, patAttempt: 5, offer: null });
-      // The farm's first cousin was registered on day 5, and shares; in seed 3 he vouched on day 7 for someone who
-      // said nothing, and went from the registry with her, so the face has nothing to share.
-      expect(six.facts.cousinsRegistered, `seed ${seed}`).toBe(seed === 3 ? 0 : 1);
+      // The farm's first cousin was registered on day 5, and shares; in seed 1 he vouched on day 6 for someone who
+      // left words out of the phrase, and went from the registry with her, so the face has nothing to share.
+      expect(six.facts.cousinsRegistered, `seed ${seed}`).toBe(seed === 1 ? 0 : 1);
       expect(six.facts.cousinsRegistered).toBe(s.registry.filter((r) => SYBIL_FARM.cousins.some((c) => c.name === r.name)).length);
       expect(writeSix(six.facts).queue[7].text).toBe(HORTENSE_LINES.removed);
       // Every speaker has a seat, and the other Robin Hale sits at the end nearest Window 2.
@@ -203,8 +206,8 @@ describe('the hall at six, read from the week', () => {
     const { s, week } = toSix(1, unless((a, day) => (a.cast === 'unit' && day <= 4 ? 'accept' : undefined)));
     expect(s.ending).toBe('replaced');
     const six = atSix(s, week)!;
-    expect(six.here.filter((x) => x.lamp).map((x) => x.name)).toEqual(UNITS.slice(1, 4).map((u) => u.name));
-    expect(six.there.filter((x) => x.lamp).map((x) => x.name)).toEqual(UNITS.slice(4).map((u) => u.name));
+    expect(six.here.filter((x) => x.lamp).map((x) => x.name)).toEqual(unitNames(week).slice(1, 4));
+    expect(six.there.filter((x) => x.lamp).map((x) => x.name)).toEqual(unitNames(week).slice(4));
     // The clerk registered their own renewal? No: they challenged it, with evidence, and it went.
     expect(six.facts.hortenseRemoved).toBe(true);
   });

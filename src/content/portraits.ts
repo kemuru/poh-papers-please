@@ -4,40 +4,14 @@ import type { Face, LampSize, Portrait } from '../gen/portrait';
 const android = (face: Face, look: Omit<Portrait, 'species' | 'face' | 'accessories'>): Portrait => ({ species: 'android', face, ...look, accessories: [] });
 
 /**
- * The Likeness units, one a day on days 1 to 6: home robots with human faces, each face new. Their
- * photos are flawless and nothing at the window gives them away; the video, most days, does.
+ * Day 1's Likeness unit, the tutorial's, the same every week: a home robot with a human face, its photo
+ * flawless. The units of days 2 to 7 are drawn like anyone (src/gen/day.ts), so none of them has a face
+ * a returning clerk could know.
  */
-export const UNIT_FACES: readonly Portrait[] = [
-  android(
-    { skin: 'rose', shape: 'oval', eyes: 'almond', eyeColor: 'green', brows: 'arched', nose: 'small', mouth: 'smile', ears: 'normal', age: 'adult', mark: 'none' },
-    { hair: 'bob', hairColor: 'auburn', facialHair: 'none', outfit: 'sweater', outfitColor: 'teal' },
-  ),
-  android(
-    { skin: 'tan', shape: 'square', eyes: 'round', eyeColor: 'brown', brows: 'thick', nose: 'straight', mouth: 'neutral', ears: 'normal', age: 'adult', mark: 'none' },
-    { hair: 'short', hairColor: 'dark-brown', facialHair: 'none', outfit: 'shirt', outfitColor: 'white' },
-  ),
-  android(
-    { skin: 'umber', shape: 'round', eyes: 'wide', eyeColor: 'dark', brows: 'thin', nose: 'button', mouth: 'grin', ears: 'small', age: 'young', mark: 'none' },
-    { hair: 'curly', hairColor: 'black', facialHair: 'none', outfit: 'hoodie', outfitColor: 'mustard' },
-  ),
-  android(
-    { skin: 'porcelain', shape: 'long', eyes: 'narrow', eyeColor: 'blue', brows: 'flat', nose: 'long', mouth: 'smirk', ears: 'big', age: 'adult', mark: 'freckles' },
-    { hair: 'side-part', hairColor: 'blond', facialHair: 'none', outfit: 'suit', outfitColor: 'grey' },
-  ),
-  android(
-    { skin: 'olive', shape: 'round', eyes: 'almond', eyeColor: 'hazel', brows: 'worried', nose: 'small', mouth: 'neutral', ears: 'normal', age: 'adult', mark: 'none' },
-    { hair: 'bun', hairColor: 'brown', facialHair: 'none', outfit: 'turtleneck', outfitColor: 'plum' },
-  ),
-  android(
-    { skin: 'ebony', shape: 'wide', eyes: 'tired', eyeColor: 'dark', brows: 'flat', nose: 'wide', mouth: 'smile', ears: 'normal', age: 'old', mark: 'none' },
-    { hair: 'buzz', hairColor: 'grey', facialHair: 'none', outfit: 'sweater', outfitColor: 'navy' },
-  ),
-  // Humanity Day's: nothing worn and no unibrow between the brows, where its slit shows.
-  android(
-    { skin: 'sand', shape: 'heart', eyes: 'round', eyeColor: 'grey', brows: 'thin', nose: 'straight', mouth: 'smile', ears: 'normal', age: 'adult', mark: 'none' },
-    { hair: 'curly', hairColor: 'brown', facialHair: 'none', outfit: 'shirt', outfitColor: 'khaki' },
-  ),
-];
+export const FIRST_UNIT_FACE: Portrait = android(
+  { skin: 'rose', shape: 'oval', eyes: 'almond', eyeColor: 'green', brows: 'arched', nose: 'small', mouth: 'smile', ears: 'normal', age: 'adult', mark: 'none' },
+  { hair: 'bob', hairColor: 'auburn', facialHair: 'none', outfit: 'sweater', outfitColor: 'teal' },
+);
 
 /**
  * Each day's unit's night lamp, and on day 2 the second blink that lights it twice. Day 1's, the
@@ -59,7 +33,7 @@ export const UNIT_LAMPS: readonly ({ lamp: LampSize; nervous?: true } | null)[] 
 /**
  * The face in the rulebook's Fig. 2: the Ministry's specimen, nobody in the queue, with no fake's hair
  * either. It was short and dark brown until that turned out to be every week's day 2 unit
- * (src/ui/faceFigure.test.tsx).
+ * (src/ui/faceFigure.test.tsx); the units drawn since are never given its hair.
  */
 export const SPECIMEN: Portrait = {
   species: 'human',
@@ -78,9 +52,6 @@ export const SPECIMEN: Portrait = {
  * On day 7, the slit. Day 1's book has no Rule 2, so no figure.
  */
 export const figureLamp = (day: number): LampSize => UNIT_LAMPS[day - 1]?.lamp ?? 'small';
-
-/** The unit Window 7 registered last month, in its own clothes: the factory made its face twice, and the day 5 unit has the other. */
-export const UNIT_ON_FILE: Portrait = { ...UNIT_FACES[4], hair: 'long', outfit: 'shirt', outfitColor: 'forest' };
 
 /** The more attractive man of the day 2 notice, whose photograph someone registered with. Nobody in the queue has his face. */
 export const CATALOGUE_GENTLEMAN: Portrait = {

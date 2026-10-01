@@ -84,9 +84,11 @@ describe('the sign: paper or phone', () => {
   it('leaves no lean on day 3 either, Pat aside: the unit is as likely on paper as on a phone', () => {
     const day3 = holders(3).filter((a) => a.cast !== 'pat');
     const fakes = day3.filter((a) => !valid(a));
-    expect(fakes.length).toBe(WEEKS.length);
-    expect(new Set(fakes.map((a) => a.cast))).toEqual(new Set(['unit']));
-    expect(new Set(fakes.map(medium))).toEqual(new Set(['paper', 'phone']));
+    const units = fakes.filter((a) => a.cast === 'unit');
+    expect(units.length).toBe(WEEKS.length);
+    // The day's other fakes are ordinary people who got something else wrong, holding their address up like anyone.
+    expect(new Set(fakes.map((a) => a.cast))).toEqual(new Set(['unit', null]));
+    expect(new Set(units.map(medium))).toEqual(new Set(['paper', 'phone']));
     expect(Math.abs(gap(day3))).toBeLessThan(0.05);
   });
 });
