@@ -1,14 +1,17 @@
-// How a shift's height is shared between the hall and the desk, for the hall (Hall.tsx) and the stage's crisp
-// scale (Stage.tsx) alike. The desk never gives way: the hall has whatever the desk's tallest state leaves, within
-// limits; and a crisp scale that would leave the desk less than that under the shortest hall is not taken.
+// How a shift's height is shared between the hall and the desk (Hall.tsx). The hall is the same on every stage, and
+// the desk below takes the rest: the stage is never narrower or shorter than its design (Stage.tsx), and there the
+// desk's tallest state fits under it.
 
 /** One hall pixel, in design pixels: the portraits' art pixel. */
 export const PX = 2;
 /** The hall's bottom edge, in design pixels. */
 const BORDER = 2;
-/** The fewest hall rows, on the shortest stages (the strip without its railing), and the most. */
-const MIN_ROWS = 48;
-const MAX_ROWS = 112;
+/**
+ * The hall's rows, on every stage: what the desk's tallest state leaves on the narrowest, shortest one (1400×820).
+ * Until 1 Oct 2026 the hall had whatever the desk left on each stage, from 48 rows to 112, and a big monitor, whose
+ * papers were drawn twice as big, cut it down to its strip.
+ */
+export const HALL_ROWS = 86;
 /** The desk rail across the top of the stage, in design pixels: .topbar's height in desk.css. */
 export const RAIL = 40;
 
@@ -31,37 +34,7 @@ export const DESK_NEEDS: readonly (readonly [width: number, height: number])[] =
   [1640, 564],
 ];
 
-/**
- * The same with the evidence drawn at twice the art scale (the video's stills and the form's photo, four design
- * pixels to a portrait pixel), measured the same way (seeds 1 to 4, at 1656, 1700 and 1760). It starts at the
- * narrowest stage whose papers hold three doubled stills with the widest sign still beside them; from there the
- * papers are at their widest, and every day's tallest is a day 1 or day 2 applicant's, 164 pixels taller than at the
- * art scale: the doubled photo (the case number typed beside it, not under it) and the doubled stills, 96 each.
- */
-export const DESK_NEEDS_X2: readonly (readonly [width: number, height: number])[] = [[1656, 728]];
+export const deskNeeds = (width: number) => DESK_NEEDS.reduce((need, [w, h]) => (width >= w ? h : need), DESK_NEEDS[0][1]);
 
-const needs = (table: typeof DESK_NEEDS, width: number) => table.reduce((need, [w, h]) => (width >= w ? h : need), table[0][1]);
-
-export const deskNeeds = (width: number) => needs(DESK_NEEDS, width);
-
-/**
- * Whether a shift this size (below the desk rail, design pixels) draws the evidence at twice the art scale: only
- * where the papers are wide enough for it, and the desk in its tallest state so drawn still fits under the
- * shortest hall. It never costs a window its crisp scale (Stage.tsx asks for the desk at the art scale), only
- * hall rows: the hall gives up what the doubled papers need.
- */
-export const evidenceX2 = (width: number, height: number) =>
-  width >= DESK_NEEDS_X2[0][0] && height >= BORDER + MIN_ROWS * PX + needs(DESK_NEEDS_X2, width);
-
-/**
- * The hall's rows on a shift this size (below the desk rail, design pixels): whatever the desk leaves, within limits.
- * All of it: the desk's foot is the blotter's edge and the lever's shadow, and until 30 Sep 2026 a hall that took
- * those 6 pixels too pushed them out of the window whenever the tallest papers were out.
- */
-export function hallRows(width: number, height: number): number {
-  const need = evidenceX2(width, height) ? needs(DESK_NEEDS_X2, width) : deskNeeds(width);
-  return Math.max(MIN_ROWS, Math.min(MAX_ROWS, Math.floor((height - BORDER - need) / PX)));
-}
-
-/** The least height a stage this wide needs for the shift: the rail, the shortest hall, and the desk in its tallest state. */
-export const shiftFloor = (width: number) => RAIL + BORDER + MIN_ROWS * PX + deskNeeds(width);
+/** The least height a stage this wide needs for the shift: the rail, the hall, and the desk in its tallest state. */
+export const shiftFloor = (width: number) => RAIL + BORDER + HALL_ROWS * PX + deskNeeds(width);

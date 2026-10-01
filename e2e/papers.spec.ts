@@ -288,42 +288,43 @@ for (const [width, height, dpr] of [
   });
 }
 
-// Where the stage has the room (room.ts, evidenceX2), the stills and the form's photo are drawn at twice the art
-// scale; everywhere else at the art scale. A 1080p monitor's browser window has it, and a 1080p laptop's at 125%;
-// a 13-inch MacBook's does not. Day 4 has every paper the desk holds, the registry's answers and vouchers included.
-for (const [width, height, dpr, doubled] of [
-  [1920, 955, 1, true],
-  [1536, 740, 1.25, true],
-  [1440, 789, 2, false],
+// The stage is one size in every window (Stage.tsx), so a 1080p monitor's browser window, a 1080p laptop's at 125% and
+// a 13-inch MacBook's show the same desk: the stills and the form's photo at the art scale, under a hall as tall. Until
+// 1 Oct 2026 the first two drew the evidence twice as big and took the room for it from the hall. Day 4 has every
+// paper the desk holds, the registry's answers and vouchers included.
+for (const [width, height, dpr] of [
+  [1920, 955, 1],
+  [1536, 740, 1.25],
+  [1440, 789, 2],
 ] as const) {
   test.describe(`in a ${width}×${height} window at ${dpr}×`, () => {
     test.use({ viewport: { width, height }, deviceScaleFactor: dpr });
 
-    test(`the evidence is drawn ${doubled ? 'at twice' : 'at'} the art scale, and the day's tallest papers fit`, async ({ page }) => {
+    test('the evidence is drawn at the art scale under the same hall, and the day\'s tallest papers fit', async ({ page }) => {
       await page.goto('/?seed=1&day=4');
       await page.getByRole('button', { name: /Open the window/ }).click();
-      await expect(page.locator('.stage')).toHaveClass(doubled ? /evidence-x2/ : /^stage$/);
       const { queue } = await game(page);
-      // The hall gives way for the doubled papers once, for the whole day: it never changes height as they come and go.
+      // The hall is as tall in every window, and never changes height as the papers come and go.
       const halls = new Set<number>();
       for (let i = 0; i < queue.length; i++) {
         await page.getByRole('button', { name: 'Call next applicant' }).click();
         await expect.poll(async () => (await game(page)).called).toBe(i + 1);
         await page.waitForFunction(() => document.getAnimations().filter((a) => (a.effect as KeyframeEffect).target?.closest('.paper')).every((a) => a.playState === 'finished'));
-        // In design pixels: four to a portrait pixel, or two.
+        // In design pixels: two to a portrait pixel.
         const pictures = await page.evaluate(() => {
           const stage = document.querySelector('.stage') as HTMLElement;
           const scale = stage.getBoundingClientRect().width / stage.offsetWidth;
           return [...document.querySelectorAll('.paper-form .photo svg, .paper-video .frame:not(.pair) svg')].map((el) => [Math.round(el.getBoundingClientRect().width / scale), Math.round(el.getBoundingClientRect().height / scale)]);
         });
         expect(pictures.length, `applicant ${i + 1}`).toBeGreaterThan(0);
-        for (const picture of pictures) expect(picture, `applicant ${i + 1}`).toEqual(doubled ? [160, 192] : [80, 96]);
+        for (const picture of pictures) expect(picture, `applicant ${i + 1}`).toEqual([80, 96]);
         for (const key of ['2', 'v']) {
           await page.keyboard.press(key);
           // The booth and the desk end inside the window, nothing scrolls, and no paper runs off the blotter.
           const fit = await page.evaluate(() => {
             const foot = document.querySelector('.station')!.getBoundingClientRect().bottom;
-            const hall = document.querySelector('[aria-label^="The waiting hall"]')!.getBoundingClientRect().height;
+            const stage = document.querySelector('.stage') as HTMLElement;
+            const hall = document.querySelector('[aria-label^="The waiting hall"]')!.getBoundingClientRect().height / (stage.getBoundingClientRect().width / stage.offsetWidth);
             const blotter = document.querySelector('.desk-papers')!.getBoundingClientRect();
             const papers = [...document.querySelectorAll('.paper-form, .paper-video')].map((el) => el.getBoundingClientRect());
             return {
@@ -343,7 +344,8 @@ for (const [width, height, dpr, doubled] of [
         await page.getByRole('button', { name: queue[i].planted.length ? 'Challenge' : 'Accept' }).click();
         await expect.poll(async () => (await game(page)).decided.length).toBe(i + 1);
       }
-      expect([...halls]).toHaveLength(1);
+      // 86 hall rows, two design pixels each (room.ts, HALL_ROWS), whatever the window.
+      expect([...halls]).toEqual([172]);
     });
   });
 }

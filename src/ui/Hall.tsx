@@ -11,19 +11,18 @@ import { pixelPaths } from './PixelPortrait';
 import { pa } from './sound';
 import { BUCKET, card, CLOCK, FLAG, PIGEON, PIGEON_PECK, PLANTS, sheared, spriteImage, textImage, turned, WET_FLOOR, wrapWords } from './sprites';
 // The hall's height on each stage, and one hall pixel: shared with the stage's scale (room.ts).
-import { hallRows, PX } from './room';
+import { HALL_ROWS, PX } from './room';
 
 // The waiting hall, seen from Window 3: the day's queue behind the railing, and a ministry that
 // comes apart a little more each day. Pure decoration; nothing here is evidence.
 //
 // It is drawn on the portraits' grid, one hall pixel to an art pixel (two design pixels) on every
-// stage, so it is as crisp as the desk and nothing in it is ever scaled. Its height is set once for
-// the stage it is on and never moves with the papers: whatever the desk leaves with its tallest papers
-// out, between a strip that still tells the whole story (the board, the queue under its banner, the
-// clock and the PA, the posters, Window 2 and whoever waits for it) and a room with a floor and a
-// ceiling. A wider stage shows more of the room at either end, never a bigger one.
+// stage, so it is as crisp as the desk and nothing in it is ever scaled. Its height is the same on
+// every stage (room.ts, HALL_ROWS) and never moves with the papers: the whole story (the board, the
+// queue under its banner, the clock and the PA, the posters, Window 2 and whoever waits for it) in a
+// room with a floor and a ceiling. A wider stage shows more of the room at either end, never a bigger one.
 
-/** Hall pixels every stage shows: the narrowest stage, 1240 design pixels, is exactly this wide. */
+/** Hall pixels at the middle of every stage, 1240 design pixels: the room is drawn around them. */
 const CORE = 620;
 /** The strip as drawn: the story, the queue's railing along its foot, and no floor. */
 const STRIP = 52;
@@ -43,7 +42,7 @@ const QUEUE_X = 64;
 const QUEUE_Y = RAIL - 40;
 const SPACING = 30;
 /** Called to the window, they walk off to the left, out of the widest stage's view. */
-const EXIT = -146;
+const EXIT = -186;
 /** The dado rail, and the floor behind the railing. */
 const DADO = 44;
 const FLOOR_Y = 59;
@@ -83,7 +82,7 @@ type Props = {
 export function Hall({ seed, day, queue: papers, called, minutes, serving, opened, decided, over }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const room = useRoom(ref);
-  const rows = hallRows(room.width, room.height);
+  const rows = HALL_ROWS;
   // Hall pixels across the stage (one spare for an odd width), with the core in the middle on a whole hall pixel.
   const cols = Math.ceil(room.width / PX) + 1;
   const left = Math.round(CORE / 2 - room.width / (2 * PX));

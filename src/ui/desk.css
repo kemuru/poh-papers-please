@@ -2519,33 +2519,6 @@ mark {
   display: flex;
 }
 
-/*
- * On a stage with the room (room.ts, evidenceX2: 1,656 design pixels wide or more, and tall enough for the doubled
- * papers under the shortest hall), the evidence is drawn at twice the art scale: the stills and the form's photo at
- * four design pixels to a portrait pixel, 160×192, crisp at every scale the stage takes. The two papers take a little
- * more of the blotter's width for it, so the sign still (150 pixels at its widest) stands beside the three stills.
- */
-.evidence-x2 .paper-form,
-.evidence-x2 .paper-video {
-  max-width: 712px;
-}
-
-.evidence-x2 .paper-video .film {
-  grid-template-columns: repeat(3, 164px);
-}
-
-.evidence-x2 .paper-form .photo svg {
-  width: 160px;
-  height: 192px;
-}
-
-/* The case number is typed beside the doubled photo, at its foot, not under it: the form grows by the photo alone. */
-.evidence-x2 .paper-form .photo-column {
-  flex-direction: row;
-  align-items: flex-end;
-  gap: 8px;
-}
-
 /* ------------------------------------------------------------ what the desk says */
 
 /*
