@@ -19,7 +19,7 @@ npm run deploy     # build and publish to GitHub Pages (scripts/deploy-web.sh)
 
 ## How it was made
 
-Built in one week during a course on AI-driven development, with Claude Code (Opus 5.5) building and Codex (GPT 6 Astra) reviewing. The process is documented in the repo:
+Built in one week during a course on AI-driven development, with Claude Code (Opus 5.5) building it and Codex (GPT 6 Astra) for one comparison build and one review. The process is documented in the repo:
 
 - `AGENTS.md`: the rules every agent follows.
 - `notes/`: the brief, the game design, the art direction, the acceptance checklist with its evidence, the run and cost log, the training report and the operating plan.

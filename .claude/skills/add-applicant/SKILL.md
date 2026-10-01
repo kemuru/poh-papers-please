@@ -30,16 +30,16 @@ Also stop and ask, in the same question where you can, when:
 Run `node ${CLAUDE_SKILL_DIR}/scripts/week.mjs`. Over the 20 seeds the tests use, it prints each day's valid share, the cast's valid share and each cast member's appearances.
 
 The targets (game-design.md):
-- Each day is 65 to 75% valid; day 1 is 3 of 5. The counts are fixed in `DAYS` (`src/gen/day.ts`) and a character never changes them: they take a fill-in's place, a fake's if invalid, a valid one's if valid.
+- Each day is 65 to 75% valid; day 1, the scripted tutorial, is 4 of 6, and day 7 is 4 of the 6 in the queue before the clerk's own renewal. The counts are fixed in `DAYS` (`src/gen/day.ts`) and a character never changes them: they take a fill-in's place, a fake's if invalid, a valid one's if valid.
 - Roughly half of the absurd cast appearances are valid (the test's floor is 40%). Appearance never gives the answer.
-- An invalid applicant has exactly one fault, on every day they appear, under every rule in force that day. A non-human (a machine, a generated person or avatar, a picture) breaks Rule 0 when its video shows it: a light of its own (the Likeness units' lamp between the brows, lit in every frame with the eyes shut), a face that changes between frames, three identical frames, or a generator's mark. It breaks one rule in all, like everyone, or Rule 0 and one of Rules 1 to 6 (the Agent, the Cutout), never more. Anything worn, painted or carried never counts under Rule 0: a costume is how they look, not what they are.
+- An invalid applicant has exactly one fault, on every day they appear, under every rule in force that day. A non-human (a machine, a generated person or avatar, a picture) is caught only by what its video shows: a light of its own (a Likeness unit's lamp between the brows, lit in the frames where its eyes are shut) or a face that changes between frames breaks Rule 2, the face; a generator's mark ✦, or three identical frames with no blink (a picture held up), breaks Rule 6, living. Before Rule 2 arrives on day 2 a light breaks nothing: day 1's unit is legal. Only the Agent breaks a second rule; the Cutout breaks Rule 6 alone. Anything worn, painted or carried never counts: a costume is how they look, not what they are.
 - Each rule wants three kinds of offender and one valid look-alike. Say which this character is.
 
 If the requested validity would take the cast share under about 50% or a day out of its band, ask, with the numbers and the alternative (the other validity, or fewer appearances). Otherwise state the decision in one line before editing, e.g. "Toaster: invalid on day 6, breaks Living (no blink: no frame shows closed eyes). Cast valid 66% to 62%."
 
 ## 3. Content (`src/content/`)
 All humor lives here. Logic files get none.
-- **Form and lines** in `cast.ts`. A valid character is a `REGULARS` entry shaped like Brenda's: name, address, birth year, portrait, `videos`, seven `remarks` (a regular comes once a week, and the seed picks which one they say) and both `exits`. An invalid character sits beside the Likeness units' content (`UNITS`, `UNIT_EXITS`): the lines for the days they appear, with the fault in the evidence, never in the lines.
+- **Form and lines** in `cast.ts`. A valid character is a `REGULARS` entry shaped like Brenda's: name, address, birth year, portrait, `videos`, seven `remarks` (a regular comes once a week, and the seed picks which one they say) and both `exits`. An invalid character sits beside the other invalid cast's content (`UNITS`, `UNIT_EXITS`, `AGENT`, `DEEPFAKE`, `CUTOUT`, `CLONE`): the lines for the days they appear, with the fault in the evidence, never in the lines.
 - **Portrait** in `portraits.ts` (`CAST_PORTRAITS`), built from existing parts plus the new accessory. Add the id to `CastId` in `cast.ts`, and to `RegularId` (a written-out list) only if the character is valid.
 - **Court line** in `verdicts.ts` (`CAST_RULINGS`, which the typecheck demands): why they were right if valid, what the court found if invalid.
 - **UI hooks:** follow the typecheck. `Shift.tsx` picks exit lines by cast id and `src/ui/week.ts` (`courtNote`) court lines; every place that special-cases `'unit'` is a place to check.
@@ -50,9 +50,9 @@ All humor lives here. Logic files get none.
 ## 4. Generator variant (`src/gen/`)
 - **Valid:** the `REGULARS` entry is the variant. `generateWeek` already rotates regulars through the week.
 - **Invalid:** a function beside `unitOn` in `day.ts` that builds them on their day or days, with `planted: [{ rule, mistake }]` naming exactly the fault and the clue in visible data (e.g. `video.blinked: false`). They replace one of the day's fake fill-ins (the day's fixed fakes are counted against `plan.fakes`), so the day's ratio holds. Scripted appearances belong in the first half of the queue.
-- If no invalid character besides the units has a pattern yet, or `Planted` cannot describe the fault, the generator's API changes: show the smallest change and ask before writing it (AGENTS.md).
+- The units, Pat, the Influencer, the Agent, the Cutout, the Deepfake and the Clone (`day.ts`) are the patterns. If `Planted` cannot describe the fault, the generator's API changes: show the smallest change and ask before writing it (AGENTS.md).
 - Pure and seeded: no `Math.random`, `Date.now` or `performance.now` (the purity test checks).
-- If the code has moved on (slice 3 adds rules, Pat, the units, Socrates before day 6), follow the pattern it uses now. The constraints still hold.
+- If the code has moved on since this skill was written, follow the pattern it uses now. The constraints still hold.
 
 ## 5. Portrait accessory (`src/gen/`)
 - Append the name to `ACCESSORIES` in `portrait.ts`. `generatePortrait` never rolls it (fill-ins wear only glasses, earrings and pearls).
@@ -64,7 +64,7 @@ All humor lives here. Logic files get none.
 - The accessory is how they look, not the proof. Unless the rule is about the photo, it is not the clue.
 
 ## 6. Rule test
-Add, never modify (AGENTS.md): append one `describe('<Name>')` block to `src/cast.test.ts` (create it the first time, beside `oracle.test.ts`). Over seeds 1 to 20:
+Add, never modify (AGENTS.md): append one `describe('<Name>')` block to `src/cast.test.ts`, beside `oracle.test.ts` (Dawn Hollis's block is the pattern). Over seeds 1 to 20:
 - they come in at least once, so the other checks are not vacuous about them;
 - on every appearance, `judge()` finds exactly the planted rules, given the applicant without `planted` and `cast`, the rulebook of that day and the registry as the oracle check builds it; `valid` is `planted.length === 0`;
 - invalid: exactly one planted violation, and the same applicant with only the clue repaired (e.g. `blinked: true`) is valid, so the clue is the whole fault;
@@ -75,7 +75,7 @@ Add, never modify (AGENTS.md): append one `describe('<Name>')` block to `src/cas
 2. `npm run test:e2e`. First check who owns port 5175: `lsof -nP -iTCP:5175 -sTCP:LISTEN`, then `lsof -p <pid> | grep cwd`. Playwright reuses any server there, which may be another worktree's. If it isn't this worktree, stop and ask.
 3. `node ${CLAUDE_SKILL_DIR}/scripts/week.mjs <castId>`: the ratios are still in their bands and the character turns up.
 
-Expect one kind of failure. A new character shifts every seeded week, since the generator draws once per cast member, so tests pinned to a seed can fail with nothing broken: `e2e/slice1.spec.ts` says so ("changed: pick another"), and `e2e/slice2.spec.ts` expects a particular queue on seed 1, day 1. Don't edit them. Find seeds that recreate each situation (a few lines using `generateWeek`), then ask before changing the tests, listing each change.
+Expect one kind of failure. A new character shifts every seeded week, since the generator draws once per cast member, so tests pinned to a seed can fail with nothing broken: `e2e/slice1.spec.ts` says so ("changed: pick another"), and `e2e/slice2.spec.ts` expects a particular queue on seed 7, day 1. Don't edit them. Find seeds that recreate each situation (a few lines using `generateWeek`), then ask before changing the tests, listing each change.
 
 Any other failure, balance bots included, is the character's: fix the character, never the test. If a test looks wrong, stop and explain.
 
