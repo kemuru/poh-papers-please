@@ -178,4 +178,5 @@ On 27 Sep, when I asked for evidence that slice 2 was done, the agent planted ea
 Other planted bugs this week:
 - 25 Sep: rediscovery B planted five bugs in the portrait generator unasked, and each was caught. Slice 1 (Claude) made "hooman" pass: 4 tests failed, both oracle tests among them.
 - 29 Sep: the slice 4 polish round switched off the jury's evidence rule in a scratch copy, and the old careful-clerk balance test still passed. It checked nothing real, so it was rewritten to fail on that bug. The phone-sign tests catch each of the five planted variants listed in the "Nothing but the evidence tells" row.
+- 30 Sep: during the redesign, `src/ui/look.test.ts` and the stylesheet half of `src/violet.test.ts` had been passing without checking anything, since Vitest read every `?raw` stylesheet as an empty string. An independent fix pass found it; once the stylesheets came through, three breaks planted in `hall.css` (a rounded corner, 12px type, a lilac) were each caught, and the file was restored.
 - 30 Sep: the whole-game review's new `e2e/board-fit.spec.ts` failed 8 of its 9 tests on the old notice board, then passed all 9 after the fix.

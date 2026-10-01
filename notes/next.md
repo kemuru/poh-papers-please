@@ -51,4 +51,4 @@ End of day 5 (30 Sep): from my playtest, a redesign in one session: one rule a d
 ## For the final report
 - What became possible: the whole game (seven days, a jury, six endings, music, pixel art and a played finale) in six days. My ambition note said it would never have been done otherwise.
 - What still needed my judgment: taste. the jokes were kinda odd, the "feel" of the game much improvable, I iteratively had to improve small things related to the "feel" of the game along the way.
-- What I'll try next: the Day 5 exercises I skipped (a routine, a CLI wrapper, a capstone reviewed by a fresh Claude session); reading `/usage` every day; playtests with people who have never seen the game (`notes/playtest-checklist.md`).
+- What I'll try next: reading `/usage` every evening, and playtests with people who have never seen the game (`notes/playtest-checklist.md`).
